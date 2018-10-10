@@ -1,0 +1,61 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.0-rc-80'
+    id 'net.minecrell.licenser' version "0.4.1"
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+}
+
+group 'io.zachbr'
+version '1.0-SNAPSHOT'
+
+repositories {
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': "io.zachbr.dis4irc.Dis4IRCKt",
+                'Name': rootProject.name,
+                'Version': version,
+                'Build-Date': new Date(),
+                'Source-Repo': "https://github.com/zachbr/Dis4IRC"
+        )
+    }
+}
+
+jar.enabled = false
+build.dependsOn(shadowJar)
+
+artifacts {
+    shadowJar
+}
+
+shadowJar {
+    classifier = null
+
+    dependencies {
+        include dependency('org.jetbrains.kotlin:kotlin-stdlib')
+    }
+
+    relocate 'kotlin', 'io.zachbr.dis4irc.libs.kotlin'
+    from "LICENSE.md"
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// updateLicenses | checkLicenses
+license {
+    ext.name = rootProject.name
+    header = project.file('HEADER.txt')
+}
