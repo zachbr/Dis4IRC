@@ -2,13 +2,16 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.0-rc-80'
     id 'net.minecrell.licenser' version "0.4.1"
     id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'io.spring.dependency-management' version '1.0.1.RELEASE'
 }
 
 group 'io.zachbr'
 version '1.0-SNAPSHOT'
 
 repositories {
-    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap/' }
+    maven { url 'https://dl.bintray.com/dv8fromtheworld/maven/'}
+    maven { url 'https://repo.spongepowered.org/maven'}
     mavenCentral()
 }
 
@@ -18,7 +21,7 @@ jar {
                 'Main-Class': "io.zachbr.dis4irc.Dis4IRCKt",
                 'Name': rootProject.name,
                 'Version': version,
-                'Build-Date': new Date(),
+                'Build-Date': new Date().format("yyyy-MM-dd 'at' HH:mm z"),
                 'Source-Repo': "https://github.com/zachbr/Dis4IRC"
         )
     }
@@ -33,17 +36,27 @@ artifacts {
 
 shadowJar {
     classifier = null
+    preserveFileTimestamps = false
 
-    dependencies {
-        include dependency('org.jetbrains.kotlin:kotlin-stdlib')
-    }
-
-    relocate 'kotlin', 'io.zachbr.dis4irc.libs.kotlin'
     from "LICENSE.md"
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.kitteh.irc:client-lib:4.0.2"
+    compile ("net.dv8tion:JDA:3.8.0_436") {
+        exclude module: 'opus-java'
+    }
+    compile "org.slf4j:slf4j-api:1.7.25"
+    compile "org.spongepowered:configurate-hocon:3.6"
+    runtime "org.apache.logging.log4j:log4j-core:2.11.1"
+    runtime "org.apache.logging.log4j:log4j-slf4j-impl:2.11.1"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.apache.logging.log4j:log4j-bom:2.11.1'
+    }
 }
 
 compileKotlin {
