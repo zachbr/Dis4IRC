@@ -17,57 +17,62 @@
 
 package io.zachbr.dis4irc
 
+import io.zachbr.dis4irc.Dis4IRC.Static.logger
+import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.config.Configuration
+import io.zachbr.dis4irc.config.makeDefaultNode
+import io.zachbr.dis4irc.config.toBridgeConfiguration
+import io.zachbr.dis4irc.util.Versioning
+import ninja.leaping.configurate.ConfigurationNode
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.IOException
-import java.util.jar.Manifest
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
 }
 
 class Dis4IRC(private val args: Array<String>) {
-    private val version: String
-    private val buildDate: String
     private val configPath: String = "./config.hocon"
-
-    internal val logger = LoggerFactory.getLogger(this::class.java)
-    internal val config = Configuration(configPath, logger)
+    internal val config = Configuration(configPath)
 
     init {
-        val versionSource = getVersionAndBuildDate()
-        version = versionSource.first
-        buildDate = versionSource.second
+        val versioning = Versioning()
 
-        logger.info("Starting Dis4IRC v$version")
-        logger.info("Built on $buildDate")
-        logger.info("Source available at https://github.com/zachbr/Dis4IRC")
-        logger.info("Licensed under the AGPLv3")
-        logger.info("")
+        logger.info("Starting Dis4IRC v${versioning.version}")
+        logger.info("Built on ${versioning.buildDate}")
+        logger.info("Source available at ${versioning.sourceRepo}")
+        logger.info("Licensed under the GNU Affero General Public License v3")
 
         if (!config.filePresent()) {
             config.saveConfig()
             logger.debug("Config file written to $configPath")
         }
-    }
 
-    private fun getVersionAndBuildDate(): Pair<String, String> {
-        val resources = this::javaClass.get().classLoader.getResources("META-INF/MANIFEST.MF")
-        while (resources.hasMoreElements()) {
-            try {
-                val manifest = Manifest(resources.nextElement().openStream())
-                val ours = manifest.mainAttributes.getValue("Name") == "Dis4IRC"
+        val bridgesNode = config.getNode("bridges")
+        if (bridgesNode.isVirtual) {
+            bridgesNode.setComment(
+                "A list of bridges that Dis4IRC should start up\n" +
+                        "Each bridge can bridge multiple channels between a single IRC and Discord Server"
+            )
 
-                if (ours) {
-                    val version = manifest.mainAttributes.getValue("Version")
-                    val sourceRepo = manifest.mainAttributes.getValue("Build-Date")
-                    return Pair(version, sourceRepo)
-                }
-            } catch (ignored: IOException) {
-            }
+            bridgesNode.getNode("default").makeDefaultNode()
+            config.saveConfig()
         }
 
-        return Pair("Unknown Version", "Unknown Source Repo")
+        if (bridgesNode.hasMapChildren()) {
+            bridgesNode.childrenMap.forEach { startBridge(it.value) }
+        } else {
+            logger.error("No bridge configurations found!")
+        }
+    }
+
+    private fun startBridge(node: ConfigurationNode) {
+        logger.info("Starting bridge: ${node.key}")
+        val bridge = Bridge(node.toBridgeConfiguration())
+    }
+
+    object Static {
+        val logger: Logger = LoggerFactory.getLogger(this::class.java)
     }
 }
 

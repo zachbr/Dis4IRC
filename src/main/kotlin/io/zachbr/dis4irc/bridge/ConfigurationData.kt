@@ -15,10 +15,18 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.util
+package io.zachbr.dis4irc.bridge
 
-fun validateNotNull(any: Any?, msg: String = "Validated object is null!") {
-    if (any === null) {
-        throw IllegalArgumentException(msg)
-    }
-}
+data class BridgeConfiguration(
+    val bridgeName: String,
+    val ircHostname: String,
+    val ircPort: Int,
+    val ircSslEnabled: Boolean,
+    val discordApiKey: String,
+    val channelMappings: List<ChannelMapping>
+)
+
+data class ChannelMapping(
+    val discordChannel: String,
+    val ircChannel: String
+)

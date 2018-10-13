@@ -15,10 +15,12 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.util
+package io.zachbr.dis4irc.bridge
 
-fun validateNotNull(any: Any?, msg: String = "Validated object is null!") {
-    if (any === null) {
-        throw IllegalArgumentException(msg)
+import io.zachbr.dis4irc.Dis4IRC.Static.logger
+
+class Bridge(private val config: BridgeConfiguration) {
+    init {
+        logger.info(config.toString())
     }
 }

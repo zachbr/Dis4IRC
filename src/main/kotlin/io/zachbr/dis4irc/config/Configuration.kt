@@ -17,18 +17,18 @@
 
 package io.zachbr.dis4irc.config
 
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader
-import java.io.IOException
-import java.nio.file.Path
+import io.zachbr.dis4irc.Dis4IRC.Static.logger
 import ninja.leaping.configurate.ConfigurationOptions
-import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader
 import ninja.leaping.configurate.loader.HeaderMode
-import org.slf4j.Logger
+import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
-class Configuration(pathIn: String, private val logger: Logger) {
+class Configuration(pathIn: String) {
 
     /**
      * The config file for use
@@ -38,7 +38,7 @@ class Configuration(pathIn: String, private val logger: Logger) {
     /**
      * Our configuration loader
      */
-    private var configurationLoader: HoconConfigurationLoader = HoconConfigurationLoader.builder()
+    private val configurationLoader: HoconConfigurationLoader = HoconConfigurationLoader.builder()
         .setPath(configPath)
         .setHeaderMode(HeaderMode.PRESET)
         .build()
@@ -49,8 +49,7 @@ class Configuration(pathIn: String, private val logger: Logger) {
     private var rootNode: SimpleCommentedConfigurationNode
 
     /**
-     * Reads Airplane's shared configuration file
-     * Must be called prior to reading individual nodes
+     * Reads configuration file and prepares for use
      */
     init {
         try {
