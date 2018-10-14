@@ -17,10 +17,13 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.Dis4IRC.Static.logger
+import org.slf4j.LoggerFactory
 
 class Bridge(private val config: BridgeConfiguration) {
+    private val logger = LoggerFactory.getLogger(config.bridgeName)
+
     init {
+        logger.info("Starting bridge: ${config.bridgeName}")
         logger.info(config.toString())
     }
 }

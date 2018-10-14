@@ -25,7 +25,7 @@ class Versioning {
     val sourceRepo: String
 
     init {
-        val resources = this::javaClass.get().classLoader.getResources("META-INF/MANIFEST.MF")
+        val resources = this.javaClass.classLoader.getResources("META-INF/MANIFEST.MF")
         var verOut = "Unknown version"
         var dateOut = "Unknown build date"
         var repoOut = "Unknown source repo"

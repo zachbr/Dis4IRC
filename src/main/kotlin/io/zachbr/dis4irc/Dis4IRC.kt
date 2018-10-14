@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
 }
 
 class Dis4IRC(private val args: Array<String>) {
-    private val configPath: String = "./config.hocon"
+    private val configPath: String = "config.hocon"
     internal val config = Configuration(configPath)
 
     init {
@@ -43,11 +43,6 @@ class Dis4IRC(private val args: Array<String>) {
         logger.info("Source available at ${versioning.sourceRepo}")
         logger.info("Licensed under the GNU Affero General Public License v3")
 
-        if (!config.filePresent()) {
-            config.saveConfig()
-            logger.debug("Config file written to $configPath")
-        }
-
         val bridgesNode = config.getNode("bridges")
         if (bridgesNode.isVirtual) {
             bridgesNode.setComment(
@@ -57,6 +52,7 @@ class Dis4IRC(private val args: Array<String>) {
 
             bridgesNode.getNode("default").makeDefaultNode()
             config.saveConfig()
+            logger.debug("Default config written to $configPath")
         }
 
         if (bridgesNode.hasMapChildren()) {
@@ -72,7 +68,7 @@ class Dis4IRC(private val args: Array<String>) {
     }
 
     object Static {
-        val logger: Logger = LoggerFactory.getLogger(this::class.java)
+        val logger: Logger = LoggerFactory.getLogger("init")
     }
 }
 

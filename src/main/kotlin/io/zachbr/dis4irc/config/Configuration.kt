@@ -20,13 +20,13 @@ package io.zachbr.dis4irc.config
 import io.zachbr.dis4irc.Dis4IRC.Static.logger
 import ninja.leaping.configurate.ConfigurationOptions
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
-import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader
 import ninja.leaping.configurate.loader.HeaderMode
 import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
+private const val HEADER = "Dis4IRC Configuration File"
 
 class Configuration(pathIn: String) {
 
@@ -40,26 +40,30 @@ class Configuration(pathIn: String) {
      */
     private val configurationLoader: HoconConfigurationLoader = HoconConfigurationLoader.builder()
         .setPath(configPath)
+        .setDefaultOptions(ConfigurationOptions.defaults().setHeader(HEADER))
         .setHeaderMode(HeaderMode.PRESET)
         .build()
 
     /**
      * Root configuration node
      */
-    private var rootNode: SimpleCommentedConfigurationNode
+    private var rootNode: CommentedConfigurationNode
 
     /**
      * Reads configuration file and prepares for use
      */
     init {
         try {
-            rootNode = SimpleCommentedConfigurationNode.root(ConfigurationOptions.defaults().setHeader(getHeader()))
+            rootNode = configurationLoader.load()
         } catch (ex: IOException) {
             logger.error("Could not load configuration! $ex")
             throw ex
         }
     }
 
+    /**
+     * Writes config back to file
+     */
     internal fun saveConfig(): Boolean {
         try {
             configurationLoader.save(rootNode)
@@ -77,16 +81,5 @@ class Configuration(pathIn: String) {
      */
     internal fun getNode(vararg keys: String): CommentedConfigurationNode {
         return rootNode.getNode(*keys)
-    }
-
-    internal fun filePresent(): Boolean {
-        return Files.exists(configPath)
-    }
-
-    /**
-     * Gets the super serious and entirely professional header for the config
-     */
-    private fun getHeader(): String {
-        return "Dis4IRC Configuration File"
     }
 }

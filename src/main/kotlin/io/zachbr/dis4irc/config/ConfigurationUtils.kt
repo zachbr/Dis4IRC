@@ -43,28 +43,28 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val discordApiKey = this.getNode("discord-api-key").string ?: throw IllegalArgumentException("Discord API key cannot be null!")
 
     val channelMappings = ArrayList<ChannelMapping>()
-    for (mappingNode in this.getNode("channel-mappings").childrenList) {
+    for (mappingNode in this.getNode("channel-mappings").childrenMap.values) {
         channelMappings.add(mappingNode.toChannelMapping())
     }
 
     var validated = true
     if (ircHost.trim().isEmpty()) {
-        logger.warn("IRC server host left empty for bridge: $bridgeName")
+        logger.error("IRC server host left empty for bridge: $bridgeName")
         validated = false
     }
 
     if (ircPort == 0) {
-        logger.warn("IRC server port invalid for bridge: $bridgeName")
+        logger.error("IRC server port invalid for bridge: $bridgeName")
         validated = false
     }
 
     if (discordApiKey.trim().isEmpty()) {
-        logger.warn("Discord API key left empty for bridge: $bridgeName")
+        logger.error("Discord API key left empty for bridge: $bridgeName")
         validated = false
     }
 
     if (channelMappings.size == 0) {
-        logger.warn("No channel mappings defined for bridge: $bridgeName")
+        logger.error("No channel mappings defined for bridge: $bridgeName")
         validated = false
     }
 
