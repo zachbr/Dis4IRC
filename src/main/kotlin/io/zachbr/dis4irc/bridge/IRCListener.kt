@@ -9,11 +9,16 @@ class IRCListener(private val bridge: Bridge) {
 
     @Handler
     public fun onUserJoinChan(event: ChannelJoinEvent) {
-        logger.info("IRC JOIN " + event.channel.name + " " + event.actor.nick)
+        logger.debug("IRC JOIN " + event.channel.name + " " + event.actor.nick)
     }
 
     @Handler
     public fun onMessage(event: ChannelMessageEvent) {
-        logger.info("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
+        if (event.actor.nick == bridge.ircConn?.nick) {
+            return
+        }
+
+        logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
+        bridge.bridgeToDiscord(event.actor.nick, event.channel, event.message)
     }
 }
