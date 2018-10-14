@@ -19,6 +19,6 @@ Built using
 * [KittehIRCClientLib](https://github.com/KittehOrg/KittehIRCClientLib)
 * [JDA (Java Discord API)](https://github.com/DV8FromTheWorld/JDA)
 * [Configurate](https://github.com/SpongePowered/configurate)
-* [SLF4J](https://www.slf4j.org)
-* [Log4J](https://logging.apache.org/log4j/2.x/)
+* [SLF4J (api)](https://www.slf4j.org)
+* [Log4J (runtime)](https://logging.apache.org/log4j/2.x/)
 
