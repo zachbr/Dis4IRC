@@ -26,14 +26,15 @@ import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.ConfigurationNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.IllegalStateException
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
 }
 
-class Dis4IRC(private val args: Array<String>) {
-    private val configPath: String = "config.hocon"
-    internal val config = Configuration(configPath)
+class Dis4IRC(val args: Array<String>) {
+    private var configPath: String = "config.hocon"
+    private val bridgesByName = HashMap<String, Bridge>()
 
     init {
         val versioning = Versioning()
@@ -42,6 +43,13 @@ class Dis4IRC(private val args: Array<String>) {
         logger.info("Built on ${versioning.buildDate}")
         logger.info("Source available at ${versioning.sourceRepo}")
         logger.info("Licensed under the GNU Affero General Public License v3")
+
+        if (args.isNotEmpty()) {
+            configPath = args[0]
+        }
+
+        logger.info("Loading config from: $configPath")
+        val config = Configuration(configPath)
 
         val bridgesNode = config.getNode("bridges")
         if (bridgesNode.isVirtual) {
@@ -64,11 +72,16 @@ class Dis4IRC(private val args: Array<String>) {
 
     private fun startBridge(node: ConfigurationNode) {
         logger.info("Starting bridge: ${node.key}")
-        val bridge = Bridge(node.toBridgeConfiguration())
+
+        val bridgeConf = node.toBridgeConfiguration()
+        val bridge = Bridge(bridgeConf)
+        bridgesByName[bridgeConf.bridgeName] = bridge
+
+        bridge.startBridge()
     }
 
     object Static {
-        val logger: Logger = LoggerFactory.getLogger("init")
+        val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
     }
 }
 

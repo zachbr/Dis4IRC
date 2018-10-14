@@ -1,3 +1,9 @@
+# Project Specific Files
+
+# Bridge configs
+*.hocon
+
+# End project specific files
 
 # Created by https://www.gitignore.io/api/vim,code,emacs,linux,macos,windows,eclipse,netbeans,sublimetext,intellij+all,gradle
 

@@ -20,8 +20,13 @@ package io.zachbr.dis4irc.bridge
 data class BridgeConfiguration(
     val bridgeName: String,
     val ircHostname: String,
+    val ircPassword: String?,
     val ircPort: Int,
     val ircSslEnabled: Boolean,
+    val ircAllowInvalidCerts: Boolean,
+    val ircNickName: String,
+    val ircUserName: String,
+    val ircRealName: String,
     val discordApiKey: String,
     val channelMappings: List<ChannelMapping>
 )
