@@ -67,6 +67,14 @@ class Dis4IRC(args: Array<String>) {
         } else {
             logger.error("No bridge configurations found!")
         }
+
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                for (bridge in bridgesByName.values) {
+                    bridge.shutdown()
+                }
+            }
+        })
     }
 
     private fun startBridge(node: ConfigurationNode) {

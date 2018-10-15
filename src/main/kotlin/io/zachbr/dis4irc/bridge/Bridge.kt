@@ -43,7 +43,7 @@ class Bridge(private val config: BridgeConfiguration) {
     }
 
     fun startBridge() {
-        logger.info(config.toString())
+        logger.debug(config.toString())
 
         try {
             initDiscordConnection()
@@ -93,7 +93,7 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to IRC!")
     }
 
-    fun toIRC(username: String, from: MessageChannel, msg: String) {
+    internal fun toIRC(username: String, from: MessageChannel, msg: String) {
         var to = discordIrcMap[from.id]
         if (to == null) {
             to = discordIrcMap[from.name]
@@ -112,7 +112,7 @@ class Bridge(private val config: BridgeConfiguration) {
         ircChannel.get().sendMessage("<$username> $msg")
     }
 
-    fun toDiscord(username: String, from: Channel, msg: String) {
+    internal fun toDiscord(username: String, from: Channel, msg: String) {
         val to = ircDiscordMap[from.name]
 
         if (to == null) {
@@ -137,7 +137,7 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Checks if the bridge has an IRC channel mapped to this Discord channel
      */
-    fun hasMappingFor(discordChannel: MessageChannel): Boolean {
+    internal fun hasMappingFor(discordChannel: MessageChannel): Boolean {
         val name = discordChannel.name
         val id = discordChannel.id
 
@@ -147,17 +147,31 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Checks if the bridge has a Discord channel mapped to this IRC channel
      */
-    fun hasMappingFor(ircChannel: Channel): Boolean {
+    internal fun hasMappingFor(ircChannel: Channel): Boolean {
         return ircDiscordMap.containsKey(ircChannel.name)
     }
 
     /**
      * Gets the Discord bot's user id or 0 if it hasn't been initialized
      */
-    fun getDiscordBotId(): Long = if (discordApi == null) { 0 } else { discordApi!!.selfUser.idLong }
+    internal fun getDiscordBotId(): Long = if (discordApi == null) { 0 } else { discordApi!!.selfUser.idLong }
 
     /**
      * Gets the IRC bot's nickname or empty string if it hasn't been initialized
      */
-    fun getIRCBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
+    internal fun getIRCBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
+
+    internal fun shutdown() {
+        logger.info("Stopping...")
+
+        if (discordApi != null) {
+            discordApi!!.shutdownNow()
+        }
+
+        if (ircConn != null) {
+            ircConn!!.shutdown("Exiting...")
+        }
+
+        logger.info("${config.bridgeName} stopped")
+    }
 }
