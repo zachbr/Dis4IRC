@@ -11,7 +11,8 @@ Features
 * User whitelist/blacklist
 * Paste support for long messages
 * Channel Join/Quit broadcasts
-* Non-prefixed messages for IRC bots
+* Discord webook support
+* Non-prefixed messages for other IRC bots to handle
 
 Built using
 -----------

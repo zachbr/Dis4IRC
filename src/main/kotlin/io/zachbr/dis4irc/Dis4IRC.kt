@@ -26,13 +26,12 @@ import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.ConfigurationNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.IllegalStateException
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
 }
 
-class Dis4IRC(val args: Array<String>) {
+class Dis4IRC(args: Array<String>) {
     private var configPath: String = "config.hocon"
     private val bridgesByName = HashMap<String, Bridge>()
 

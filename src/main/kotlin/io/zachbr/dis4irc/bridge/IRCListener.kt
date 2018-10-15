@@ -5,16 +5,22 @@ import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 
 class IRCListener(private val bridge: Bridge) {
-    val logger = bridge.logger
+    private val logger = bridge.logger
 
     @Handler
-    public fun onUserJoinChan(event: ChannelJoinEvent) {
+    fun onUserJoinChan(event: ChannelJoinEvent) {
         logger.debug("IRC JOIN " + event.channel.name + " " + event.actor.nick)
     }
 
     @Handler
-    public fun onMessage(event: ChannelMessageEvent) {
-        if (event.actor.nick == bridge.ircConn?.nick) {
+    fun onMessage(event: ChannelMessageEvent) {
+        // dont bridge itself
+        if (event.actor.nick == bridge.getIRCBotNick()) {
+            return
+        }
+
+        // dont bridge unrelated channels
+        if (!bridge.hasMappingFor(event.channel)) {
             return
         }
 

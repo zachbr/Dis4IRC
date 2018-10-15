@@ -24,16 +24,15 @@ import net.dv8tion.jda.core.entities.MessageChannel
 import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.LoggerFactory
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
     private val discordIrcMap = HashMap<String, String>()
     private val ircDiscordMap: Map<String, String>
 
-    internal var discordApi: JDA? = null
-    internal var ircConn: Client? = null
+    internal var hasInitialized = false
+    private var discordApi: JDA? = null
+    private var ircConn: Client? = null
 
     init {
         for (mapping in config.channelMappings) {
@@ -53,14 +52,16 @@ class Bridge(private val config: BridgeConfiguration) {
             logger.error("Exception while initializing connections: $ex")
             ex.printStackTrace()
         }
+
+        hasInitialized = true
     }
 
-    fun initDiscordConnection() {
+    private fun initDiscordConnection() {
         logger.info("Connecting to Discord API...")
 
         discordApi = JDABuilder()
             .setToken(config.discordApiKey)
-            .setGame(Game.of(Game.GameType.DEFAULT,"IRC", "http://irc.spi.gt/iris/?channels=paper"))
+            .setGame(Game.of(Game.GameType.DEFAULT, "IRC"))
             .addEventListener(DiscordListener(this))
             .build()
             .awaitReady()
@@ -69,7 +70,7 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to Discord!")
     }
 
-    fun initIrcConnection() {
+    private fun initIrcConnection() {
         logger.info("Connecting to IRC Server")
 
         ircConn = Client.builder()
@@ -105,9 +106,8 @@ class Bridge(private val config: BridgeConfiguration) {
 
         val ircChannel = ircConn?.getChannel(to)
         if (!ircChannel!!.isPresent) {
-            logger.warn("Bot is not present in IRC channel $to")
+            logger.warn("Bridge is not present in IRC channel $to")
         }
-
 
         ircChannel.get().sendMessage("<$username> $msg")
     }
@@ -122,15 +122,42 @@ class Bridge(private val config: BridgeConfiguration) {
 
         val discordChannel = discordApi?.getTextChannelById(to)
         if (discordChannel == null) {
-            logger.warn("Bot is not present in Discord channel $to!")
+            logger.warn("Bridge is not present in Discord channel $to!")
             return
         }
 
         if (!discordChannel.canTalk()) {
-            logger.warn("BridgeBot cannot speak in ${discordChannel.name}")
+            logger.warn("Bridge cannot speak in ${discordChannel.name} to bridge message from ${from.name}!")
             return
         }
 
         discordChannel.sendMessage("<$username> $msg").complete()
     }
+
+    /**
+     * Checks if the bridge has an IRC channel mapped to this Discord channel
+     */
+    fun hasMappingFor(discordChannel: MessageChannel): Boolean {
+        val name = discordChannel.name
+        val id = discordChannel.id
+
+        return discordIrcMap.containsKey(id) || discordIrcMap.containsKey(name)
+    }
+
+    /**
+     * Checks if the bridge has a Discord channel mapped to this IRC channel
+     */
+    fun hasMappingFor(ircChannel: Channel): Boolean {
+        return ircDiscordMap.containsKey(ircChannel.name)
+    }
+
+    /**
+     * Gets the Discord bot's user id or 0 if it hasn't been initialized
+     */
+    fun getDiscordBotId(): Long = if (discordApi == null) { 0 } else { discordApi!!.selfUser.idLong }
+
+    /**
+     * Gets the IRC bot's nickname or empty string if it hasn't been initialized
+     */
+    fun getIRCBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
 }

@@ -12,7 +12,13 @@ class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
             return
         }
 
-        if (event.author.idLong == bridge.discordApi?.selfUser?.idLong) {
+        // dont bridge itself
+        if (event.author.idLong == bridge.getDiscordBotId()) {
+            return
+        }
+
+        // dont bridge unrelated channels
+        if (!bridge.hasMappingFor(event.channel)) {
             return
         }
 
