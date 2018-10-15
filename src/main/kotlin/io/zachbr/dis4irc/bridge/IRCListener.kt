@@ -25,6 +25,6 @@ class IRCListener(private val bridge: Bridge) {
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        bridge.bridgeToDiscord(event.actor.nick, event.channel, event.message)
+        bridge.toDiscord(event.actor.nick, event.channel, event.message)
     }
 }

@@ -93,7 +93,7 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to IRC!")
     }
 
-    fun bridgeToIRC(username: String, from: MessageChannel, msg: String) {
+    fun toIRC(username: String, from: MessageChannel, msg: String) {
         var to = discordIrcMap[from.id]
         if (to == null) {
             to = discordIrcMap[from.name]
@@ -112,7 +112,7 @@ class Bridge(private val config: BridgeConfiguration) {
         ircChannel.get().sendMessage("<$username> $msg")
     }
 
-    fun bridgeToDiscord(username: String, from: Channel, msg: String) {
+    fun toDiscord(username: String, from: Channel, msg: String) {
         val to = ircDiscordMap[from.name]
 
         if (to == null) {
