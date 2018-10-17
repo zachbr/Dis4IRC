@@ -21,6 +21,9 @@ import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 
+/**
+ * Responsible for listening to incoming IRC messages and filtering garbage
+ */
 class IRCListener(private val bridge: Bridge) {
     private val logger = bridge.logger
 
@@ -37,6 +40,6 @@ class IRCListener(private val bridge: Bridge) {
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        bridge.handleFromIrc(event.actor.nick, event.channel, event.message)
+        bridge.handleMessageFromIrc(event.actor.nick, event.channel, event.message)
     }
 }

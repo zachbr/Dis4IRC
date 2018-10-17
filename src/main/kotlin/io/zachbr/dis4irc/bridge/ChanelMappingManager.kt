@@ -20,6 +20,9 @@ package io.zachbr.dis4irc.bridge
 import net.dv8tion.jda.core.entities.MessageChannel
 import org.kitteh.irc.client.library.element.Channel
 
+/**
+ * Responsible for maintaining the channel-to-channel mappings between IRC and Discord
+ */
 class ChannelMappingManager(conf: BridgeConfiguration) {
     private val discord2Irc = HashMap<String, String>()
     private val irc2Discord: Map<String, String>

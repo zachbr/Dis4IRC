@@ -23,6 +23,11 @@ import io.zachbr.dis4irc.bridge.ChannelMapping
 import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 
+/**
+ * Creates a "default" node, pre-populated with settings
+ *
+ * @throws IllegalArgumentException if called from any node other than direct children of the bridges node
+ */
 fun CommentedConfigurationNode.makeDefaultNode() {
     if (this.parent?.key != "bridges") {
         throw IllegalArgumentException("Cannot make default node from anything but a direct child of bridges node!")
@@ -68,6 +73,11 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     discordChannelNode.value = "irc-channel-name"
 }
 
+/**
+ * Converts a given node into a BridgeConfiguration instance
+ *
+ * @throws IllegalArgumentException if called from any node other than direct children of the bridges node
+ */
 fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     if (this.parent?.key != "bridges") {
         throw IllegalArgumentException("Cannot make bridge configuration from anything but a direct child of bridges node!")
@@ -131,6 +141,9 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     )
 }
 
+/**
+ * Converts a given node into a channel mapping configuration instance
+ */
 fun ConfigurationNode.toChannelMapping(): ChannelMapping {
     val discordChannel: String = this.key as String
     val ircChannel: String = this.string ?: throw IllegalArgumentException("IRC channel mapping cannot be null")

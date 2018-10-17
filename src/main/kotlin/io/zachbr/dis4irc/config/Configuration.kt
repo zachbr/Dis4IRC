@@ -28,6 +28,9 @@ import java.nio.file.Paths
 
 private const val HEADER = "Dis4IRC Configuration File"
 
+/**
+ * Responsible for interacting with the underlying configuration system
+ */
 class Configuration(pathIn: String) {
 
     /**

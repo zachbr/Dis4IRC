@@ -20,6 +20,9 @@ package io.zachbr.dis4irc.bridge
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 
+/**
+ * Responsible for listening to incoming discord messages and filtering garbage
+ */
 class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
     private val logger = bridge.logger
 
@@ -35,6 +38,6 @@ class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
         }
 
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
-        bridge.handleFromDiscord(event.author.name, event.channel, event.message.contentStripped)
+        bridge.handleMessageFromDiscord(event.author.name, event.channel, event.message.contentStripped)
     }
 }

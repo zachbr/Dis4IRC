@@ -24,7 +24,11 @@ import net.dv8tion.jda.core.entities.MessageChannel
 import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
+/**
+ * Responsible for the connection between Discord and IRC, including message processing hand offs
+ */
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
     private val channelMappings = ChannelMappingManager(config)
@@ -32,18 +36,27 @@ class Bridge(private val config: BridgeConfiguration) {
     private var discordApi: JDA? = null
     private var ircConn: Client? = null
 
+    /**
+     * Connects to IRC and Discord
+     */
     fun startBridge() {
         logger.debug(config.toString())
 
         try {
             initDiscordConnection()
             initIrcConnection()
+        } catch (ex: IOException) {
+            logger.error("IO Exception while initializing connections: $ex")
+            ex.printStackTrace()
         } catch (ex: IllegalArgumentException) {
-            logger.error("Exception while initializing connections: $ex")
+            logger.error("Argument Exception while initializing connections: $ex")
             ex.printStackTrace()
         }
     }
 
+    /**
+     * Prepares and connects to Discord API
+     */
     private fun initDiscordConnection() {
         logger.info("Connecting to Discord API...")
 
@@ -58,6 +71,9 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to Discord!")
     }
 
+    /**
+     * Prepares and connects the IRC bot to the server
+     */
     private fun initIrcConnection() {
         logger.info("Connecting to IRC Server")
 
@@ -81,7 +97,10 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to IRC!")
     }
 
-    internal fun handleFromDiscord(username: String, from: MessageChannel, msg: String) {
+    /**
+     * Process a message received from Discord
+     */
+    internal fun handleMessageFromDiscord(username: String, from: MessageChannel, msg: String) {
         val to = channelMappings.getMappingFor(from)
 
         if (to == null) {
@@ -104,7 +123,10 @@ class Bridge(private val config: BridgeConfiguration) {
         ircChannel.get().sendMessage("<$username> $msg")
     }
 
-    internal fun handleFromIrc(username: String, from: Channel, msg: String) {
+    /**
+     * Process a message received from IRC
+     */
+    internal fun handleMessageFromIrc(username: String, from: Channel, msg: String) {
         val to = channelMappings.getMappingFor(from)
 
         if (to == null) {
@@ -136,6 +158,9 @@ class Bridge(private val config: BridgeConfiguration) {
      */
     internal fun getIrcBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
 
+    /**
+     * Clean up and disconnect from the IRC and Discord platforms
+     */
     internal fun shutdown() {
         logger.info("Stopping...")
 

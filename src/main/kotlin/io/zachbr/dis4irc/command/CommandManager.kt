@@ -17,6 +17,9 @@
 
 package io.zachbr.dis4irc.command
 
+/**
+ * Responsible for managing, looking up, and delegating to command executors
+ */
 class CommandManager() {
 
 }

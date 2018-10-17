@@ -19,6 +19,9 @@ package io.zachbr.dis4irc.util
 
 import java.util.jar.Manifest
 
+/**
+ * Fetches and provides versioning information from the jar's manifest
+ */
 class Versioning {
     val version: String
     val buildDate: String

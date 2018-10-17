@@ -17,6 +17,9 @@
 
 package io.zachbr.dis4irc.bridge
 
+/**
+ * Main bridge configuration data class
+ */
 data class BridgeConfiguration(
     val bridgeName: String,
     val ircHostname: String,
@@ -30,6 +33,9 @@ data class BridgeConfiguration(
     val channelMappings: List<ChannelMapping>
 )
 
+/**
+ * Simple channel-to-channel configuration data class
+ */
 data class ChannelMapping(
     val discordChannel: String,
     val ircChannel: String
