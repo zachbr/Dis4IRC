@@ -34,12 +34,7 @@ class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
             return
         }
 
-        // dont bridge unrelated channels
-        if (!bridge.hasMappingFor(event.channel)) {
-            return
-        }
-
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
-        bridge.toIRC(event.author.name, event.channel, event.message.contentStripped)
+        bridge.handleFromDiscord(event.author.name, event.channel, event.message.contentStripped)
     }
 }

@@ -27,20 +27,10 @@ import org.slf4j.LoggerFactory
 
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
-    private val discordIrcMap = HashMap<String, String>()
-    private val ircDiscordMap: Map<String, String>
+    private val channelMappings = ChannelMappingManager(config)
 
-    internal var hasInitialized = false
     private var discordApi: JDA? = null
     private var ircConn: Client? = null
-
-    init {
-        for (mapping in config.channelMappings) {
-            discordIrcMap[mapping.discordChannel] = mapping.ircChannel
-        }
-
-        ircDiscordMap = discordIrcMap.entries.associateBy({ it.value }) { it.key }
-    }
 
     fun startBridge() {
         logger.debug(config.toString())
@@ -52,8 +42,6 @@ class Bridge(private val config: BridgeConfiguration) {
             logger.error("Exception while initializing connections: $ex")
             ex.printStackTrace()
         }
-
-        hasInitialized = true
     }
 
     private fun initDiscordConnection() {
@@ -93,30 +81,34 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.info("Connected to IRC!")
     }
 
-    internal fun toIRC(username: String, from: MessageChannel, msg: String) {
-        var to = discordIrcMap[from.id]
-        if (to == null) {
-            to = discordIrcMap[from.name]
-        }
+    internal fun handleFromDiscord(username: String, from: MessageChannel, msg: String) {
+        val to = channelMappings.getMappingFor(from)
 
         if (to == null) {
-            logger.warn("Message from Discord ${from.name} does not have IRC channel mapping!")
+            logger.debug("Discarding message - Discord ${from.name} does not have a IRC channel mapping!")
             return
         }
 
         val ircChannel = ircConn?.getChannel(to)
-        if (!ircChannel!!.isPresent) {
+        if (ircChannel == null) {
+            logger.error("Got null IRC channel back from IRC API!")
+            Throwable().printStackTrace()
+            return
+        }
+
+        if (!ircChannel.isPresent) {
             logger.warn("Bridge is not present in IRC channel $to")
+            return
         }
 
         ircChannel.get().sendMessage("<$username> $msg")
     }
 
-    internal fun toDiscord(username: String, from: Channel, msg: String) {
-        val to = ircDiscordMap[from.name]
+    internal fun handleFromIrc(username: String, from: Channel, msg: String) {
+        val to = channelMappings.getMappingFor(from)
 
         if (to == null) {
-            logger.warn("Message from IRC ${from.name} does not have a mapping to Discord!")
+            logger.debug("Discarding message - IRC ${from.name} does not have a Discord channel mapping!")
             return
         }
 
@@ -135,23 +127,6 @@ class Bridge(private val config: BridgeConfiguration) {
     }
 
     /**
-     * Checks if the bridge has an IRC channel mapped to this Discord channel
-     */
-    internal fun hasMappingFor(discordChannel: MessageChannel): Boolean {
-        val name = discordChannel.name
-        val id = discordChannel.id
-
-        return discordIrcMap.containsKey(id) || discordIrcMap.containsKey(name)
-    }
-
-    /**
-     * Checks if the bridge has a Discord channel mapped to this IRC channel
-     */
-    internal fun hasMappingFor(ircChannel: Channel): Boolean {
-        return ircDiscordMap.containsKey(ircChannel.name)
-    }
-
-    /**
      * Gets the Discord bot's user id or 0 if it hasn't been initialized
      */
     internal fun getDiscordBotId(): Long = if (discordApi == null) { 0 } else { discordApi!!.selfUser.idLong }
@@ -159,18 +134,13 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Gets the IRC bot's nickname or empty string if it hasn't been initialized
      */
-    internal fun getIRCBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
+    internal fun getIrcBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
 
     internal fun shutdown() {
         logger.info("Stopping...")
 
-        if (discordApi != null) {
-            discordApi!!.shutdownNow()
-        }
-
-        if (ircConn != null) {
-            ircConn!!.shutdown("Exiting...")
-        }
+        discordApi?.shutdownNow()
+        ircConn?.shutdown("Exiting...")
 
         logger.info("${config.bridgeName} stopped")
     }

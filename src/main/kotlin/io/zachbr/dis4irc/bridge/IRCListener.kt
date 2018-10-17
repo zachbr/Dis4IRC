@@ -32,16 +32,11 @@ class IRCListener(private val bridge: Bridge) {
     @Handler
     fun onMessage(event: ChannelMessageEvent) {
         // dont bridge itself
-        if (event.actor.nick == bridge.getIRCBotNick()) {
-            return
-        }
-
-        // dont bridge unrelated channels
-        if (!bridge.hasMappingFor(event.channel)) {
+        if (event.actor.nick == bridge.getIrcBotNick()) {
             return
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        bridge.toDiscord(event.actor.nick, event.channel, event.message)
+        bridge.handleFromIrc(event.actor.nick, event.channel, event.message)
     }
 }
