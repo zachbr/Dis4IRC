@@ -24,6 +24,8 @@ import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.ConfigurationNode
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -51,6 +53,21 @@ class Dis4IRC(args: Array<String>) {
 
         logger.info("Loading config from: $configPath")
         val config = Configuration(configPath)
+
+        val debugNode = config.getNode("debug-logging")
+        if (debugNode.isVirtual) {
+            debugNode.value = false
+            config.saveConfig()
+        }
+
+        if (debugNode.boolean) {
+            val logContext = (LogManager.getContext(false) as LoggerContext)
+            val logConfig =  logContext.configuration
+            logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = org.apache.logging.log4j.Level.DEBUG
+            logContext.updateLoggers(logConfig)
+
+            logger.debug("Debug logging enabled")
+        }
 
         val bridgesNode = config.getNode("bridges")
         if (bridgesNode.isVirtual) {
