@@ -17,4 +17,4 @@
 
 package io.zachbr.dis4irc.command.api
 
-data class Sender(val name: String, val id: Long?)
+data class Sender(val displayName: String, val discordId: Long?, val ircNickServ: String?)

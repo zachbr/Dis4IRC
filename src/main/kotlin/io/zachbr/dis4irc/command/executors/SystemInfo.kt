@@ -19,11 +19,25 @@ package io.zachbr.dis4irc.command.executors
 
 import io.zachbr.dis4irc.Dis4IRC
 import io.zachbr.dis4irc.command.api.Executor
+import io.zachbr.dis4irc.command.api.Sender
 import io.zachbr.dis4irc.command.api.SimpleCommand
 
 class SystemInfo : Executor() {
+
+    private fun isAuthorized(sender: Sender): Boolean {
+        if (sender.ircNickServ != null && sender.ircNickServ == "Z750") {
+            return true
+        }
+
+        if (sender.discordId != null && sender.discordId == 107387791683416064) {
+            return true
+        }
+
+        return false
+    }
+
     override fun onCommand(command: SimpleCommand) {
-        if (command.sender.name != "Z750") {
+        if (!isAuthorized(command.sender)) {
             return
         }
 

@@ -120,7 +120,8 @@ class Bridge(private val config: BridgeConfiguration) {
 
         if (msg.startsWith(COMMAND_PREFIX)) {
             logger.debug("Handling message as command")
-            val command = SimpleCommand(msg, Sender(sender.name, sender.idLong), channel.id, Source.DISCORD, this)
+            val senderObj = Sender(sender.name, sender.idLong, null)
+            val command = SimpleCommand(msg, senderObj, channel.id, Source.DISCORD, this)
             commandManager.processCommandMessage(command)
         }
     }
@@ -140,7 +141,14 @@ class Bridge(private val config: BridgeConfiguration) {
 
         if (msg.startsWith(COMMAND_PREFIX)) {
             logger.debug("Handling message as command")
-            val command = SimpleCommand(msg, Sender(sender.nick, null), channel.name, Source.IRC, this)
+
+            var nickServAcct: String? = null
+            if (sender.account.isPresent) {
+                nickServAcct = sender.account.get()
+            }
+
+            val senderObj = Sender(sender.nick, null, nickServAcct)
+            val command = SimpleCommand(msg, senderObj, channel.name, Source.IRC, this)
             commandManager.processCommandMessage(command)
         }
     }
