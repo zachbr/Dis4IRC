@@ -40,6 +40,6 @@ class IRCListener(private val bridge: Bridge) {
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        bridge.handleMessageFromIrc(event.actor.nick, event.channel, event.message)
+        bridge.handleMessageFromIrc(event.actor, event.channel, event.message)
     }
 }

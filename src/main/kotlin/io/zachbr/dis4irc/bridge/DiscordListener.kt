@@ -38,6 +38,6 @@ class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
         }
 
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
-        bridge.handleMessageFromDiscord(event.author.name, event.channel, event.message.contentStripped)
+        bridge.handleMessageFromDiscord(event.author, event.channel, event.message.contentStripped)
     }
 }

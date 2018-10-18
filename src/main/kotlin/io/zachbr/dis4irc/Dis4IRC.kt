@@ -26,6 +26,8 @@ import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.ConfigurationNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
+import java.time.Period
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
@@ -89,6 +91,10 @@ class Dis4IRC(args: Array<String>) {
 
     object Static {
         val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
+        private val startDate = LocalDate.now()
+        val uptime: String by lazy {
+            "${Period.between(startDate, LocalDate.now()).days} days"
+        }
     }
 }
 
