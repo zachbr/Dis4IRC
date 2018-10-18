@@ -172,7 +172,7 @@ class Bridge(private val config: BridgeConfiguration) {
             return
         }
 
-        if (result.sendToIrc()) {
+        if (result.shouldSendToIrc()) {
             val out = result.output?.split("\n") ?: return
             val target = if (result.source == Source.IRC) { result.channel } else { bridgeTarget }
             for (line in out) {
@@ -180,7 +180,7 @@ class Bridge(private val config: BridgeConfiguration) {
             }
         }
 
-        if (result.sendToDiscord()) {
+        if (result.shouldSendToDiscord()) {
             val target = if (result.source == Source.DISCORD) { result.channel } else { bridgeTarget }
             sendRawDiscordMessage(target, result.output!!)
         }

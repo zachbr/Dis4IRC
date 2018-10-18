@@ -32,7 +32,7 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         bridge.handleCommand(this)
     }
 
-    fun sendToIrc(): Boolean {
+    fun shouldSendToIrc(): Boolean {
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> true
@@ -41,7 +41,7 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         }
     }
 
-    fun sendToDiscord(): Boolean {
+    fun shouldSendToDiscord(): Boolean {
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> false
