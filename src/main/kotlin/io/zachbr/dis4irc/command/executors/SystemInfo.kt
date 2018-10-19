@@ -46,10 +46,11 @@ class SystemInfo : Executor {
         val javaVersion = System.getProperty("java.runtime.version")
         val osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + "(" + System.getProperty("os.arch") + ")"
 
-        command.output = "Uptime: ${Dis4IRC.Static.uptime}\n" +
+        val out = "Uptime: ${Dis4IRC.Static.uptime}\n" +
                 "Memory: $currentMemory / $totalAllocated (MiB)\n" +
                 "Java: $javaVersion\n" +
                 "OS: $osInfo"
-        command.submit()
+
+        command.submit(out)
     }
 }

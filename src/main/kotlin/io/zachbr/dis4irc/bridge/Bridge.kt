@@ -156,11 +156,7 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Process a command executor's submission
      */
-    internal fun handleCommand(result: SimpleCommand) {
-        if (result.output == null) {
-            throw IllegalArgumentException("Cannot handle command result with null output")
-        }
-
+    internal fun handleCommand(result: SimpleCommand, output: String) {
         val bridgeTarget: String? = when {
             result.source == Source.DISCORD -> channelMappings.getMappingForDiscordChannelBy(result.channel)
             result.source == Source.IRC -> channelMappings.getMappingForIrcChannelByName(result.channel)
@@ -173,7 +169,7 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         if (result.shouldSendToIrc()) {
-            val out = result.output?.split("\n") ?: return
+            val out = output.split("\n")
             val target = if (result.source == Source.IRC) { result.channel } else { bridgeTarget }
             for (line in out) {
                 sendRawIrcMessage(target, line)
@@ -182,7 +178,7 @@ class Bridge(private val config: BridgeConfiguration) {
 
         if (result.shouldSendToDiscord()) {
             val target = if (result.source == Source.DISCORD) { result.channel } else { bridgeTarget }
-            sendRawDiscordMessage(target, result.output!!)
+            sendRawDiscordMessage(target, output)
         }
 
     }

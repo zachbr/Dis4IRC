@@ -22,14 +22,12 @@ import java.lang.IllegalArgumentException
 
 class SimpleCommand(val msg: String, val sender: Sender, val channel: String, val source: Source, private val bridge: Bridge) {
     var destination = Destination.BOTH
-    var output: String? = null
 
-    fun submit() {
-        if (output == null) {
-            throw IllegalArgumentException("Cannot submit a null result!")
-        }
-
-        bridge.handleCommand(this)
+    /**
+     * Call to send output back to the user
+     */
+    fun submit(output: String) {
+        bridge.handleCommand(this, output)
     }
 
     fun shouldSendToIrc(): Boolean {
