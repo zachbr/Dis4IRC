@@ -28,8 +28,6 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.time.Period
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
@@ -62,7 +60,7 @@ class Dis4IRC(args: Array<String>) {
 
         if (debugNode.boolean) {
             val logContext = (LogManager.getContext(false) as LoggerContext)
-            val logConfig =  logContext.configuration
+            val logConfig = logContext.configuration
             logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = org.apache.logging.log4j.Level.DEBUG
             logContext.updateLoggers(logConfig)
 
@@ -96,6 +94,9 @@ class Dis4IRC(args: Array<String>) {
         })
     }
 
+    /**
+     * Initializes and starts a bridge instance
+     */
     private fun startBridge(node: ConfigurationNode) {
         logger.info("Starting bridge: ${node.key}")
 
@@ -107,11 +108,10 @@ class Dis4IRC(args: Array<String>) {
     }
 
     object Static {
+        /**
+         * Static logger for use *only* during initialization, bridges have their own loggers
+         */
         val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
-        private val startDate = LocalDate.now()
-        val uptime: String by lazy {
-            "${Period.between(startDate, LocalDate.now()).days} days"
-        }
     }
 }
 

@@ -15,13 +15,13 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.command
+package io.zachbr.dis4irc.bridge.command
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.COMMAND_PREFIX
-import io.zachbr.dis4irc.command.api.Executor
-import io.zachbr.dis4irc.command.api.SimpleCommand
-import io.zachbr.dis4irc.command.executors.SystemInfo
+import io.zachbr.dis4irc.bridge.command.api.Executor
+import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
+import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
@@ -34,6 +34,9 @@ class CommandManager(bridge: Bridge) {
         registerExecutor("!system", SystemInfo())
     }
 
+    /**
+     * Registers an executor to the given command
+     */
     fun registerExecutor(name: String, executor: Executor) {
         if (!name.startsWith(COMMAND_PREFIX)) {
             throw IllegalArgumentException("Executor name registration must start with \"$COMMAND_PREFIX\"")
@@ -42,13 +45,18 @@ class CommandManager(bridge: Bridge) {
         executorsByCommand[name] = executor
     }
 
+    /**
+     * Gets the executor for the given command
+     */
     fun getExecutorFor(name: String): Executor? {
         return executorsByCommand[name]
     }
 
+    /**
+     * Process a command message, passing it off to the registered executor
+     */
     fun processCommandMessage(command: SimpleCommand) {
         val split = command.msg.split(" ")
-
         val executor = getExecutorFor(split[0]) ?: return
 
         logger.debug("Passing command to executor: $executor")

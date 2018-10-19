@@ -85,14 +85,17 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
 
     val bridgeName = this.key as String
 
-    val ircHost = this.getNode("irc", "server").string ?: throw IllegalArgumentException("IRC hostname cannot be null in $bridgeName!")
+    val ircHost = this.getNode("irc", "server").string
+        ?: throw IllegalArgumentException("IRC hostname cannot be null in $bridgeName!")
     val ircPass = this.getNode("irc", "password").string // nullable
     val ircPort = this.getNode("irc", "port").int
     val ircUseSsl = this.getNode("irc", "use-ssl").boolean
-    val ircNickName = this.getNode("irc", "nickname").string ?: throw java.lang.IllegalArgumentException("IRC nickname cannot be null in $bridgeName!")
+    val ircNickName = this.getNode("irc", "nickname").string
+        ?: throw java.lang.IllegalArgumentException("IRC nickname cannot be null in $bridgeName!")
     val ircUserName = this.getNode("irc", "username").getString("BridgeBot")
     val ircRealName = this.getNode("irc", "realname").getString("BridgeBot")
-    val discordApiKey = this.getNode("discord-api-key").string ?: throw IllegalArgumentException("Discord API key cannot be null in $bridgeName!")
+    val discordApiKey = this.getNode("discord-api-key").string
+        ?: throw IllegalArgumentException("Discord API key cannot be null in $bridgeName!")
 
     val channelMappings = ArrayList<ChannelMapping>()
     for (mappingNode in this.getNode("channel-mappings").childrenMap.values) {

@@ -15,8 +15,24 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.command.api
+package io.zachbr.dis4irc.bridge.pier
 
-enum class Source {
-    DISCORD, IRC, COMMAND
+import io.zachbr.dis4irc.bridge.BridgeConfiguration
+
+interface Pier {
+
+    /**
+     * Initializes a pier, connecting it to whatever backend it needs, and readying it for use
+     */
+    fun init(config: BridgeConfiguration)
+
+    /**
+     * Safely shuts down a pier
+     */
+    fun shutdown()
+
+    /**
+     * Sends a message through this pier
+     */
+    fun sendMessage(channel: String, msg: String) // todo - we might need an internal API for this
 }

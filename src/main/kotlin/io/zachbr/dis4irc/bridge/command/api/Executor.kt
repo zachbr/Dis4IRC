@@ -15,6 +15,11 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.command.api
+package io.zachbr.dis4irc.bridge.command.api
 
-data class Sender(val displayName: String, val discordId: Long?, val ircNickServ: String?)
+interface Executor {
+    /**
+     * Perform some action when a command is executed
+     */
+    fun onCommand(command: SimpleCommand)
+}

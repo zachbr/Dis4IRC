@@ -15,10 +15,9 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.command.api
+package io.zachbr.dis4irc.bridge.command.api
 
 import io.zachbr.dis4irc.bridge.Bridge
-import java.lang.IllegalArgumentException
 
 class SimpleCommand(val msg: String, val sender: Sender, val channel: String, val source: Source, private val bridge: Bridge) {
     var destination = Destination.BOTH
@@ -30,6 +29,9 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         bridge.handleCommand(this, output)
     }
 
+    /**
+     * Gets whether the message should be sent to IRC
+     */
     fun shouldSendToIrc(): Boolean {
         return when (destination) {
             Destination.BOTH -> true
@@ -39,6 +41,9 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         }
     }
 
+    /**
+     * Gets whether the message should be sent to Discord
+     */
     fun shouldSendToDiscord(): Boolean {
         return when (destination) {
             Destination.BOTH -> true

@@ -15,7 +15,7 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge
+package io.zachbr.dis4irc.bridge.pier.discord
 
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
@@ -23,8 +23,8 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter
 /**
  * Responsible for listening to incoming discord messages and filtering garbage
  */
-class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
-    private val logger = bridge.logger
+class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
+    private val logger = pier.logger
 
     override fun onMessageReceived(event: MessageReceivedEvent?) {
         if (event == null) {
@@ -33,11 +33,11 @@ class DiscordListener(private val bridge: Bridge) : ListenerAdapter() {
         }
 
         // dont bridge itself
-        if (event.author.idLong == bridge.getDiscordBotId()) {
+        if (event.author.idLong == pier.getBotId()) {
             return
         }
 
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
-        bridge.handleMessageFromDiscord(event.author, event.channel, event.message.contentStripped)
+        pier.sendToBridge(event.author, event.channel, event.message)
     }
 }

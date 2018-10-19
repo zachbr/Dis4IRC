@@ -15,7 +15,7 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge
+package io.zachbr.dis4irc.bridge.pier.irc
 
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
@@ -24,8 +24,8 @@ import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
  */
-class IRCListener(private val bridge: Bridge) {
-    private val logger = bridge.logger
+class IRCListener(private val pier: IRCPier) {
+    private val logger = pier.logger
 
     @Handler
     fun onUserJoinChan(event: ChannelJoinEvent) {
@@ -34,12 +34,12 @@ class IRCListener(private val bridge: Bridge) {
 
     @Handler
     fun onMessage(event: ChannelMessageEvent) {
-        // dont bridge itself
-        if (event.actor.nick == bridge.getIrcBotNick()) {
+        // ignore messages sent by this bot
+        if (event.actor.nick == pier.getBotNick()) {
             return
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        bridge.handleMessageFromIrc(event.actor, event.channel, event.message)
+        pier.sendToBridge(event.actor, event.channel, event.message)
     }
 }

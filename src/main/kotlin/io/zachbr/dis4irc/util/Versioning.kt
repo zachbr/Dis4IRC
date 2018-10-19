@@ -23,8 +23,17 @@ import java.util.jar.Manifest
  * Fetches and provides versioning information from the jar's manifest
  */
 class Versioning {
+    /**
+     * Gets the build version of this jar
+     */
     val version: String
+    /**
+     * Gets the build date of this jar
+     */
     val buildDate: String
+    /**
+     * Gets the source repo of this project
+     */
     val sourceRepo: String
 
     init {

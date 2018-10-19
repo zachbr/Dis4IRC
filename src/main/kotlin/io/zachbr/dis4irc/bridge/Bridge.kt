@@ -17,16 +17,15 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.command.CommandManager
-import io.zachbr.dis4irc.command.api.Sender
-import io.zachbr.dis4irc.command.api.SimpleCommand
-import io.zachbr.dis4irc.command.api.Source
-import net.dv8tion.jda.core.JDA
-import net.dv8tion.jda.core.JDABuilder
-import net.dv8tion.jda.core.entities.Game
+import io.zachbr.dis4irc.bridge.command.CommandManager
+import io.zachbr.dis4irc.bridge.command.api.Sender
+import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
+import io.zachbr.dis4irc.bridge.command.api.Source
+import io.zachbr.dis4irc.bridge.pier.Pier
+import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
+import io.zachbr.dis4irc.bridge.pier.irc.IRCPier
 import net.dv8tion.jda.core.entities.MessageChannel
 import net.dv8tion.jda.core.entities.User
-import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -41,8 +40,14 @@ class Bridge(private val config: BridgeConfiguration) {
     private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
 
-    private var discordApi: JDA? = null
-    private var ircConn: Client? = null
+    private val discordConn: Pier
+    private val ircConn: Pier
+
+    init {
+        // todo - discord webhooks
+        discordConn = DiscordPier(this)
+        ircConn = IRCPier(this)
+    }
 
     /**
      * Connects to IRC and Discord
@@ -51,8 +56,8 @@ class Bridge(private val config: BridgeConfiguration) {
         logger.debug(config.toString())
 
         try {
-            initDiscordConnection()
-            initIrcConnection()
+            discordConn.init(config)
+            ircConn.init(config)
         } catch (ex: IOException) {
             logger.error("IO Exception while initializing connections: $ex")
             ex.printStackTrace()
@@ -63,52 +68,9 @@ class Bridge(private val config: BridgeConfiguration) {
     }
 
     /**
-     * Prepares and connects to Discord API
-     */
-    private fun initDiscordConnection() {
-        logger.info("Connecting to Discord API...")
-
-        discordApi = JDABuilder()
-            .setToken(config.discordApiKey)
-            .setGame(Game.of(Game.GameType.DEFAULT, "IRC"))
-            .addEventListener(DiscordListener(this))
-            .build()
-            .awaitReady()
-
-        logger.info("Discord Bot Invite URL: ${discordApi?.asBot()?.getInviteUrl()}")
-        logger.info("Connected to Discord!")
-    }
-
-    /**
-     * Prepares and connects the IRC bot to the server
-     */
-    private fun initIrcConnection() {
-        logger.info("Connecting to IRC Server")
-
-        ircConn = Client.builder()
-            .nick(config.ircNickName)
-            .serverHost(config.ircHostname)
-            .serverPort(config.ircPort)
-            .serverPassword(config.ircPassword)
-            .secure(config.ircSslEnabled)
-            .user(config.ircUserName)
-            .realName(config.ircRealName)
-            .buildAndConnect()
-
-        for (mapping in config.channelMappings) {
-            ircConn?.addChannel(mapping.ircChannel)
-            logger.debug("Joined ${mapping.ircChannel}")
-        }
-
-        ircConn?.eventManager?.registerEventListener(IRCListener(this))
-
-        logger.info("Connected to IRC!")
-    }
-
-    /**
      * Process a message received from Discord
      */
-    internal fun handleMessageFromDiscord(sender: User, channel: MessageChannel, msg: String) {
+    internal fun handleMessageFromDiscord(sender: User, channel: MessageChannel, msg: String) { // todo - generify, remove specific handler
         val to = channelMappings.getMappingFor(channel)
 
         if (to == null) {
@@ -116,7 +78,7 @@ class Bridge(private val config: BridgeConfiguration) {
             return
         }
 
-        sendRawIrcMessage(to, "<${sender.name}> $msg")
+        ircConn.sendMessage(to, "<${sender.name}> $msg")
 
         if (msg.startsWith(COMMAND_PREFIX)) {
             logger.debug("Handling message as command")
@@ -129,7 +91,7 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Process a message received from IRC
      */
-    internal fun handleMessageFromIrc(sender: org.kitteh.irc.client.library.element.User, channel: Channel, msg: String) {
+    internal fun handleMessageFromIrc(sender: org.kitteh.irc.client.library.element.User, channel: Channel, msg: String) { // todo - generify, remove specific handler
         val to = channelMappings.getMappingFor(channel)
 
         if (to == null) {
@@ -137,7 +99,7 @@ class Bridge(private val config: BridgeConfiguration) {
             return
         }
 
-        sendRawDiscordMessage(to, "<${sender.nick}> $msg")
+        discordConn.sendMessage(to, "<${sender.nick}> $msg")
 
         if (msg.startsWith(COMMAND_PREFIX)) {
             logger.debug("Handling message as command")
@@ -172,26 +134,16 @@ class Bridge(private val config: BridgeConfiguration) {
             val out = output.split("\n")
             val target = if (result.source == Source.IRC) { result.channel } else { bridgeTarget }
             for (line in out) {
-                sendRawIrcMessage(target, line)
+                ircConn.sendMessage(target, line)
             }
         }
 
         if (result.shouldSendToDiscord()) {
             val target = if (result.source == Source.DISCORD) { result.channel } else { bridgeTarget }
-            sendRawDiscordMessage(target, output)
+            discordConn.sendMessage(target, output)
         }
 
     }
-
-    /**
-     * Gets the Discord bot's user id or 0 if it hasn't been initialized
-     */
-    internal fun getDiscordBotId(): Long = if (discordApi == null) { 0 } else { discordApi!!.selfUser.idLong }
-
-    /**
-     * Gets the IRC bot's nickname or empty string if it hasn't been initialized
-     */
-    internal fun getIrcBotNick(): String = if (ircConn == null) { "" } else { ircConn!!.name }
 
     /**
      * Clean up and disconnect from the IRC and Discord platforms
@@ -199,46 +151,9 @@ class Bridge(private val config: BridgeConfiguration) {
     internal fun shutdown() {
         logger.info("Stopping...")
 
-        discordApi?.shutdownNow()
-        ircConn?.shutdown("Exiting...")
+        discordConn.shutdown()
+        ircConn.shutdown()
 
         logger.info("${config.bridgeName} stopped")
-    }
-
-    /**
-     * Sends the given message directly to the specified IRC channel
-     */
-    private fun sendRawIrcMessage(channel: String, msg: String) {
-        val ircChannel = ircConn?.getChannel(channel)
-        if (ircChannel == null) {
-            logger.error("Got null IRC channel back from IRC API!")
-            Throwable().printStackTrace()
-            return
-        }
-
-        if (!ircChannel.isPresent) {
-            logger.warn("Bridge is not present in IRC channel $channel")
-            return
-        }
-
-        ircChannel.get().sendMessage(msg)
-    }
-
-    /**
-     * Sends the given message directly to the specified Discord channel
-     */
-    private fun sendRawDiscordMessage(channel: String, msg: String) {
-        val discordChannel = discordApi?.getTextChannelById(channel)
-        if (discordChannel == null) {
-            logger.warn("Bridge is not present in Discord channel $channel!")
-            return
-        }
-
-        if (!discordChannel.canTalk()) {
-            logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $msg")
-            return
-        }
-
-        discordChannel.sendMessage(msg).complete()
     }
 }

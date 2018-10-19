@@ -15,15 +15,19 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.command.executors
+package io.zachbr.dis4irc.bridge.command.executors
 
-import io.zachbr.dis4irc.Dis4IRC
-import io.zachbr.dis4irc.command.api.Executor
-import io.zachbr.dis4irc.command.api.Sender
-import io.zachbr.dis4irc.command.api.SimpleCommand
+import io.zachbr.dis4irc.bridge.command.api.Executor
+import io.zachbr.dis4irc.bridge.command.api.Sender
+import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
+import java.lang.management.ManagementFactory
+import java.util.concurrent.TimeUnit
 
 class SystemInfo : Executor {
 
+    /**
+     * Checks that the sender is authorized to use this command
+     */
     private fun isAuthorized(sender: Sender): Boolean {
         if (sender.ircNickServ != null && sender.ircNickServ == "Z750") {
             return true
@@ -41,12 +45,15 @@ class SystemInfo : Executor {
             return
         }
 
+        val runtimeMX = ManagementFactory.getRuntimeMXBean()
+
+        val uptime = TimeUnit.MILLISECONDS.toDays(runtimeMX.uptime)
         val totalAllocated = Runtime.getRuntime().maxMemory() / (1024 * 1024)
         val currentMemory = Runtime.getRuntime().totalMemory() / (1024 * 1024)
-        val javaVersion = System.getProperty("java.runtime.version")
+        val javaVersion = "${runtimeMX.vmName} ${runtimeMX.vmVersion}"
         val osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + "(" + System.getProperty("os.arch") + ")"
 
-        val out = "Uptime: ${Dis4IRC.Static.uptime}\n" +
+        val out = "Uptime: $uptime days\n" +
                 "Memory: $currentMemory / $totalAllocated (MiB)\n" +
                 "Java: $javaVersion\n" +
                 "OS: $osInfo"
