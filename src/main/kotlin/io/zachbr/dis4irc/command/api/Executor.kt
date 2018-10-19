@@ -17,6 +17,6 @@
 
 package io.zachbr.dis4irc.command.api
 
-abstract class Executor {
-    abstract fun onCommand(command: SimpleCommand)
+interface Executor {
+    fun onCommand(command: SimpleCommand)
 }

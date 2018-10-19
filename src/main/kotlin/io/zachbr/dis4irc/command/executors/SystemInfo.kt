@@ -22,7 +22,7 @@ import io.zachbr.dis4irc.command.api.Executor
 import io.zachbr.dis4irc.command.api.Sender
 import io.zachbr.dis4irc.command.api.SimpleCommand
 
-class SystemInfo : Executor() {
+class SystemInfo : Executor {
 
     private fun isAuthorized(sender: Sender): Boolean {
         if (sender.ircNickServ != null && sender.ircNickServ == "Z750") {
