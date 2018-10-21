@@ -33,7 +33,7 @@ const val COMMAND_PREFIX: String = "!"
  */
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
-    private val channelMappings = ChannelMappingManager(config)
+    internal val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
 
     private val discordConn: Pier

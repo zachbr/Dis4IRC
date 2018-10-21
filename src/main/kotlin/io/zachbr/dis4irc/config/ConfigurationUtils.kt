@@ -20,6 +20,7 @@ package io.zachbr.dis4irc.config
 import io.zachbr.dis4irc.Dis4IRC.Static.logger
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.ChannelMapping
+import io.zachbr.dis4irc.bridge.WebhookMapping
 import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 
@@ -66,6 +67,12 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     discordApiKey.setComment("Your discord API key you registered your bot with")
     discordApiKey.value = ""
 
+    val discordWebhookParent = this.getNode("discord-webhooks")
+    discordWebhookParent.setComment("Match a channel id to a webhook URL to enable webhooks for that channel")
+
+    val discordWebhook = discordWebhookParent.getNode("discord-channel-id")
+    discordWebhook.value = "http://webhook-url"
+
     val mappingsNode = this.getNode("channel-mappings")
     mappingsNode.setComment("Mappings are the channel <-> channel bridging configurations")
 
@@ -85,17 +92,22 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
 
     val bridgeName = this.key as String
 
-    val ircHost = this.getNode("irc", "server").string
-        ?: throw IllegalArgumentException("IRC hostname cannot be null in $bridgeName!")
+    val ircHost = this.getNode("irc", "server").string ?: throw IllegalArgumentException("IRC hostname cannot be null in $bridgeName!")
     val ircPass = this.getNode("irc", "password").string // nullable
     val ircPort = this.getNode("irc", "port").int
     val ircUseSsl = this.getNode("irc", "use-ssl").boolean
-    val ircNickName = this.getNode("irc", "nickname").string
-        ?: throw java.lang.IllegalArgumentException("IRC nickname cannot be null in $bridgeName!")
+    val ircNickName = this.getNode("irc", "nickname").string ?: throw java.lang.IllegalArgumentException("IRC nickname cannot be null in $bridgeName!")
     val ircUserName = this.getNode("irc", "username").getString("BridgeBot")
     val ircRealName = this.getNode("irc", "realname").getString("BridgeBot")
-    val discordApiKey = this.getNode("discord-api-key").string
-        ?: throw IllegalArgumentException("Discord API key cannot be null in $bridgeName!")
+    val discordApiKey = this.getNode("discord-api-key").string ?: throw IllegalArgumentException("Discord API key cannot be null in $bridgeName!")
+
+    val webhookMappings = ArrayList<WebhookMapping>()
+    for (webhookNode in this.getNode("discord-webhooks").childrenMap.values) {
+        val mapping = webhookNode.toWebhookMapping()
+        if (mapping != null) {
+            webhookMappings.add(mapping)
+        }
+    }
 
     val channelMappings = ArrayList<ChannelMapping>()
     for (mappingNode in this.getNode("channel-mappings").childrenMap.values) {
@@ -140,6 +152,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircUserName,
         ircRealName,
         discordApiKey,
+        webhookMappings,
         channelMappings
     )
 }
@@ -152,4 +165,18 @@ fun ConfigurationNode.toChannelMapping(): ChannelMapping {
     val ircChannel: String = this.string ?: throw IllegalArgumentException("IRC channel mapping cannot be null")
 
     return ChannelMapping(discordChannel, ircChannel)
+}
+
+/**
+ * Converts a given node into a webhook mapping configuration instance
+ */
+fun ConfigurationNode.toWebhookMapping(): WebhookMapping? {
+    val discordChannel: String? = this.key as String
+    val webhookUrl: String? = this.string
+
+    if (discordChannel == null || webhookUrl == null) {
+        return null
+    }
+
+    return WebhookMapping(discordChannel, webhookUrl)
 }

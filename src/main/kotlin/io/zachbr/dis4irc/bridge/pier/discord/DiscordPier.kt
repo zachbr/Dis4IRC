@@ -17,6 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
+import io.zachbr.dis4irc.api.Channel
 import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
@@ -24,11 +25,15 @@ import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.webhook.WebhookClient
+import net.dv8tion.jda.webhook.WebhookClientBuilder
+import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
 import java.util.concurrent.TimeUnit
 
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
+    private val webhookMap = HashMap<String, WebhookClient>()
     private var discordApi: JDA? = null
 
     override fun init(config: BridgeConfiguration) {
@@ -41,32 +46,57 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             .build()
             .awaitReady()
 
+        // init webhooks
+        if (config.discordWebHooks.isNotEmpty()) {
+            logger.info("Initializing Discord webhooks")
+
+            for (hook in config.discordWebHooks) {
+                val webhook: WebhookClient
+                try {
+                    webhook = WebhookClientBuilder(hook.webhookUrl).build()
+                } catch (ex: IllegalArgumentException) {
+                    logger.error("Webhook for ${hook.discordChannel} with url ${hook.webhookUrl} is not valid!")
+                    ex.printStackTrace()
+                    continue
+                }
+
+                webhookMap[hook.discordChannel] = webhook
+                logger.info("Webhook for ${hook.discordChannel} registered")
+            }
+        }
+
         logger.info("Discord Bot Invite URL: ${discordApi?.asBot()?.getInviteUrl()}")
         logger.info("Connected to Discord!")
     }
 
+    /**
+     * Gets whether the given string is a snowflake id
+     */
+    private fun isId(value: String): Boolean {
+        val long: Long? = value.toLongOrNull()
+        return long != null
+    }
+
     override fun shutdown() {
         discordApi?.shutdownNow()
+
+        for (client in webhookMap.values) {
+            client.close()
+        }
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {
-        val discordChannel = discordApi?.getTextChannelById(targetChan)
-        if (discordChannel == null) {
-            logger.warn("Bridge is not present in Discord channel $targetChan!")
-            return
+        val webhook = webhookMap[targetChan]
+        if (webhook == null) {
+            sendMessageOldStyle(targetChan, msg)
+        } else {
+            sendMessageWebhook(webhook, msg)
         }
-
-        if (!discordChannel.canTalk()) {
-            logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $msg")
-            return
-        }
-
-        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}")
 
         logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
     }
 
-    fun sendMessageOldStyle(targetChan: String, msg: Message) {
+    private fun sendMessageOldStyle(targetChan: String, msg: Message) {
         val discordChannel = discordApi?.getTextChannelById(targetChan)
         if (discordChannel == null) {
             logger.warn("Bridge is not present in Discord channel $targetChan!")
@@ -78,14 +108,49 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}")
+        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}").complete()
+    }
+
+    private fun sendMessageWebhook(webhook: WebhookClient, msg: Message) {
+        // try and get avatar for matching user
+        var avatarUrl: String? = null
+        val matchingUsers = discordApi?.getUsersByName(msg.sender.displayName, true)
+        if (matchingUsers != null && matchingUsers.isNotEmpty()) {
+            avatarUrl = matchingUsers[0].avatarUrl
+        }
+
+        val builder = WebhookMessageBuilder()
+        builder.setContent(msg.contents)
+        builder.setUsername(msg.sender.displayName)
+        if (avatarUrl != null) {
+            builder.setAvatarUrl(avatarUrl)
+        }
+
+        val message = builder.build()
+        webhook.send(message)
     }
 
     /**
      * Gets the Discord bot's snowflake id
      */
-    fun getBotId(): Long? {
-        return discordApi?.selfUser?.idLong
+    fun isThisBot(channel: Channel, snowflake: Long): Boolean {
+        // check against bot user directly
+        if (snowflake == discordApi?.selfUser?.idLong) {
+            return true
+        }
+
+        // check against webclients
+        var webhook = webhookMap[channel.discordId.toString()]
+        if (webhook == null) {
+            webhook = webhookMap[channel.name]
+        }
+
+        if (webhook != null) {
+            return snowflake == webhook.idLong
+        }
+
+        // nope
+        return false
     }
 
     /**

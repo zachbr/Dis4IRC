@@ -30,6 +30,7 @@ data class BridgeConfiguration(
     val ircUserName: String,
     val ircRealName: String,
     val discordApiKey: String,
+    val discordWebHooks: List<WebhookMapping>,
     val channelMappings: List<ChannelMapping>
 )
 
@@ -39,4 +40,9 @@ data class BridgeConfiguration(
 data class ChannelMapping(
     val discordChannel: String,
     val ircChannel: String
+)
+
+data class WebhookMapping(
+    val discordChannel: String,
+    val webhookUrl: String
 )

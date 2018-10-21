@@ -36,7 +36,8 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         // dont bridge itself
-        if (event.author.idLong == pier.getBotId()) {
+        val channel = Channel(event.channel.name, event.channel.idLong, Channel.Type.DISCORD)
+        if (pier.isThisBot(channel, event.author.idLong)) {
             return
         }
 
@@ -51,7 +52,6 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
 
         val displayName = guildMember?.effectiveName ?: event.author.name
         val sender = Sender(displayName, event.author.idLong, null)
-        val channel = Channel(event.channel.name, event.channel.idLong, Channel.Type.DISCORD)
         val message = Message(event.message.contentDisplay, sender, channel, receiveTimestamp)
         pier.sendToBridge(message)
     }
