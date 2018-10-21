@@ -86,7 +86,7 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         if (message.shouldSendToDiscord()) {
-            val target = if (message.channel.type == Channel.Type.DISCORD) message.channel.name else bridgeTarget
+            val target = if (message.channel.type == Channel.Type.DISCORD) message.channel.discordId.toString() else bridgeTarget
             discordConn.sendMessage(target, message)
         }
 

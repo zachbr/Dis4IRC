@@ -26,6 +26,8 @@ import io.zachbr.dis4irc.bridge.message.Sender
 interface Mutator {
     /**
      * Called on a given object to mutate the value
+     *
+     * @return the mutated value or null if the message is not to be sent
      */
     fun mutate(message: String, source: Channel, sender: Sender): String?
 }

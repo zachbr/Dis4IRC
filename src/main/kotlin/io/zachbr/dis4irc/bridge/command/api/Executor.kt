@@ -23,7 +23,7 @@ interface Executor {
     /**
      * Perform some action when a command is executed
      *
-     * @return your desired output or 'null' if you desire no output
+     * @return your desired output or null if you desire no output
      */
     fun onCommand(command: Message): String?
 }
