@@ -15,23 +15,27 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge.command.api
+package io.zachbr.dis4irc.api
 
 enum class Destination {
     /**
-     * Only send a response back to the source
+     * Only send back to the source
      */
     ORIGIN,
     /**
-     * Send a response to both sides of the bridge
+     * Only send to the opposite side of the bridge
+     */
+    OPPOSITE,
+    /**
+     * Send to both sides of the bridge
      */
     BOTH,
     /**
-     * Only send a response to IRC
+     * Only send to IRC
      */
     IRC,
     /**
-     * Only send a response to Discord
+     * Only send to Discord
      */
     DISCORD
 }

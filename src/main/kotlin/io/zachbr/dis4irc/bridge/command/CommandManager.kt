@@ -17,16 +17,17 @@
 
 package io.zachbr.dis4irc.bridge.command
 
+import io.zachbr.dis4irc.api.Destination
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.COMMAND_PREFIX
-import io.zachbr.dis4irc.bridge.command.api.Executor
-import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
+import io.zachbr.dis4irc.api.Executor
+import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
  */
-class CommandManager(bridge: Bridge) {
+class CommandManager(private val bridge: Bridge) {
     private val executorsByCommand = HashMap<String, Executor>()
     private val logger = bridge.logger
 
@@ -55,11 +56,18 @@ class CommandManager(bridge: Bridge) {
     /**
      * Process a command message, passing it off to the registered executor
      */
-    fun processCommandMessage(command: SimpleCommand) {
-        val split = command.msg.split(" ")
+    fun processCommandMessage(command: Message) {
+        val split = command.contents.split(" ")
         val executor = getExecutorFor(split[0]) ?: return
 
         logger.debug("Passing command to executor: $executor")
-        executor.onCommand(command)
+
+        command.destination = Destination.BOTH // we want results to go to both sides by default
+        val result = executor.onCommand(command)
+
+        if (result != null) {
+            command.contents = result
+            bridge.handleCommand(command)
+        }
     }
 }

@@ -17,8 +17,7 @@
 
 package io.zachbr.dis4irc.bridge
 
-import net.dv8tion.jda.core.entities.MessageChannel
-import org.kitteh.irc.client.library.element.Channel
+import io.zachbr.dis4irc.api.Channel
 
 /**
  * Responsible for maintaining the channel-to-channel mappings between IRC and Discord
@@ -36,37 +35,31 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
         irc2Discord = discord2Irc.entries.associateBy({ it.value }) { it.key }
     }
 
-    /**
-     * Gets the IRC channel name to bridge to based on the Discord channel identifier
-     */
-    internal fun getMappingFor(discordChannel: MessageChannel): String? {
-        var mapping = getMappingForDiscordChannelBy(discordChannel.id)
+    internal fun getMappingFor(source: Channel): String? {
+        when (source.type) {
+            Channel.Type.IRC -> return getMappingForIrcChannelByName(source.name)
+            Channel.Type.DISCORD -> {
+                var mapping = getMappingForDiscordChannelBy(source.discordId.toString())
+                if (mapping == null) {
+                    mapping = getMappingForDiscordChannelBy(source.name)
+                }
 
-        if (mapping == null) {
-            mapping = getMappingForDiscordChannelBy(discordChannel.name)
+                return mapping
+            }
         }
-
-        return mapping
-    }
-
-    /**
-     * Gets the discord channel identifier to bridge to based on the IRC channel instance
-     */
-    internal fun getMappingFor(ircChannel: Channel): String? {
-        return getMappingForIrcChannelByName(ircChannel.name)
     }
 
     /**
      * Gets the IRC channel to bridge to based on the given string
      */
-    internal fun getMappingForDiscordChannelBy(id: String): String? {
+    private fun getMappingForDiscordChannelBy(id: String): String? {
         return discord2Irc[id]
     }
 
     /**
      * Gets the discord channel identifier to bridge to based on the IRC channel name
      */
-    internal fun getMappingForIrcChannelByName(name: String): String? {
+    private fun getMappingForIrcChannelByName(name: String): String? {
         return irc2Discord[name]
     }
 }

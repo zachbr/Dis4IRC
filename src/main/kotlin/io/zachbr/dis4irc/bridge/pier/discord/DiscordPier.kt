@@ -17,16 +17,15 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
+import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.entities.Game
-import net.dv8tion.jda.core.entities.Message
-import net.dv8tion.jda.core.entities.MessageChannel
-import net.dv8tion.jda.core.entities.User
 import org.slf4j.Logger
+import java.util.concurrent.TimeUnit
 
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -50,10 +49,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         discordApi?.shutdownNow()
     }
 
-    override fun sendMessage(channel: String, msg: String) {
-        val discordChannel = discordApi?.getTextChannelById(channel)
+    override fun sendMessage(targetChan: String, msg: Message) {
+        val discordChannel = discordApi?.getTextChannelById(targetChan)
         if (discordChannel == null) {
-            logger.warn("Bridge is not present in Discord channel $channel!")
+            logger.warn("Bridge is not present in Discord channel $targetChan!")
             return
         }
 
@@ -62,7 +61,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        discordChannel.sendMessage(msg).complete()
+        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}").complete()
+
+        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
     }
 
     /**
@@ -75,7 +76,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(author: User, channel: MessageChannel, message: Message) {
-        bridge.handleMessageFromDiscord(author, channel, message.contentStripped) // todo - generify
+    fun sendToBridge(message: io.zachbr.dis4irc.api.Message) {
+        bridge.handleMessage(message)
     }
 }

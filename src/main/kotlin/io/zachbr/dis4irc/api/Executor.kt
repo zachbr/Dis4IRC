@@ -15,19 +15,11 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge.command.api
+package io.zachbr.dis4irc.api
 
-enum class Source {
+interface Executor {
     /**
-     * Message originated in Discord
+     * Perform some action when a command is executed
      */
-    DISCORD,
-    /**
-     * Message originated in IRC
-     */
-    IRC,
-    /**
-     * Message originated as a response to a command
-     */
-    COMMAND
+    fun onCommand(command: Message): String?
 }

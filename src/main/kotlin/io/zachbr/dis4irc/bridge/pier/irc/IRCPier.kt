@@ -17,13 +17,13 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
+import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
-import org.kitteh.irc.client.library.element.Channel
-import org.kitteh.irc.client.library.element.User
 import org.slf4j.Logger
+import java.util.concurrent.TimeUnit
 
 class IRCPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -56,8 +56,8 @@ class IRCPier(private val bridge: Bridge) : Pier {
         ircConn?.shutdown("Exiting...")
     }
 
-    override fun sendMessage(channel: String, msg: String) {
-        val ircChannel = ircConn?.getChannel(channel)
+    override fun sendMessage(targetChan: String, msg: Message) {
+        val ircChannel = ircConn?.getChannel(targetChan)
         if (ircChannel == null) {
             logger.error("Got null IRC channel back from IRC API!")
             Throwable().printStackTrace()
@@ -65,11 +65,18 @@ class IRCPier(private val bridge: Bridge) : Pier {
         }
 
         if (!ircChannel.isPresent) {
-            logger.warn("Bridge is not present in IRC channel $channel")
+            logger.warn("Bridge is not present in IRC channel $targetChan")
             return
         }
 
-        ircChannel.get().sendMessage(msg)
+        val channel = ircChannel.get()
+
+        val out = msg.contents.split("\n")
+        for (line in out) {
+            channel.sendMessage("<${msg.sender.displayName}> $line")
+        }
+
+        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
     }
 
     /**
@@ -82,7 +89,7 @@ class IRCPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(actor: User, channel: Channel, message: String) {
-        bridge.handleMessageFromIrc(actor, channel, message) // todo - generify
+    fun sendToBridge(message: Message) {
+        bridge.handleMessage(message)
     }
 }

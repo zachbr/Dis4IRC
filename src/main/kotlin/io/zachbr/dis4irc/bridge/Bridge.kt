@@ -17,16 +17,12 @@
 
 package io.zachbr.dis4irc.bridge
 
+import io.zachbr.dis4irc.api.Channel
 import io.zachbr.dis4irc.bridge.command.CommandManager
-import io.zachbr.dis4irc.bridge.command.api.Sender
-import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
-import io.zachbr.dis4irc.bridge.command.api.Source
+import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IRCPier
-import net.dv8tion.jda.core.entities.MessageChannel
-import net.dv8tion.jda.core.entities.User
-import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
@@ -61,69 +57,43 @@ class Bridge(private val config: BridgeConfiguration) {
         } catch (ex: IOException) {
             logger.error("IO Exception while initializing connections: $ex")
             ex.printStackTrace()
+            this.shutdown()
         } catch (ex: IllegalArgumentException) {
             logger.error("Argument Exception while initializing connections: $ex")
             ex.printStackTrace()
+            this.shutdown()
         }
     }
 
-    /**
-     * Process a message received from Discord
-     */
-    internal fun handleMessageFromDiscord(sender: User, channel: MessageChannel, msg: String) { // todo - generify, remove specific handler
-        val to = channelMappings.getMappingFor(channel)
+    internal fun handleMessage(message: Message) {
+        val bridgeTarget: String? = channelMappings.getMappingFor(message.channel)
 
-        if (to == null) {
-            logger.debug("Discarding message - Discord ${channel.name} does not have a IRC channel mapping!")
+        if (bridgeTarget == null) {
+            logger.debug("Discarding message with no bridge target: ${message.channel.name} ${message.sender.displayName} ${message.contents}")
             return
         }
 
-        ircConn.sendMessage(to, "<${sender.name}> $msg")
-
-        if (msg.startsWith(COMMAND_PREFIX)) {
-            logger.debug("Handling message as command")
-            val senderObj = Sender(sender.name, sender.idLong, null)
-            val command = SimpleCommand(msg, senderObj, channel.id, Source.DISCORD, this)
-            commandManager.processCommandMessage(command)
-        }
-    }
-
-    /**
-     * Process a message received from IRC
-     */
-    internal fun handleMessageFromIrc(sender: org.kitteh.irc.client.library.element.User, channel: Channel, msg: String) { // todo - generify, remove specific handler
-        val to = channelMappings.getMappingFor(channel)
-
-        if (to == null) {
-            logger.debug("Discarding message - IRC ${channel.name} does not have a Discord channel mapping!")
-            return
+        if (message.shouldSendToIrc()) {
+            val target: String = if (message.channel.type == Channel.Type.IRC) { message.channel.name } else { bridgeTarget }
+            ircConn.sendMessage(target, message)
         }
 
-        discordConn.sendMessage(to, "<${sender.nick}> $msg")
+        if (message.shouldSendToDiscord()) {
+            val target = if (message.channel.type == Channel.Type.DISCORD) { message.channel.name } else { bridgeTarget }
+            discordConn.sendMessage(target, message)
+        }
 
-        if (msg.startsWith(COMMAND_PREFIX)) {
-            logger.debug("Handling message as command")
-
-            var nickServAcct: String? = null
-            if (sender.account.isPresent) {
-                nickServAcct = sender.account.get()
-            }
-
-            val senderObj = Sender(sender.nick, null, nickServAcct)
-            val command = SimpleCommand(msg, senderObj, channel.name, Source.IRC, this)
-            commandManager.processCommandMessage(command)
+        // command handling
+        if (message.contents.startsWith(COMMAND_PREFIX)) {
+            commandManager.processCommandMessage(message)
         }
     }
 
     /**
      * Process a command executor's submission
      */
-    internal fun handleCommand(result: SimpleCommand, output: String) {
-        val bridgeTarget: String? = when {
-            result.source == Source.DISCORD -> channelMappings.getMappingForDiscordChannelBy(result.channel)
-            result.source == Source.IRC -> channelMappings.getMappingForIrcChannelByName(result.channel)
-            else -> return
-        }
+    internal fun handleCommand(result: Message) {
+        val bridgeTarget: String? = channelMappings.getMappingFor(result.channel)
 
         if (bridgeTarget == null) {
             logger.warn("Command result handling didn't return early for tertiary source!")
@@ -131,16 +101,13 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         if (result.shouldSendToIrc()) {
-            val out = output.split("\n")
-            val target = if (result.source == Source.IRC) { result.channel } else { bridgeTarget }
-            for (line in out) {
-                ircConn.sendMessage(target, line)
-            }
+            val target: String = if (result.channel.type == Channel.Type.IRC) { result.channel.name } else { bridgeTarget }
+            ircConn.sendMessage(target, result)
         }
 
         if (result.shouldSendToDiscord()) {
-            val target = if (result.source == Source.DISCORD) { result.channel } else { bridgeTarget }
-            discordConn.sendMessage(target, output)
+            val target = if (result.channel.type == Channel.Type.DISCORD) { result.channel.name } else { bridgeTarget }
+            discordConn.sendMessage(target, result)
         }
 
     }

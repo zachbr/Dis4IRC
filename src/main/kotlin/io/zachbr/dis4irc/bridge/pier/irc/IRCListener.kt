@@ -17,6 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
+import io.zachbr.dis4irc.api.Channel
+import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.api.Sender
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
@@ -40,6 +43,11 @@ class IRCListener(private val pier: IRCPier) {
         }
 
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
-        pier.sendToBridge(event.actor, event.channel, event.message)
+
+        val nickserv = if (event.actor.account.isPresent) { event.actor.account.get() } else { null }
+        val sender = Sender(event.actor.nick, null, nickserv)
+        val channel = Channel(event.channel.name, null, Channel.Type.IRC)
+        val message = Message(event.message, sender, channel, System.nanoTime())
+        pier.sendToBridge(message)
     }
 }

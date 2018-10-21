@@ -17,6 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier
 
+import io.zachbr.dis4irc.api.Message
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 
 interface Pier {
@@ -34,5 +35,5 @@ interface Pier {
     /**
      * Sends a message through this pier
      */
-    fun sendMessage(channel: String, msg: String) // todo - we might need an internal API for this
+    fun sendMessage(targetChan: String, msg: Message)
 }

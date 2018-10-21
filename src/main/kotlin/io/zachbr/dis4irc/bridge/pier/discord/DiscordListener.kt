@@ -17,6 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
+import io.zachbr.dis4irc.api.Channel
+import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.api.Sender
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 
@@ -38,6 +41,10 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
-        pier.sendToBridge(event.author, event.channel, event.message)
+
+        val sender = Sender(event.author.name, event.author.idLong, null)
+        val channel = Channel(event.channel.name, event.channel.idLong, Channel.Type.DISCORD)
+        val message = Message(event.message.contentDisplay, sender, channel, System.nanoTime())
+        pier.sendToBridge(message)
     }
 }

@@ -15,11 +15,18 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge.command.api
+package io.zachbr.dis4irc.api
 
-interface Executor {
+data class Sender(
     /**
-     * Perform some action when a command is executed
+     * User's display name, this is *not* guaranteed to be unique or secure
      */
-    fun onCommand(command: SimpleCommand)
-}
+    val displayName: String,
+    /**
+     * User's discord snowflake id, or null if the message originated from IRC
+     */
+    val discordId: Long?,
+    /**
+     * User's nickserv account name, or null if the message originated from IRC or the IRC network doesn't support it
+     */
+    val ircNickServ: String?)

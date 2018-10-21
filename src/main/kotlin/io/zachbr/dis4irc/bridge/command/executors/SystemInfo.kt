@@ -17,9 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.command.executors
 
-import io.zachbr.dis4irc.bridge.command.api.Executor
-import io.zachbr.dis4irc.bridge.command.api.Sender
-import io.zachbr.dis4irc.bridge.command.api.SimpleCommand
+import io.zachbr.dis4irc.api.Executor
+import io.zachbr.dis4irc.api.Sender
+import io.zachbr.dis4irc.api.Message
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
@@ -40,9 +40,9 @@ class SystemInfo : Executor {
         return false
     }
 
-    override fun onCommand(command: SimpleCommand) {
+    override fun onCommand(command: Message): String? {
         if (!isAuthorized(command.sender)) {
-            return
+            return null
         }
 
         val runtimeMX = ManagementFactory.getRuntimeMXBean()
@@ -58,6 +58,6 @@ class SystemInfo : Executor {
                 "Java: $javaVersion\n" +
                 "OS: $osInfo"
 
-        command.submit(out)
+        return out
     }
 }

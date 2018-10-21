@@ -15,19 +15,27 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge.command.api
+package io.zachbr.dis4irc.api
 
-import io.zachbr.dis4irc.bridge.Bridge
-
-class SimpleCommand(val msg: String, val sender: Sender, val channel: String, val source: Source, private val bridge: Bridge) {
-    var destination = Destination.BOTH
-
+class Message(
     /**
-     * Call to send output back to the user
+     * Message content, '\n' for newlines
      */
-    fun submit(output: String) {
-        bridge.handleCommand(this, output)
-    }
+    var contents: String,
+    /**
+     * Original sender of the message
+     */
+    val sender: Sender,
+    /**
+     * Channel the message originated from
+     */
+    val channel: Channel,
+    /**
+     * Nano time
+     */
+    val timestamp: Long
+) {
+    internal var destination = Destination.OPPOSITE
 
     /**
      * Gets whether the message should be sent to IRC
@@ -36,7 +44,8 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> true
-            Destination.ORIGIN -> source == Source.IRC
+            Destination.ORIGIN -> channel.type == Channel.Type.IRC
+            Destination.OPPOSITE -> channel.type != Channel.Type.IRC
             Destination.DISCORD -> false
         }
     }
@@ -48,7 +57,8 @@ class SimpleCommand(val msg: String, val sender: Sender, val channel: String, va
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> false
-            Destination.ORIGIN -> source == Source.DISCORD
+            Destination.ORIGIN -> channel.type == Channel.Type.DISCORD
+            Destination.OPPOSITE -> channel.type != Channel.Type.DISCORD
             Destination.DISCORD -> true
         }
     }
