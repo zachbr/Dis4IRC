@@ -17,16 +17,15 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.api.Channel
+import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.command.CommandManager
-import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
+import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IRCPier
 import org.slf4j.LoggerFactory
 import java.io.IOException
-
-const val COMMAND_PREFIX: String = "!"
 
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs

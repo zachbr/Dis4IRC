@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -76,7 +76,7 @@ class IRCPier(private val bridge: Bridge) : Pier {
             channel.sendMessage("<${msg.sender.displayName}> $line")
         }
 
-        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
+        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message out to IRC")
     }
 
     /**

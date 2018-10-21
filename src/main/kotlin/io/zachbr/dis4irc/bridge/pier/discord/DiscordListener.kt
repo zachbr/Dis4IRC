@@ -17,9 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import io.zachbr.dis4irc.api.Channel
-import io.zachbr.dis4irc.api.Message
-import io.zachbr.dis4irc.api.Sender
+import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Sender
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 

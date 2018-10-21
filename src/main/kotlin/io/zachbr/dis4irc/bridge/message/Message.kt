@@ -15,7 +15,7 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.api
+package io.zachbr.dis4irc.bridge.message
 
 class Message(
     /**

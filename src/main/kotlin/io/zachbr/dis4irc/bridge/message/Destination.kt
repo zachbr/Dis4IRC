@@ -15,13 +15,27 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.api
+package io.zachbr.dis4irc.bridge.message
 
-interface Executor {
+enum class Destination {
     /**
-     * Perform some action when a command is executed
-     *
-     * @return your desired output or 'null' if you desire no output
+     * Only send back to the source
      */
-    fun onCommand(command: Message): String?
+    ORIGIN,
+    /**
+     * Only send to the opposite side of the bridge
+     */
+    OPPOSITE,
+    /**
+     * Send to both sides of the bridge
+     */
+    BOTH,
+    /**
+     * Only send to IRC
+     */
+    IRC,
+    /**
+     * Only send to Discord
+     */
+    DISCORD
 }

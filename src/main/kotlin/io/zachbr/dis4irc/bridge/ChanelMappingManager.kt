@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.api.Channel
+import io.zachbr.dis4irc.bridge.message.Channel
 
 /**
  * Responsible for maintaining the channel-to-channel mappings between IRC and Discord

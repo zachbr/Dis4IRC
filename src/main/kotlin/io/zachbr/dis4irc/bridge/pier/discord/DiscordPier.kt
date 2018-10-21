@@ -17,8 +17,8 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import io.zachbr.dis4irc.api.Channel
-import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -93,7 +93,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             sendMessageWebhook(webhook, msg)
         }
 
-        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
+        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message out to Discord")
     }
 
     private fun sendMessageOldStyle(targetChan: String, msg: Message) {
@@ -156,7 +156,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(message: io.zachbr.dis4irc.api.Message) {
+    fun sendToBridge(message: io.zachbr.dis4irc.bridge.message.Message) {
         bridge.handleMessage(message)
     }
 }

@@ -17,15 +17,15 @@
 
 package io.zachbr.dis4irc.bridge.command
 
-import io.zachbr.dis4irc.api.Destination
+import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.COMMAND_PREFIX
-import io.zachbr.dis4irc.api.Executor
-import io.zachbr.dis4irc.api.Message
-import io.zachbr.dis4irc.api.Sender
+import io.zachbr.dis4irc.bridge.command.api.Executor
+import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
 
-private val COMMAND_SENDER = Sender("Bridge", null, null)
+const val COMMAND_PREFIX: String = "!"
+internal val COMMAND_SENDER = Sender("Bridge", null, null)
 
 /**
  * Responsible for managing, looking up, and delegating to command executors

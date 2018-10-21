@@ -1,4 +1,4 @@
-package io.zachbr.dis4irc.api
+package io.zachbr.dis4irc.bridge.message
 
 data class Channel(
     /**

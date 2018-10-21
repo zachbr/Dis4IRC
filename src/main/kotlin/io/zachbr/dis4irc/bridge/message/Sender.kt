@@ -15,27 +15,18 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.api
+package io.zachbr.dis4irc.bridge.message
 
-enum class Destination {
+data class Sender(
     /**
-     * Only send back to the source
+     * User's display name, this is *not* guaranteed to be unique or secure
      */
-    ORIGIN,
+    val displayName: String,
     /**
-     * Only send to the opposite side of the bridge
+     * User's discord snowflake id, or null if the message originated from IRC
      */
-    OPPOSITE,
+    val discordId: Long?,
     /**
-     * Send to both sides of the bridge
+     * User's nickserv account name, or null if the message originated from IRC or the IRC network doesn't support it
      */
-    BOTH,
-    /**
-     * Only send to IRC
-     */
-    IRC,
-    /**
-     * Only send to Discord
-     */
-    DISCORD
-}
+    val ircNickServ: String?)

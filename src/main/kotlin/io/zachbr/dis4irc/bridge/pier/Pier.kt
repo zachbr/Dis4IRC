@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier
 
-import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 
 interface Pier {
