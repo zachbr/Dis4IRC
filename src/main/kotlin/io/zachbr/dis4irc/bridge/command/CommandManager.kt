@@ -22,7 +22,10 @@ import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.COMMAND_PREFIX
 import io.zachbr.dis4irc.api.Executor
 import io.zachbr.dis4irc.api.Message
+import io.zachbr.dis4irc.api.Sender
 import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
+
+private val COMMAND_SENDER = Sender("Bridge", null, null)
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
@@ -32,17 +35,13 @@ class CommandManager(private val bridge: Bridge) {
     private val logger = bridge.logger
 
     init {
-        registerExecutor("!system", SystemInfo())
+        registerExecutor("system", SystemInfo())
     }
 
     /**
      * Registers an executor to the given command
      */
     fun registerExecutor(name: String, executor: Executor) {
-        if (!name.startsWith(COMMAND_PREFIX)) {
-            throw IllegalArgumentException("Executor name registration must start with \"$COMMAND_PREFIX\"")
-        }
-
         executorsByCommand[name] = executor
     }
 
@@ -58,7 +57,8 @@ class CommandManager(private val bridge: Bridge) {
      */
     fun processCommandMessage(command: Message) {
         val split = command.contents.split(" ")
-        val executor = getExecutorFor(split[0]) ?: return
+        val trigger = split[0].substring(COMMAND_PREFIX.length, split[0].length) // strip off command prefix
+        val executor = getExecutorFor(trigger) ?: return
 
         logger.debug("Passing command to executor: $executor")
 
@@ -67,6 +67,7 @@ class CommandManager(private val bridge: Bridge) {
 
         if (result != null) {
             command.contents = result
+            command.sender = COMMAND_SENDER
             bridge.handleCommand(command)
         }
     }

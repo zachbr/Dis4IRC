@@ -23,9 +23,9 @@ class Message(
      */
     var contents: String,
     /**
-     * Original sender of the message
+     * Sender of the message
      */
-    val sender: Sender,
+    var sender: Sender,
     /**
      * Channel the message originated from
      */
