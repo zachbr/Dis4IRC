@@ -80,7 +80,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Gets whether the given string is a snowflake id
      */
-    private fun isId(value: String): Boolean {
+    private fun isId(value: String): Boolean { // todo - remove in immediate future if unused
         val long: Long? = value.toLongOrNull()
         return long != null
     }

@@ -24,7 +24,7 @@ class MutatorManager(bridge: Bridge) {
                 return null
             }
 
-            mutated = iterator.next().mutate(mutated, message.channel)
+            mutated = iterator.next().mutate(mutated, message.channel, message.sender)
         }
 
         return mutated
