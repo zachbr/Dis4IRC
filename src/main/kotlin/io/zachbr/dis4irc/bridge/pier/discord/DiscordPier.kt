@@ -17,11 +17,11 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import io.zachbr.dis4irc.bridge.message.Channel
-import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
@@ -116,7 +116,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val prefix = if (msg.sender == COMMAND_SENDER) { "" } else { "<${msg.sender.displayName}> " }
+        val prefix = if (msg.sender == COMMAND_SENDER) "" else "<${msg.sender.displayName}> "
 
         discordChannel.sendMessage("$prefix${msg.contents}").complete()
     }

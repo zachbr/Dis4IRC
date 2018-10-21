@@ -17,10 +17,10 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.bridge.message.Channel
-import io.zachbr.dis4irc.bridge.command.CommandManager
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
 import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.command.CommandManager
+import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -81,12 +81,12 @@ class Bridge(private val config: BridgeConfiguration) {
         message.contents = mutatorManager.applyMutators(message) ?: return
 
         if (message.shouldSendToIrc()) {
-            val target: String = if (message.channel.type == Channel.Type.IRC) { message.channel.name } else { bridgeTarget }
+            val target: String = if (message.channel.type == Channel.Type.IRC) message.channel.name else bridgeTarget
             ircConn.sendMessage(target, message)
         }
 
         if (message.shouldSendToDiscord()) {
-            val target = if (message.channel.type == Channel.Type.DISCORD) { message.channel.name } else { bridgeTarget }
+            val target = if (message.channel.type == Channel.Type.DISCORD) message.channel.name else bridgeTarget
             discordConn.sendMessage(target, message)
         }
 

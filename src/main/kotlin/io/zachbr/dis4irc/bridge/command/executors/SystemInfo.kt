@@ -18,8 +18,8 @@
 package io.zachbr.dis4irc.bridge.command.executors
 
 import io.zachbr.dis4irc.bridge.command.api.Executor
-import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Sender
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
