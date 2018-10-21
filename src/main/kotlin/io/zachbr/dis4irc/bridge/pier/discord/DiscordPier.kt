@@ -157,11 +157,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         // check against webclients
-        var webhook = webhookMap[channel.discordId.toString()]
-        if (webhook == null) {
-            webhook = webhookMap[channel.name]
-        }
-
+        val webhook = webhookMap[channel.discordId.toString()] ?: webhookMap[channel.name]
         if (webhook != null) {
             return snowflake == webhook.idLong
         }

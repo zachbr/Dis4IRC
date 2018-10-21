@@ -60,7 +60,7 @@ class IRCPier(private val bridge: Bridge) : Pier {
     override fun sendMessage(targetChan: String, msg: Message) {
         val ircChannel = ircConn?.getChannel(targetChan)
         if (ircChannel == null) {
-            logger.error("Got null IRC channel back from IRC API!")
+            logger.error("Null optional for IRC channel!")
             Throwable().printStackTrace()
             return
         }

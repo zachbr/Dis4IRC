@@ -20,7 +20,9 @@ package io.zachbr.dis4irc.bridge
 import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.command.CommandManager
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
+import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IRCPier
@@ -32,8 +34,9 @@ import java.io.IOException
  */
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
-    internal val channelMappings = ChannelMappingManager(config)
+    private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
+    private val mutatorManager = MutatorManager(this)
 
     private val discordConn: Pier
     private val ircConn: Pier
@@ -63,6 +66,9 @@ class Bridge(private val config: BridgeConfiguration) {
         }
     }
 
+    /**
+     * Bridges communication between the two piers
+     */
     internal fun handleMessage(message: Message) {
         val bridgeTarget: String? = channelMappings.getMappingFor(message.channel)
 
@@ -70,6 +76,9 @@ class Bridge(private val config: BridgeConfiguration) {
             logger.debug("Discarding message with no bridge target from: ${message.channel}")
             return
         }
+
+        // mutate message contents
+        message.contents = mutatorManager.applyMutators(message) ?: return
 
         if (message.shouldSendToIrc()) {
             val target: String = if (message.channel.type == Channel.Type.IRC) { message.channel.name } else { bridgeTarget }
@@ -82,30 +91,8 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         // command handling
-        if (message.contents.startsWith(COMMAND_PREFIX)) {
+        if (message.contents.startsWith(COMMAND_PREFIX) && message.sender != COMMAND_SENDER) {
             commandManager.processCommandMessage(message)
-        }
-    }
-
-    /**
-     * Process a command executor's submission
-     */
-    internal fun handleCommand(result: Message) {
-        val bridgeTarget: String? = channelMappings.getMappingFor(result.channel)
-
-        if (bridgeTarget == null) {
-            logger.warn("Command result handling didn't return early for tertiary source!")
-            return
-        }
-
-        if (result.shouldSendToIrc()) {
-            val target: String = if (result.channel.type == Channel.Type.IRC) { result.channel.name } else { bridgeTarget }
-            ircConn.sendMessage(target, result)
-        }
-
-        if (result.shouldSendToDiscord()) {
-            val target = if (result.channel.type == Channel.Type.DISCORD) { result.channel.discordId.toString() } else { bridgeTarget }
-            discordConn.sendMessage(target, result)
         }
     }
 

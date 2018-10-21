@@ -41,14 +41,14 @@ class CommandManager(private val bridge: Bridge) {
     /**
      * Registers an executor to the given command
      */
-    fun registerExecutor(name: String, executor: Executor) {
+    private fun registerExecutor(name: String, executor: Executor) {
         executorsByCommand[name] = executor
     }
 
     /**
      * Gets the executor for the given command
      */
-    fun getExecutorFor(name: String): Executor? {
+    private fun getExecutorFor(name: String): Executor? {
         return executorsByCommand[name]
     }
 
@@ -68,7 +68,7 @@ class CommandManager(private val bridge: Bridge) {
         if (result != null) {
             command.contents = result
             command.sender = COMMAND_SENDER
-            bridge.handleCommand(command)
+            bridge.handleMessage(command)
         }
     }
 }

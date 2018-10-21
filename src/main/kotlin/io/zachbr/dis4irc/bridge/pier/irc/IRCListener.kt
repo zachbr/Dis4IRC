@@ -22,7 +22,6 @@ import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
 import net.engio.mbassy.listener.Handler
-import org.kitteh.irc.client.library.element.Actor
 import org.kitteh.irc.client.library.element.User
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
@@ -89,6 +88,6 @@ class IRCListener(private val pier: IRCPier) {
      * Gets a user's nickserv account name or null if it cannot be found
      */
     private fun getNickServAccountName(user: User): String? {
-        return if (user.account.isPresent) { user.account.get() } else { null }
+        return if (user.account.isPresent) user.account.get() else null
     }
 }

@@ -53,11 +53,9 @@ class SystemInfo : Executor {
         val javaVersion = "${runtimeMX.vmName} ${runtimeMX.vmVersion}"
         val osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + "(" + System.getProperty("os.arch") + ")"
 
-        val out = "Uptime: $uptime days\n" +
+        return "Uptime: $uptime days\n" +
                 "Memory: $currentMemory / $totalAllocated (MiB)\n" +
                 "Java: $javaVersion\n" +
                 "OS: $osInfo"
-
-        return out
     }
 }

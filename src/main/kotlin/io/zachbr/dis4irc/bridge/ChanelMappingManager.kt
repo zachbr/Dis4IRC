@@ -35,31 +35,27 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
         irc2Discord = discord2Irc.entries.associateBy({ it.value }) { it.key }
     }
 
+    /**
+     * Gets the opposite channel mapping for the given channel
+     */
     internal fun getMappingFor(source: Channel): String? {
-        when (source.type) {
-            Channel.Type.IRC -> return getMappingForIrcChannelByName(source.name)
-            Channel.Type.DISCORD -> {
-                var mapping = getMappingForDiscordChannelBy(source.discordId.toString())
-                if (mapping == null) {
-                    mapping = getMappingForDiscordChannelBy(source.name)
-                }
-
-                return mapping
-            }
+        return when (source.type) {
+            Channel.Type.IRC -> ircMappingByName(source.name)
+            Channel.Type.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.name)
         }
     }
 
     /**
      * Gets the IRC channel to bridge to based on the given string
      */
-    private fun getMappingForDiscordChannelBy(id: String): String? {
+    private fun discordMappingByName(id: String): String? {
         return discord2Irc[id]
     }
 
     /**
      * Gets the discord channel identifier to bridge to based on the IRC channel name
      */
-    private fun getMappingForIrcChannelByName(name: String): String? {
+    private fun ircMappingByName(name: String): String? {
         return irc2Discord[name]
     }
 }
