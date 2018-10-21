@@ -31,7 +31,7 @@ class Message(
      */
     val channel: Channel,
     /**
-     * Nano time
+     * Original receive timestamp in nanoseconds
      */
     val timestamp: Long
 ) {

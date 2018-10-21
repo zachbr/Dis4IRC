@@ -40,11 +40,19 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
             return
         }
 
+        val receiveTimestamp = System.nanoTime()
         logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
 
-        val sender = Sender(event.author.name, event.author.idLong, null)
+        // We need to get the guild member in order to grab their display name
+        val guildMember = event.guild.getMember(event.author)
+        if (guildMember == null) {
+            logger.debug("Cannot get Discord guild member from user information: ${event.author}!")
+        }
+
+        val displayName = guildMember?.effectiveName ?: event.author.name
+        val sender = Sender(displayName, event.author.idLong, null)
         val channel = Channel(event.channel.name, event.channel.idLong, Channel.Type.DISCORD)
-        val message = Message(event.message.contentDisplay, sender, channel, System.nanoTime())
+        val message = Message(event.message.contentDisplay, sender, channel, receiveTimestamp)
         pier.sendToBridge(message)
     }
 }

@@ -61,9 +61,24 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}").complete()
+        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}")
 
         logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message")
+    }
+
+    fun sendMessageOldStyle(targetChan: String, msg: Message) {
+        val discordChannel = discordApi?.getTextChannelById(targetChan)
+        if (discordChannel == null) {
+            logger.warn("Bridge is not present in Discord channel $targetChan!")
+            return
+        }
+
+        if (!discordChannel.canTalk()) {
+            logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $msg")
+            return
+        }
+
+        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}")
     }
 
     /**

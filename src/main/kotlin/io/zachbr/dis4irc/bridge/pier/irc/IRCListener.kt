@@ -42,12 +42,13 @@ class IRCListener(private val pier: IRCPier) {
             return
         }
 
+        val receiveTimestamp = System.nanoTime()
         logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
 
         val nickserv = if (event.actor.account.isPresent) { event.actor.account.get() } else { null }
         val sender = Sender(event.actor.nick, null, nickserv)
         val channel = Channel(event.channel.name, null, Channel.Type.IRC)
-        val message = Message(event.message, sender, channel, System.nanoTime())
+        val message = Message(event.message, sender, channel, receiveTimestamp)
         pier.sendToBridge(message)
     }
 }

@@ -69,7 +69,7 @@ class Bridge(private val config: BridgeConfiguration) {
         val bridgeTarget: String? = channelMappings.getMappingFor(message.channel)
 
         if (bridgeTarget == null) {
-            logger.debug("Discarding message with no bridge target: ${message.channel.name} ${message.sender.displayName} ${message.contents}")
+            logger.debug("Discarding message with no bridge target from: ${message.channel}")
             return
         }
 
@@ -106,10 +106,9 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         if (result.shouldSendToDiscord()) {
-            val target = if (result.channel.type == Channel.Type.DISCORD) { result.channel.name } else { bridgeTarget }
+            val target = if (result.channel.type == Channel.Type.DISCORD) { result.channel.discordId.toString() } else { bridgeTarget }
             discordConn.sendMessage(target, result)
         }
-
     }
 
     /**
