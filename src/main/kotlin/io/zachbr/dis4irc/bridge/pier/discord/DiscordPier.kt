@@ -21,6 +21,7 @@ import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
+import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
@@ -34,7 +35,10 @@ import java.util.concurrent.TimeUnit
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private val webhookMap = HashMap<String, WebhookClient>()
+
     private var discordApi: JDA? = null
+    private var botName: String? = null
+    private var botAvatarUrl: String? = null
 
     override fun init(config: BridgeConfiguration) {
         logger.info("Connecting to Discord API...")
@@ -64,6 +68,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
                 logger.info("Webhook for ${hook.discordChannel} registered")
             }
         }
+
+        // load bot name and avatar url
+        botName = discordApi?.selfUser?.name
+        botAvatarUrl = discordApi?.selfUser?.avatarUrl
 
         logger.info("Discord Bot Invite URL: ${discordApi?.asBot()?.getInviteUrl()}")
         logger.info("Connected to Discord!")
@@ -108,7 +116,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        discordChannel.sendMessage("<${msg.sender.displayName}> ${msg.contents}").complete()
+        val prefix = if (msg.sender == COMMAND_SENDER) { "" } else { "<${msg.sender.displayName}> " }
+
+        discordChannel.sendMessage("$prefix${msg.contents}").complete()
     }
 
     private fun sendMessageWebhook(webhook: WebhookClient, msg: Message) {
@@ -119,9 +129,16 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             avatarUrl = matchingUsers[0].avatarUrl
         }
 
+        var senderName = msg.sender.displayName
+        // if sender is command, use bot's actual name and avatar if possible
+        if (msg.sender == COMMAND_SENDER) {
+            senderName = botName ?: senderName
+            avatarUrl = botAvatarUrl ?: avatarUrl
+        }
+
         val builder = WebhookMessageBuilder()
         builder.setContent(msg.contents)
-        builder.setUsername(msg.sender.displayName)
+        builder.setUsername(senderName)
         if (avatarUrl != null) {
             builder.setAvatarUrl(avatarUrl)
         }
@@ -131,7 +148,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     /**
-     * Gets the Discord bot's snowflake id
+     * Checks if the message came from this bot
      */
     fun isThisBot(channel: Channel, snowflake: Long): Boolean {
         // check against bot user directly

@@ -29,4 +29,5 @@ data class Sender(
     /**
      * User's nickserv account name, or null if the message originated from IRC or the IRC network doesn't support it
      */
-    val ircNickServ: String?)
+    val ircNickServ: String?
+)

@@ -39,7 +39,6 @@ class Bridge(private val config: BridgeConfiguration) {
     private val ircConn: Pier
 
     init {
-        // todo - discord webhooks
         discordConn = DiscordPier(this)
         ircConn = IRCPier(this)
     }
@@ -54,11 +53,11 @@ class Bridge(private val config: BridgeConfiguration) {
             discordConn.init(config)
             ircConn.init(config)
         } catch (ex: IOException) {
-            logger.error("IO Exception while initializing connections: $ex")
+            logger.error("IOException while initializing connections: $ex")
             ex.printStackTrace()
             this.shutdown()
         } catch (ex: IllegalArgumentException) {
-            logger.error("Argument Exception while initializing connections: $ex")
+            logger.error("IllegalArgumentException while initializing connections: $ex")
             ex.printStackTrace()
             this.shutdown()
         }

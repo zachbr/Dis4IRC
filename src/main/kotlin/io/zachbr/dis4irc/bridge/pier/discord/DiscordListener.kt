@@ -31,7 +31,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
 
     override fun onMessageReceived(event: MessageReceivedEvent?) {
         if (event == null) {
-            logger.debug("Null Discord event from JDA")
+            logger.debug("Null Discord message event from JDA")
             return
         }
 
@@ -42,7 +42,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         val receiveTimestamp = System.nanoTime()
-        logger.debug("DISCORD " + event.channel?.name + " " + event.author.name + ": " + event.message.contentStripped)
+        logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name} ${event.message.contentStripped}")
 
         // We need to get the guild member in order to grab their display name
         val guildMember = event.guild.getMember(event.author)

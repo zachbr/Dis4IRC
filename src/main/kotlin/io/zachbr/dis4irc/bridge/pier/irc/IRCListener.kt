@@ -17,12 +17,16 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
+import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
 import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
 import net.engio.mbassy.listener.Handler
+import org.kitteh.irc.client.library.element.Actor
+import org.kitteh.irc.client.library.element.User
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
+import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
 
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
@@ -32,7 +36,36 @@ class IRCListener(private val pier: IRCPier) {
 
     @Handler
     fun onUserJoinChan(event: ChannelJoinEvent) {
-        logger.debug("IRC JOIN " + event.channel.name + " " + event.actor.nick)
+        // don't log our own joins
+        if (event.user.nick == pier.getBotNick()) {
+            return
+        }
+
+        val receiveTimestamp = System.nanoTime()
+        logger.debug("IRC JOIN ${event.channel.name}  ${event.user.nick}")
+
+        val sender = COMMAND_SENDER
+        val channel = Channel(event.channel.name, null, Channel.Type.IRC)
+        val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
+        val message = Message(msgContent, sender, channel, receiveTimestamp)
+        pier.sendToBridge(message)
+    }
+
+    @Handler
+    fun onUserLeaveChan(event: ChannelPartEvent) {
+        // don't log our own leaving
+        if (event.user.nick == pier.getBotNick()) {
+            return
+        }
+
+        val receiveTimestamp = System.nanoTime()
+        logger.debug("IRC PART ${event.channel.name}  ${event.user.nick}")
+
+        val sender = COMMAND_SENDER
+        val channel = Channel(event.channel.name, null, Channel.Type.IRC)
+        val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
+        val message = Message(msgContent, sender, channel, receiveTimestamp)
+        pier.sendToBridge(message)
     }
 
     @Handler
@@ -43,12 +76,19 @@ class IRCListener(private val pier: IRCPier) {
         }
 
         val receiveTimestamp = System.nanoTime()
-        logger.debug("IRC " + event.channel.name + " " + event.actor.nick + ": " + event.message)
+        logger.debug("IRC MSG ${event.channel.name} ${event.actor.nick}: ${event.message}")
 
-        val nickserv = if (event.actor.account.isPresent) { event.actor.account.get() } else { null }
+        val nickserv = getNickServAccountName(event.actor)
         val sender = Sender(event.actor.nick, null, nickserv)
         val channel = Channel(event.channel.name, null, Channel.Type.IRC)
         val message = Message(event.message, sender, channel, receiveTimestamp)
         pier.sendToBridge(message)
+    }
+
+    /**
+     * Gets a user's nickserv account name or null if it cannot be found
+     */
+    private fun getNickServAccountName(user: User): String? {
+        return if (user.account.isPresent) { user.account.get() } else { null }
     }
 }
