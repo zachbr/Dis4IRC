@@ -36,7 +36,7 @@ class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
     private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
-    private val mutatorManager = MutatorManager(this)
+    private val mutatorManager = MutatorManager()
 
     private val discordConn: Pier
     private val ircConn: Pier

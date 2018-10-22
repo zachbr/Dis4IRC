@@ -27,6 +27,7 @@ import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 class BlockHereEveryone : Mutator {
 
     override fun mutate(message: String, source: Channel, sender: Sender): String? {
+        // only block from IRC -> Discord, allow them the other way around
         if (source.type != Channel.Type.IRC) {
             return message
         }

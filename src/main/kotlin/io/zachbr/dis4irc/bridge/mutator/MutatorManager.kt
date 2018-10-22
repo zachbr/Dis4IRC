@@ -17,16 +17,17 @@
 
 package io.zachbr.dis4irc.bridge.mutator
 
-import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
+import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
 
-class MutatorManager(bridge: Bridge) {
+class MutatorManager {
     private val mutators = ArrayList<Mutator>()
 
     init {
         registerMutator(BlockHereEveryone())
+        registerMutator(TranslateFormatting())
     }
 
     private fun registerMutator(mutator: Mutator) {
