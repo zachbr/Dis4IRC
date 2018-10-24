@@ -42,6 +42,9 @@ data class ChannelMapping(
     val ircChannel: String
 )
 
+/**
+ * Simple discord-to-webhook configuration data class
+ */
 data class WebhookMapping(
     val discordChannel: String,
     val webhookUrl: String

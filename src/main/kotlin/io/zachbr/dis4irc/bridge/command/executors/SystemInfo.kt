@@ -29,11 +29,11 @@ class SystemInfo : Executor {
      * Checks that the sender is authorized to use this command
      */
     private fun isAuthorized(sender: Sender): Boolean {
-        if (sender.ircNickServ != null && sender.ircNickServ == "Z750") {
+        if (sender.ircNickServ != null && sender.ircNickServ == "Z750") { // todo - config
             return true
         }
 
-        if (sender.discordId != null && sender.discordId == 107387791683416064) {
+        if (sender.discordId != null && sender.discordId == 107387791683416064) { // todo - config
             return true
         }
 
