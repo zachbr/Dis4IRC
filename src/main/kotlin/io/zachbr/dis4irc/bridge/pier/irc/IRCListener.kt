@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
@@ -43,7 +43,7 @@ class IRCListener(private val pier: IRCPier) {
         val receiveTimestamp = System.nanoTime()
         logger.debug("IRC JOIN ${event.channel.name}  ${event.user.nick}")
 
-        val sender = COMMAND_SENDER
+        val sender = BOT_SENDER
         val channel = Channel(event.channel.name, null, Channel.Type.IRC)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
         val message = Message(msgContent, sender, channel, receiveTimestamp)
@@ -60,7 +60,7 @@ class IRCListener(private val pier: IRCPier) {
         val receiveTimestamp = System.nanoTime()
         logger.debug("IRC PART ${event.channel.name}  ${event.user.nick}")
 
-        val sender = COMMAND_SENDER
+        val sender = BOT_SENDER
         val channel = Channel(event.channel.name, null, Channel.Type.IRC)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
         val message = Message(msgContent, sender, channel, receiveTimestamp)

@@ -124,7 +124,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(hardLineBreak: HardLineBreak?) {
-        visitChildren(hardLineBreak)
+        textContent.line()
     }
 
     override fun visit(heading: Heading?) {
@@ -172,7 +172,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(softLineBreak: SoftLineBreak?) {
-        visitChildren(softLineBreak)
+        textContent.line()
     }
 
     override fun visit(strongEmphasis: StrongEmphasis?) {

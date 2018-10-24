@@ -19,7 +19,7 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
-import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
@@ -71,7 +71,7 @@ class IRCPier(private val bridge: Bridge) : Pier {
         }
 
         val channel = ircChannel.get()
-        val prefix = if (msg.sender == COMMAND_SENDER) "" else "<${msg.sender.displayName}> "
+        val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
 
         val out = msg.contents.split("\n")
         for (line in out) {

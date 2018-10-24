@@ -25,7 +25,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
 
 const val COMMAND_PREFIX: String = "!"
-internal val COMMAND_SENDER = Sender("Bridge", null, null)
+internal val BOT_SENDER = Sender("Bridge", null, null)
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
@@ -67,7 +67,7 @@ class CommandManager(private val bridge: Bridge) {
 
         if (result != null) {
             command.contents = result
-            command.sender = COMMAND_SENDER
+            command.sender = BOT_SENDER
             bridge.handleMessage(command)
         }
     }

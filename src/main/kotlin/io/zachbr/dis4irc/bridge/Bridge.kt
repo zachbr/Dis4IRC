@@ -18,7 +18,7 @@
 package io.zachbr.dis4irc.bridge
 
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
-import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.command.CommandManager
 import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
@@ -91,7 +91,7 @@ class Bridge(private val config: BridgeConfiguration) {
         }
 
         // command handling
-        if (message.contents.startsWith(COMMAND_PREFIX) && message.sender != COMMAND_SENDER) {
+        if (message.contents.startsWith(COMMAND_PREFIX) && message.sender != BOT_SENDER) {
             commandManager.processCommandMessage(message)
         }
     }

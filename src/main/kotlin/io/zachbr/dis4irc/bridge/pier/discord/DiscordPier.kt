@@ -19,7 +19,7 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
-import io.zachbr.dis4irc.bridge.command.COMMAND_SENDER
+import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Channel
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -116,7 +116,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val prefix = if (msg.sender == COMMAND_SENDER) "" else "<${msg.sender.displayName}> "
+        val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
 
         discordChannel.sendMessage("$prefix${msg.contents}").complete()
     }
@@ -131,7 +131,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         var senderName = msg.sender.displayName
         // if sender is command, use bot's actual name and avatar if possible
-        if (msg.sender == COMMAND_SENDER) {
+        if (msg.sender == BOT_SENDER) {
             senderName = botName ?: senderName
             avatarUrl = botAvatarUrl ?: avatarUrl
         }
