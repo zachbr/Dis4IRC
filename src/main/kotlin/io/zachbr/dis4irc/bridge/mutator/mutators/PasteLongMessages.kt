@@ -29,6 +29,10 @@ import java.lang.StringBuilder
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+//
+// TODO clean this shit up
+//
+
 class PasteLongMessages : Mutator {
     private val pasteService = PasteService()
 
@@ -63,20 +67,33 @@ class PasteLongMessages : Mutator {
         }
 
         val response = pasteService.pasteSync(message)
-        if (response.type == PasteService.Response.Type.SUCCESS) {
+        if (response.type != PasteService.Response.Type.SUCCESS) {
+            // just return the base string, nothing we can do
+            return message
+        } else {
             val pasteUrl = response.pasteUrl ?: return message // return early if null pasteUrl
 
             // shorten text up and append paste url
             val builder = StringBuilder()
 
+            // todo - rework, not super happy with split by newline then by word
             val words = message.replace("\n", "").split(" ")
-            for ((index, word) in words.withIndex()) {
+            for ((i, word) in words.withIndex()) {
+                if (i == 0 || i == words.size - 1) {
+                    if (word.contains(fencedBlock)) {
+                        continue
+                    }
+                }
+
                 builder.append(word)
 
-                if (index >= 5 || index == words.size) {
+                if (i >= 5 || i == words.size - 1) {
                     builder.append("...")
                     break
                 }
+
+                // append space in place of new line
+                builder.append(" ")
             }
 
             var shortened = builder.toString()
@@ -87,9 +104,6 @@ class PasteLongMessages : Mutator {
             }
 
             return "$shortened $pasteUrl"
-        } else {
-            // just return the base string, nothing we can do
-            return message
         }
     }
 
@@ -103,23 +117,6 @@ class PasteLongMessages : Mutator {
         // blocking // todo - its blocking...
         internal fun pasteSync(message: String): Response {
             fun OffsetDateTime.toIso8601(): String = this.format(DateTimeFormatter.ISO_DATE_TIME)
-
-            // sanitize a bit
-            val sanitizer = StringBuilder()
-            val lines = message.split("\n")
-            for ((i, line) in lines.withIndex()) {
-                if (i == 0 || i == lines.size - 1) {
-                    line.replace("```", "")
-                }
-
-                if (line.trim() == "") {
-                    continue
-                }
-
-                sanitizer.append(line).append("\n")
-            }
-
-            val pasteContents = sanitizer.toString()
             val rightNow = OffsetDateTime.now()
 
             // paste options
@@ -127,6 +124,33 @@ class PasteLongMessages : Mutator {
             val visibility = PasteVisibility.UNLISTED.toString()
             val format = PasteFormat.TEXT.toString()
             val expires = rightNow.plusDays(7).toIso8601()
+            var highlightLang: String? = null
+
+            // sanitize a bit
+            val sanitizer = StringBuilder()
+            val lines = message.split("\n")
+            for ((i, rawLine) in lines.withIndex()) {
+                var line = rawLine
+
+                if (i == 0 || i == lines.size - 1) {
+                    line = line.replace("```", "")
+
+                    // use whatever is left as the highlight lang
+                    if (highlightLang == null && line.trim() != "") {
+                        highlightLang = line
+                        line = "" // get rid of language str
+                    }
+
+                    // if we made the first or last line empty, just skip it
+                    if (line.trim() == "") {
+                        continue
+                    }
+                }
+
+                sanitizer.append(line).append("\n")
+            }
+
+            val pasteContents = sanitizer.toString()
 
             // https://github.com/jkcclemens/paste/blob/b05ad0f468afa46170e46e2a73a2bd2ffec93db2/api.md#post-pastes
             val jsonPayload = JSONObject()
@@ -137,6 +161,7 @@ class PasteLongMessages : Mutator {
                     .put("name", "paste1")
                     .put("content", JSONObject()
                         .put("format", format)
+                        .put("highlight_language", highlightLang)
                         .put("value", pasteContents)
                     )
                 )))
