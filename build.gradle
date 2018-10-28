@@ -71,6 +71,8 @@ compileTestKotlin {
 
 // updateLicenses | checkLicenses
 license {
-    ext.name = rootProject.name
     header = project.file('HEADER.txt')
+    ext {
+        name = rootProject.name
+    }
 }
