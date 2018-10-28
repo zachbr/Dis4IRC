@@ -48,16 +48,50 @@ class TranslateFormatting : Mutator {
         }
     }
 
+    /**
+     * Takes a message from IRC and translates the formatting to Discord compatible rendering chars
+     */
     private fun formatForDiscord(message: String): String {
-        TODO()
+        var out = fixIrcFormattingBalance(message)
+
+        out = out.replace(IrcFormattingCodes.BOLD.asString, DiscordFormattingCodes.BOLD.code)
+        out = out.replace(IrcFormattingCodes.ITALICS.asString, DiscordFormattingCodes.ITALICS.code)
+        out = out.replace(IrcFormattingCodes.UNDERLINE.asString, DiscordFormattingCodes.UNDERLINE.code)
+        out = out.replace(IrcFormattingCodes.STRIKETHROUGH.asString, DiscordFormattingCodes.STRIKETHROUGH.code)
+        out = out.replace(IrcFormattingCodes.MONOSPACE.asString, DiscordFormattingCodes.MONOSPACE.code)
+
+        return out
     }
 
+    /**
+     * Ensures that IRC formatting chars are balanced, that is even, as there is no requirement
+     * for them to be.
+     */
+    private fun fixIrcFormattingBalance(message: String): String {
+        fun countSub(str: String, sub: Char): Int = str.split(sub).size - 1
+        var out = message
+
+        for (formattingCode in IrcFormattingCodes.values()) {
+            if (countSub(out, formattingCode.char) % 2 != 0) {
+                out += formattingCode.char
+            }
+        }
+
+        return out
+    }
+
+    /**
+     * Takes a message from Discord and runs translates the formatting to IRC compatible rendering chars
+     */
     private fun formatForIrc(message: String): String {
-        val content = markdownParser.parse(message)
-        return ircMarkdownRenderer.render(content)
+        val parsed = markdownParser.parse(message)
+        return ircMarkdownRenderer.render(parsed)
     }
 }
 
+/**
+ * Custom renderer to take standard markdown (plus strikethrough) and emit IRC compatible formatting codes
+ */
 class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), NodeRenderer {
     private val context: TextContentNodeRendererContext = context
     private val textContent = context.writer
@@ -201,6 +235,9 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
 
 }
 
+/**
+ * General discord (markdown) formatting codes
+ */
 enum class DiscordFormattingCodes(val code: String) {
     BOLD("**"),
     ITALICS("*"),
@@ -220,4 +257,6 @@ enum class IrcFormattingCodes(val char: Char) {
     STRIKETHROUGH(0x1E.toChar()),
     MONOSPACE(0x11.toChar()),
     RESET(0x0F.toChar());
+
+    val asString: String = char.toString()
 }
