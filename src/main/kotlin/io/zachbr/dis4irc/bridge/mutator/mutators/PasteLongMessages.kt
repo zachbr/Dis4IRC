@@ -193,11 +193,11 @@ class PasteLongMessages : Mutator {
             }
 
             if (!response.isSuccessful) {
-                logger.debug("Received response FAILURE")
+                logger.debug("Received HTTP response FAILURE")
 
                 return Response(Response.Type.FAILURE, null, respJson, rawResp)
             } else {
-                logger.debug("Received response SUCCESS")
+                logger.debug("Received HTTP response SUCCESS")
 
                 // successful but invalid json? treat as failure
                 if (respJson == null) {
