@@ -110,7 +110,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
 
-        discordChannel.sendMessage("$prefix${msg.contents}").complete()
+        discordChannel.sendMessage("$prefix${msg.contents}")
     }
 
     private fun sendMessageWebhook(webhook: WebhookClient, msg: Message) {
