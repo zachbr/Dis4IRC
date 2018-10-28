@@ -20,6 +20,7 @@ package io.zachbr.dis4irc.bridge.mutator
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
+import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
 
 class MutatorManager {
@@ -27,6 +28,7 @@ class MutatorManager {
 
     init {
         registerMutator(BlockHereEveryone())
+        registerMutator(PasteLongMessages())
         registerMutator(TranslateFormatting())
     }
 
