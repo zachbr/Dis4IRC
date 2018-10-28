@@ -50,9 +50,20 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
             logger.debug("Cannot get Discord guild member from user information: ${event.author}!")
         }
 
+        // handle attachments
+        val attachmentUrls = ArrayList<String>()
+        for (attachment in event.message.attachments) {
+            var url = attachment.url
+            if (attachment.isImage) {
+                url = attachment.proxyUrl
+            }
+
+            attachmentUrls.add(url)
+        }
+
         val displayName = guildMember?.effectiveName ?: event.author.name
         val sender = Sender(displayName, event.author.idLong, null)
-        val message = Message(event.message.contentDisplay, sender, channel, receiveTimestamp)
+        val message = Message(event.message.contentDisplay, sender, channel, receiveTimestamp, attachmentUrls)
         pier.sendToBridge(message)
     }
 }

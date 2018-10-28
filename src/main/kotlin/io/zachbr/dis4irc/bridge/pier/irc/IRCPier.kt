@@ -72,8 +72,13 @@ class IRCPier(private val bridge: Bridge) : Pier {
 
         val channel = ircChannel.get()
         val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
+        var msgContent = msg.contents
 
-        val out = msg.contents.split("\n")
+        if (msg.attachments != null && msg.attachments.isNotEmpty()) {
+            msg.attachments.forEach { msgContent += " $it"}
+        }
+
+        val out = msgContent.split("\n")
         for (line in out) {
             channel.sendMessage("$prefix$line")
         }

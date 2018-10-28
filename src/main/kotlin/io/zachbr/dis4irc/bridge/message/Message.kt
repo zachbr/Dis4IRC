@@ -33,7 +33,11 @@ class Message(
     /**
      * Original receive timestamp in nanoseconds
      */
-    val timestamp: Long
+    val timestamp: Long,
+    /**
+     * A list of attachment URLs on the message
+     */
+    val attachments: List<String>?
 ) {
     internal var destination = Destination.OPPOSITE
 
