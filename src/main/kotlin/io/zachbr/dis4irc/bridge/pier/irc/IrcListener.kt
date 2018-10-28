@@ -30,7 +30,7 @@ import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
  */
-class IRCListener(private val pier: IRCPier) {
+class IrcListener(private val pier: IrcPier) {
     private val logger = pier.logger
 
     @Handler

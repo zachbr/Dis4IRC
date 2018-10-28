@@ -26,7 +26,7 @@ import org.kitteh.irc.client.library.Client
 import org.slf4j.Logger
 import java.util.concurrent.TimeUnit
 
-class IRCPier(private val bridge: Bridge) : Pier {
+class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private var ircConn: Client? = null
 
@@ -48,7 +48,7 @@ class IRCPier(private val bridge: Bridge) : Pier {
             logger.debug("Joined ${mapping.ircChannel}")
         }
 
-        ircConn?.eventManager?.registerEventListener(IRCListener(this))
+        ircConn?.eventManager?.registerEventListener(IrcListener(this))
 
         logger.info("Connected to IRC!")
     }

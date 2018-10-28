@@ -37,10 +37,12 @@ class Message(
     /**
      * A list of attachment URLs on the message
      */
-    val attachments: List<String>?
+    val attachments: List<String>?,
+    /**
+     * Destination to be bridged to
+     */
+    var destination: Destination = Destination.OPPOSITE
 ) {
-    internal var destination = Destination.OPPOSITE
-
     /**
      * Gets whether the message should be sent to IRC
      */

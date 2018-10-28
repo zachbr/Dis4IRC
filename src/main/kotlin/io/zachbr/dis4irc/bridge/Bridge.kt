@@ -25,7 +25,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
-import io.zachbr.dis4irc.bridge.pier.irc.IRCPier
+import io.zachbr.dis4irc.bridge.pier.irc.IrcPier
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
@@ -43,7 +43,7 @@ class Bridge(private val config: BridgeConfiguration) {
 
     init {
         discordConn = DiscordPier(this)
-        ircConn = IRCPier(this)
+        ircConn = IrcPier(this)
     }
 
     /**
