@@ -46,7 +46,7 @@ class Dis4IRC(args: Array<String>) {
         logger.info("Licensed under the GNU Affero General Public License v3")
 
         if (args.isNotEmpty()) {
-            configPath = args[0]
+            configPath = args[0] // todo better parsing
         }
 
         logger.info("Loading config from: $configPath")

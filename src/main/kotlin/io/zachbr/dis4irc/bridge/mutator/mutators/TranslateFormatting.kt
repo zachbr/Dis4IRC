@@ -54,11 +54,11 @@ class TranslateFormatting : Mutator {
     private fun formatForDiscord(message: String): String {
         var out = fixIrcFormattingBalance(message)
 
-        out = out.replace(IrcFormattingCodes.BOLD.asString, DiscordFormattingCodes.BOLD.code)
-        out = out.replace(IrcFormattingCodes.ITALICS.asString, DiscordFormattingCodes.ITALICS.code)
-        out = out.replace(IrcFormattingCodes.UNDERLINE.asString, DiscordFormattingCodes.UNDERLINE.code)
-        out = out.replace(IrcFormattingCodes.STRIKETHROUGH.asString, DiscordFormattingCodes.STRIKETHROUGH.code)
-        out = out.replace(IrcFormattingCodes.MONOSPACE.asString, DiscordFormattingCodes.MONOSPACE.code)
+        out = out.replace(IrcFormattingCodes.BOLD.code, DiscordFormattingCodes.BOLD.code)
+        out = out.replace(IrcFormattingCodes.ITALICS.code, DiscordFormattingCodes.ITALICS.code)
+        out = out.replace(IrcFormattingCodes.UNDERLINE.code, DiscordFormattingCodes.UNDERLINE.code)
+        out = out.replace(IrcFormattingCodes.STRIKETHROUGH.code, DiscordFormattingCodes.STRIKETHROUGH.code)
+        out = out.replace(IrcFormattingCodes.MONOSPACE.code, DiscordFormattingCodes.MONOSPACE.code)
 
         return out
     }
@@ -93,7 +93,6 @@ class TranslateFormatting : Mutator {
  * Custom renderer to take standard markdown (plus strikethrough) and emit IRC compatible formatting codes
  */
 class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), NodeRenderer {
-    private val context: TextContentNodeRendererContext = context
     private val textContent = context.writer
 
     override fun render(node: Node?) {
@@ -258,5 +257,5 @@ enum class IrcFormattingCodes(val char: Char) {
     MONOSPACE(0x11.toChar()),
     RESET(0x0F.toChar());
 
-    val asString: String = char.toString()
+    val code: String = char.toString()
 }
