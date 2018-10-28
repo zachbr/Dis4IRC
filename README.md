@@ -8,10 +8,9 @@ Licensed [AGPLv3](https://github.com/zachbr/Dis4IRC/blob/master/LICENSE.md)
 Features
 --------
 * Markdown and Modern IRC Client Features
-* User whitelist/blacklist
 * Paste support for long messages
 * Channel Join/Quit broadcasts
-* Discord webook support
+* Discord webhook support
 * Non-prefixed messages for other IRC bots to handle
 
 Built using
