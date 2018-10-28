@@ -63,6 +63,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircRealName = ircBaseNode.getNode("realname")
     ircRealName.value = "BridgeBot"
 
+    val noPrefixString = ircBaseNode.getNode("no-prefix-str")
+    noPrefixString.value = null
+    noPrefixString.setComment("Messages prefixed with this value will be passed to IRC without a user prefix")
+
     val discordApiKey = this.getNode("discord-api-key")
     discordApiKey.setComment("Your discord API key you registered your bot with")
     discordApiKey.value = ""
@@ -90,19 +94,22 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         throw IllegalArgumentException("Cannot make bridge configuration from anything but a direct child of bridges node!")
     }
 
+    fun getStringNonNull(errMsg: String, vararg path: String): String {
+        val node = this.getNode(*path)
+        return node.string ?: throw IllegalArgumentException(errMsg)
+    }
+
     val bridgeName = this.key as String
 
-    val ircHost = this.getNode("irc", "server").string
-        ?: throw IllegalArgumentException("IRC hostname cannot be null in $bridgeName!")
+    val ircHost = getStringNonNull("IRC hostname cannot be null in $bridgeName", "irc", "server")
     val ircPass = this.getNode("irc", "password").string // nullable
     val ircPort = this.getNode("irc", "port").int
     val ircUseSsl = this.getNode("irc", "use-ssl").boolean
-    val ircNickName = this.getNode("irc", "nickname").string
-        ?: throw java.lang.IllegalArgumentException("IRC nickname cannot be null in $bridgeName!")
-    val ircUserName = this.getNode("irc", "username").getString("BridgeBot")
-    val ircRealName = this.getNode("irc", "realname").getString("BridgeBot")
-    val discordApiKey = this.getNode("discord-api-key").string
-        ?: throw IllegalArgumentException("Discord API key cannot be null in $bridgeName!")
+    val ircNickName = getStringNonNull("IRC nickname cannot be null in $bridgeName!", "irc", "nickname")
+    val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
+    val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
+    val ircNoPrefix = this.getNode("irc", "no-prefix-str").string // nullable
+    val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
 
     val webhookMappings = ArrayList<WebhookMapping>()
     for (webhookNode in this.getNode("discord-webhooks").childrenMap.values) {
@@ -131,6 +138,14 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     validateStringNotEmpty(ircRealName, "IRC realname left empty")
     validateStringNotEmpty(discordApiKey, "Discord API key left empty")
 
+    if (ircPass != null) {
+        validateStringNotEmpty(ircPass, "IRC pass cannot be left empty")
+    }
+
+    if (ircNoPrefix != null) {
+        validateStringNotEmpty(ircNoPrefix, "IRC no prefix str cannot be left empty")
+    }
+
     if (ircPort == 0) {
         logger.error("IRC server port invalid for bridge: $bridgeName")
         validated = false
@@ -154,6 +169,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircNickName,
         ircUserName,
         ircRealName,
+        ircNoPrefix,
         discordApiKey,
         webhookMappings,
         channelMappings

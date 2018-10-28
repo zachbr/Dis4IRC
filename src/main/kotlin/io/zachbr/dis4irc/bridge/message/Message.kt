@@ -37,7 +37,7 @@ class Message(
     /**
      * A list of attachment URLs on the message
      */
-    val attachments: List<String>?,
+    val attachments: MutableList<String>?,
     /**
      * Destination to be bridged to
      */

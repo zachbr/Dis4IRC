@@ -29,5 +29,5 @@ interface Mutator {
      *
      * @return the mutated value or null if the message is not to be sent
      */
-    fun mutate(message: String, source: Channel, sender: Sender): String?
+    fun mutate(message: String, source: Channel, sender: Sender, attachments: MutableList<String>?): String?
 }

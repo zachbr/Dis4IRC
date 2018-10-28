@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private var ircConn: Client? = null
+    private var noPrefix: String? = null
 
     override fun init(config: BridgeConfiguration) {
         logger.info("Connecting to IRC Server")
@@ -49,6 +50,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         ircConn?.eventManager?.registerEventListener(IrcListener(this))
+        noPrefix = config.ircNoPrefixVal
 
         logger.info("Connected to IRC!")
     }
@@ -71,16 +73,23 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         val channel = ircChannel.get()
-        val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
+        val senderPrefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
         var msgContent = msg.contents
 
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {
             msg.attachments.forEach { msgContent += " $it"}
         }
 
-        val out = msgContent.split("\n")
-        for (line in out) {
-            channel.sendMessage("$prefix$line")
+        val prefixNoPrefix = noPrefix
+        val msgLines = msgContent.split("\n")
+        for (line in msgLines) {
+            var ircMsgOut = line
+
+            if (prefixNoPrefix == null || !line.startsWith(prefixNoPrefix)) {
+                ircMsgOut = "$senderPrefix$line"
+            }
+
+            channel.sendMessage(ircMsgOut)
         }
 
         logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message out to IRC")

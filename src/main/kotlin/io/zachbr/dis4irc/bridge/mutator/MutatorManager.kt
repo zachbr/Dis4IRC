@@ -42,7 +42,7 @@ class MutatorManager {
                 return null
             }
 
-            mutated = iterator.next().mutate(mutated, message.channel, message.sender)
+            mutated = iterator.next().mutate(mutated, message.channel, message.sender, message.attachments)
         }
 
         return mutated

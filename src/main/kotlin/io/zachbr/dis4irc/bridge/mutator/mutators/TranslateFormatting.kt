@@ -41,7 +41,7 @@ class TranslateFormatting : Mutator {
         .nodeRendererFactory { context -> IrcRenderer(context) }
         .build()
 
-    override fun mutate(message: String, source: Channel, sender: Sender): String? {
+    override fun mutate(message: String, source: Channel, sender: Sender, attachments: MutableList<String>?): String? {
         return when (source.type) {
             Channel.Type.IRC -> formatForDiscord(message)
             Channel.Type.DISCORD -> formatForIrc(message)
