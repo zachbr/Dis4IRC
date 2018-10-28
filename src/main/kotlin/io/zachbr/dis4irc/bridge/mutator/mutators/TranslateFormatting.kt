@@ -66,7 +66,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
         node?.accept(this)
     }
 
-    override fun getNodeTypes(): MutableSet<Class<out Node>> {
+    override fun getNodeTypes(): HashSet<Class<out Node>> {
         return HashSet(
             Arrays.asList(
                 Document::class.java,
