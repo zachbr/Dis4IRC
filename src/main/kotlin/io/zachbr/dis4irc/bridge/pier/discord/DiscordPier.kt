@@ -118,7 +118,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         var avatarUrl: String? = null
         val matchingUsers = discordApi?.getUsersByName(msg.sender.displayName, true)
         if (matchingUsers != null && matchingUsers.isNotEmpty()) {
-            avatarUrl = matchingUsers[0].avatarUrl
+            avatarUrl = matchingUsers.first().avatarUrl
         }
 
         var senderName = msg.sender.displayName
@@ -128,14 +128,12 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             avatarUrl = botAvatarUrl ?: avatarUrl
         }
 
-        val builder = WebhookMessageBuilder()
-        builder.setContent(msg.contents)
-        builder.setUsername(senderName)
-        if (avatarUrl != null) {
-            builder.setAvatarUrl(avatarUrl)
-        }
+        val message = WebhookMessageBuilder()
+            .setContent(msg.contents)
+            .setUsername(senderName)
+            .setAvatarUrl(avatarUrl)
+            .build()
 
-        val message = builder.build()
         webhook.send(message)
     }
 

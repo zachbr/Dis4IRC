@@ -81,7 +81,7 @@ class TranslateFormatting : Mutator {
     }
 
     /**
-     * Takes a message from Discord and runs translates the formatting to IRC compatible rendering chars
+     * Takes a message from Discord and translates the formatting to IRC compatible rendering chars
      */
     private fun formatForIrc(message: String): String {
         val parsed = markdownParser.parse(message)

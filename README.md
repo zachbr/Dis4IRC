@@ -12,6 +12,7 @@ Features
 * Channel Join/Quit broadcasts
 * Discord webhook support
 * Non-prefixed messages for other IRC bots to handle
+* IRC anti-ping zero width character in usernames
 
 Built using
 -----------
