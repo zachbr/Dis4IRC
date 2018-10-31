@@ -19,13 +19,10 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
-import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
 import org.slf4j.Logger
-import java.lang.StringBuilder
-import java.util.concurrent.TimeUnit
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 
@@ -88,7 +85,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         val channel = ircChannel.get()
 
         var senderPrefix = "<${msg.sender.displayName}> "
-        if (msg.sender == BOT_SENDER) {
+        if (msg.originatesFromBridgeItself()) {
             senderPrefix = ""
         } else if (antiPing) {
             senderPrefix = StringBuilder(senderPrefix).insert(3, ANTI_PING_CHAR).toString()
@@ -112,7 +109,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
             channel.sendMessage(ircMsgOut)
         }
 
-        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message out to IRC")
+        val outTimestamp = System.nanoTime()
+        bridge.addToTiming(msg, outTimestamp)
     }
 
     /**

@@ -20,12 +20,11 @@ package io.zachbr.dis4irc.bridge.command
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.command.api.Executor
 import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
+import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.Sender
 
 const val COMMAND_PREFIX: String = "!"
-internal val BOT_SENDER = Sender("Bridge", null, null)
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
@@ -35,7 +34,7 @@ class CommandManager(private val bridge: Bridge) {
     private val logger = bridge.logger
 
     init {
-        registerExecutor("system", SystemInfo())
+        registerExecutor("system", SystemInfo(bridge))
     }
 
     /**
@@ -68,6 +67,8 @@ class CommandManager(private val bridge: Bridge) {
         if (result != null) {
             command.contents = result
             command.sender = BOT_SENDER
+
+            // submit as new message
             bridge.submitMessage(command)
         }
     }

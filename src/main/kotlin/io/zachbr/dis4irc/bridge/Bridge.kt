@@ -17,23 +17,26 @@
 
 package io.zachbr.dis4irc.bridge
 
+import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
-import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.command.CommandManager
-import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IrcPier
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs
  */
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
+
+    private val messageHandlingTimes = EvictingQueue.create<Long>(1000)
     private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
     private val mutatorManager = MutatorManager(this)
@@ -69,30 +72,30 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Bridges communication between the two piers
      */
-    internal fun submitMessage(message: Message) {
-        val bridgeTarget: String? = channelMappings.getMappingFor(message.source)
+    internal fun submitMessage(messageIn: Message) {
+        val bridgeTarget: String? = channelMappings.getMappingFor(messageIn.source)
 
         if (bridgeTarget == null) {
-            logger.debug("Discarding message with no bridge target from: ${message.source}")
+            logger.debug("Discarding message with no bridge target from: ${messageIn.source}")
             return
         }
 
         // mutate message contents
-        message.contents = mutatorManager.applyMutators(message) ?: return
+        val mutatedMessage = mutatorManager.applyMutators(messageIn) ?: return
 
-        if (message.shouldSendToIrc()) {
-            val target: String = if (message.source.type == Source.Type.IRC) message.source.channelName else bridgeTarget
-            ircConn.sendMessage(target, message)
+        if (mutatedMessage.shouldSendToIrc()) {
+            val target: String = if (mutatedMessage.source.type == Source.Type.IRC) mutatedMessage.source.channelName else bridgeTarget
+            ircConn.sendMessage(target, mutatedMessage)
         }
 
-        if (message.shouldSendToDiscord()) {
-            val target = if (message.source.type == Source.Type.DISCORD) message.source.discordId.toString() else bridgeTarget
-            discordConn.sendMessage(target, message)
+        if (mutatedMessage.shouldSendToDiscord()) {
+            val target = if (mutatedMessage.source.type == Source.Type.DISCORD) mutatedMessage.source.discordId.toString() else bridgeTarget
+            discordConn.sendMessage(target, mutatedMessage)
         }
 
         // command handling
-        if (message.contents.startsWith(COMMAND_PREFIX) && message.sender != BOT_SENDER) {
-            commandManager.processCommandMessage(message)
+        if (mutatedMessage.contents.startsWith(COMMAND_PREFIX) && !mutatedMessage.originatesFromBridgeItself()) {
+            commandManager.processCommandMessage(mutatedMessage)
         }
     }
 
@@ -106,5 +109,25 @@ class Bridge(private val config: BridgeConfiguration) {
         ircConn.shutdown()
 
         logger.info("${config.bridgeName} stopped")
+    }
+
+    /**
+     * Adds a message's handling time to the bridge's collection for monitoring purposes
+     */
+    fun addToTiming(message: Message, timestampOut: Long) {
+        val difference = timestampOut - message.timestamp
+
+        if (!message.originatesFromBridgeItself()) {
+            messageHandlingTimes.add(difference)
+        }
+
+        logger.debug("Message from ${message.source} ${message.sender} took ${TimeUnit.NANOSECONDS.toMillis(difference)} to handle")
+    }
+
+    /**
+     * Gets an array of the message handling collection's contents for inspection
+     */
+    internal fun getMessageTimes(): LongArray {
+        return messageHandlingTimes.toLongArray()
     }
 }

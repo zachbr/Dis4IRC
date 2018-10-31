@@ -19,9 +19,9 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
-import io.zachbr.dis4irc.bridge.command.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
@@ -30,7 +30,6 @@ import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
-import java.util.concurrent.TimeUnit
 
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -93,7 +92,8 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             sendMessageWebhook(webhook, msg)
         }
 
-        logger.debug("Took approximately ${TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - msg.timestamp)}ms to handle message out to Discord")
+        val outTimestamp = System.nanoTime()
+        bridge.addToTiming(msg, outTimestamp)
     }
 
     private fun sendMessageOldStyle(targetChan: String, msg: Message) {
@@ -108,7 +108,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val prefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
+        val prefix = if (msg.originatesFromBridgeItself()) "" else "<${msg.sender.displayName}> "
 
         discordChannel.sendMessage("$prefix${msg.contents}")
     }

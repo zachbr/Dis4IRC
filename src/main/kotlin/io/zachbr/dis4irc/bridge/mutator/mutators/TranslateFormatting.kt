@@ -42,11 +42,13 @@ class TranslateFormatting : Mutator {
         .nodeRendererFactory { context -> IrcRenderer(context) }
         .build()
 
-    override fun mutate(message: Message): String? {
-        return when (message.source.type) {
+    override fun mutate(message: Message): Mutator.LifeCycle {
+        message.contents =  when (message.source.type) {
             Source.Type.IRC -> formatForDiscord(message.contents)
             Source.Type.DISCORD -> formatForIrc(message.contents)
         }
+
+        return Mutator.LifeCycle.CONTINUE
     }
 
     /**

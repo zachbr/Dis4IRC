@@ -28,5 +28,23 @@ interface Mutator {
      *
      * @return the mutated message contents value or null if the message is not to be sent
      */
-    fun mutate(message: Message): String?
+    fun mutate(message: Message): LifeCycle
+
+    /**
+     * Mutator Life Cycle control types
+     */
+    enum class LifeCycle {
+        /**
+         * Continue the lifecycle by passing this message onto the next
+         */
+        CONTINUE,
+        /**
+         * Stop the lifecycle and discard the message entirely
+         */
+        STOP_AND_DISCARD,
+        /**
+         * Stop the lifecycle and return the message as it exists currently
+         */
+        RETURN_EARLY
+    }
 }

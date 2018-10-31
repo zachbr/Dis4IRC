@@ -17,13 +17,14 @@
 
 package io.zachbr.dis4irc.bridge.command.executors
 
+import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.command.api.Executor
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
-class SystemInfo : Executor {
+class SystemInfo(private val bridge: Bridge) : Executor {
 
     /**
      * Checks that the sender is authorized to use this command
@@ -53,9 +54,40 @@ class SystemInfo : Executor {
         val javaVersion = "${runtimeMX.vmName} ${runtimeMX.vmVersion}"
         val osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + "(" + System.getProperty("os.arch") + ")"
 
+        val sortedTimings = bridge.getMessageTimes().sortedArray()
+        val meanMillis = TimeUnit.NANOSECONDS.toMillis(mean(sortedTimings))
+        val medianMillis = TimeUnit.NANOSECONDS.toMillis(median(sortedTimings))
+
+
         return "Uptime: $uptime days\n" +
+                "Message Handling (mean/median): ${meanMillis}ms / ${medianMillis}ms" +
                 "Memory: $currentMemory / $totalAllocated (MiB)\n" +
                 "Java: $javaVersion\n" +
                 "OS: $osInfo"
+    }
+
+    /**
+     * Gets the mean of a given array
+     */
+    private fun mean(a: LongArray): Long {
+        var sum = 0L
+        for (i in a.indices) {
+            sum += a[i]
+        }
+
+        return sum / a.size
+    }
+
+    /**
+     * Gets the median of a given sorted array
+     */
+    private fun median(a: LongArray): Long {
+        val middle = a.size / 2
+
+        return if (a.size % 2 == 1) {
+            a[middle]
+        } else {
+            (a[middle - 1] + a[middle]) / 2
+        }
     }
 }

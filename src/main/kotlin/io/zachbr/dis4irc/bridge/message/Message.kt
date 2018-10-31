@@ -84,5 +84,10 @@ data class Message(
     /**
      * Gets whether this class has been affected by the given mutator
      */
-    fun <T: Mutator> hasApplied(clazz: Class<T>): Boolean = appliedMutators.contains(clazz.hashCode())
+    fun <T: Mutator> hasAlreadyApplied(clazz: Class<T>): Boolean = appliedMutators.contains(clazz.hashCode())
+
+    /**
+     * Gets whether this message is a command message
+     */
+    fun originatesFromBridgeItself() = sender == BOT_SENDER
 }

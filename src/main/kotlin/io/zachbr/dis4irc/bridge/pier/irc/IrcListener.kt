@@ -17,10 +17,10 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.command.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
+import io.zachbr.dis4irc.bridge.message.Source
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.element.User
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent

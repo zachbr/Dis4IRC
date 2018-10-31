@@ -37,23 +37,25 @@ class MutatorManager(bridge: Bridge) {
         mutators.add(mutator)
     }
 
-    // todo - sort this out
-    internal fun applyMutators(message: Message): String? {
+    internal fun applyMutators(message: Message): Message? {
         val iterator = mutators.iterator()
-        var mutated: String? = message.contents
-        while (iterator.hasNext()) {
-            message.contents = mutated ?: return null
 
+        loop@ while (iterator.hasNext()) {
             val mutator = iterator.next()
-            if (message.hasApplied(mutator.javaClass)) {
+            if (message.hasAlreadyApplied(mutator.javaClass)) {
                 continue
             }
 
-            mutated = mutator.mutate(message)
-
+            val state = mutator.mutate(message)
             message.markMutatorApplied(mutator.javaClass)
+
+            return when (state) {
+                Mutator.LifeCycle.CONTINUE -> continue@loop
+                Mutator.LifeCycle.STOP_AND_DISCARD -> null
+                Mutator.LifeCycle.RETURN_EARLY -> message
+            }
         }
 
-        return mutated
+        return message
     }
 }

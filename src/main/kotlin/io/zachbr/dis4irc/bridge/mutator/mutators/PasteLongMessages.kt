@@ -28,7 +28,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.lang.StringBuilder
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
@@ -44,12 +43,12 @@ class PasteLongMessages(val bridge: Bridge) : Mutator {
     private val fencedBlock = "```"
     private val maxMsgLength = 450 // todo - config
 
-    override fun mutate(message: Message): String? {
+    override fun mutate(message: Message): Mutator.LifeCycle {
         val msgContents = message.contents
 
         // we only need to run paste service on discord messages
         if (message.source.type != Source.Type.DISCORD) {
-            return msgContents
+            return Mutator.LifeCycle.CONTINUE
         }
 
         var shouldPaste = false
@@ -69,10 +68,10 @@ class PasteLongMessages(val bridge: Bridge) : Mutator {
         // if after all of that we don't meet the criteria
         // don't paste, return early
         if (!shouldPaste) {
-            return msgContents
+            return Mutator.LifeCycle.CONTINUE
         }
 
-        if (message.hasApplied(this.javaClass)) {
+        if (message.hasAlreadyApplied(this.javaClass)) {
             throw IllegalStateException("Twice!")
         }
 
@@ -134,7 +133,7 @@ class PasteLongMessages(val bridge: Bridge) : Mutator {
 
         // message will be resubmitted in the future with mutated content string
         // we want this version to die here
-        return null
+        return Mutator.LifeCycle.STOP_AND_DISCARD
     }
 
     /**

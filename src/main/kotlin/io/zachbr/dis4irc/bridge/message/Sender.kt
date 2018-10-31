@@ -17,6 +17,8 @@
 
 package io.zachbr.dis4irc.bridge.message
 
+internal val BOT_SENDER = Sender("Bridge", null, null)
+
 data class Sender(
     /**
      * User's display name, this is *not* guaranteed to be unique or secure
