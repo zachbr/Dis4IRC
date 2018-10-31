@@ -46,7 +46,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
 
         // We need to get the guild member in order to grab their display name
         val guildMember = event.guild.getMember(event.author)
-        if (guildMember == null) {
+        if (guildMember == null && !event.author.isBot) {
             logger.debug("Cannot get Discord guild member from user information: ${event.author}!")
         }
 
