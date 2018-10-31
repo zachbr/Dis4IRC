@@ -20,7 +20,7 @@ package io.zachbr.dis4irc.bridge.pier.discord
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.command.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
@@ -140,14 +140,14 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Checks if the message came from this bot
      */
-    fun isThisBot(channel: Channel, snowflake: Long): Boolean {
+    fun isThisBot(source: Source, snowflake: Long): Boolean {
         // check against bot user directly
         if (snowflake == discordApi?.selfUser?.idLong) {
             return true
         }
 
         // check against webclients
-        val webhook = webhookMap[channel.discordId.toString()] ?: webhookMap[channel.name]
+        val webhook = webhookMap[source.discordId.toString()] ?: webhookMap[source.channelName]
         if (webhook != null) {
             return snowflake == webhook.idLong
         }
@@ -160,6 +160,6 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      * Sends a message to the bridge for processing
      */
     fun sendToBridge(message: io.zachbr.dis4irc.bridge.message.Message) {
-        bridge.handleMessage(message)
+        bridge.submitMessage(message)
     }
 }

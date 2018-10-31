@@ -68,7 +68,7 @@ class CommandManager(private val bridge: Bridge) {
         if (result != null) {
             command.contents = result
             command.sender = BOT_SENDER
-            bridge.handleMessage(command)
+            bridge.submitMessage(command)
         }
     }
 }

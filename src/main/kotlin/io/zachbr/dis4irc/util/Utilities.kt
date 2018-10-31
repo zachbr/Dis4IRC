@@ -15,18 +15,9 @@
  * along with Dis4IRC.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.zachbr.dis4irc.bridge.mutator.api
-
-import io.zachbr.dis4irc.bridge.message.Message
+package io.zachbr.dis4irc.util
 
 /**
- * A mutator takes the given message contents and alters it in some way before returning it
+ * Counts the number of occurrences of the substring in the base string
  */
-interface Mutator {
-    /**
-     * Called on a given message to mutate the contents
-     *
-     * @return the mutated message contents value or null if the message is not to be sent
-     */
-    fun mutate(message: Message): String?
-}
+fun countSubstring(baseStr: String, subStr: String): Int = baseStr.split(subStr).size - 1

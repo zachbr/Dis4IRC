@@ -17,18 +17,19 @@
 
 package io.zachbr.dis4irc.bridge.mutator
 
+import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
 import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
 
-class MutatorManager {
+class MutatorManager(bridge: Bridge) {
     private val mutators = ArrayList<Mutator>()
 
     init {
         registerMutator(BlockHereEveryone())
-        registerMutator(PasteLongMessages())
+        registerMutator(PasteLongMessages(bridge))
         registerMutator(TranslateFormatting())
     }
 
@@ -36,15 +37,21 @@ class MutatorManager {
         mutators.add(mutator)
     }
 
+    // todo - sort this out
     internal fun applyMutators(message: Message): String? {
         val iterator = mutators.iterator()
         var mutated: String? = message.contents
         while (iterator.hasNext()) {
-            if (mutated == null) {
-                return null
+            message.contents = mutated ?: return null
+
+            val mutator = iterator.next()
+            if (message.hasApplied(mutator.javaClass)) {
+                continue
             }
 
-            mutated = iterator.next().mutate(mutated, message.channel, message.sender, message.attachments)
+            mutated = mutator.mutate(message)
+
+            message.markMutatorApplied(mutator.javaClass)
         }
 
         return mutated

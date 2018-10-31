@@ -17,105 +17,156 @@
 
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
-import io.zachbr.dis4irc.bridge.message.Channel
-import io.zachbr.dis4irc.bridge.message.Sender
+import io.zachbr.dis4irc.bridge.Bridge
+import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
+import io.zachbr.dis4irc.util.countSubstring
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.lang.StringBuilder
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.function.Consumer
 
 //
 // TODO clean this shit up
 //
 
-class PasteLongMessages : Mutator {
+class PasteLongMessages(val bridge: Bridge) : Mutator {
     private val pasteService = PasteService()
 
     private val maxNewlines = 4 // todo - config
     private val fencedBlock = "```"
     private val maxMsgLength = 450 // todo - config
 
-    override fun mutate(message: String, source: Channel, sender: Sender, attachments: MutableList<String>?): String? {
+    override fun mutate(message: Message): String? {
+        val msgContents = message.contents
+
         // we only need to run paste service on discord messages
-        if (source.type != Channel.Type.DISCORD) {
-            return message
+        if (message.source.type != Source.Type.DISCORD) {
+            return msgContents
         }
 
         var shouldPaste = false
 
-        if (message.split("\n").size > maxNewlines) {
+        if (msgContents.split("\n").size > maxNewlines) {
             shouldPaste = true
         }
 
-        if (message.contains(fencedBlock)) {
+        if (countSubstring(msgContents, fencedBlock) >= 2) {
             shouldPaste = true
         }
 
-        if (message.length > maxMsgLength) {
+        if (msgContents.length > maxMsgLength) {
             shouldPaste = true
         }
 
         // if after all of that we don't meet the criteria
         // don't paste, return early
         if (!shouldPaste) {
-            return message
+            return msgContents
         }
 
-        val response = pasteService.pasteSync(message)
-        if (response.type != PasteService.Response.Type.SUCCESS) {
-            // just return the base string, nothing we can do
-            return message
-        } else {
-            val pasteUrl = response.pasteUrl ?: return message // return early if null pasteUrl
-
-            // shorten text up and append paste url
-            val builder = StringBuilder()
-
-            // todo - rework, not super happy with split by newline then by word
-            val words = message.replace("\n", "").split(" ")
-            for ((i, word) in words.withIndex()) {
-                if (i == 0 || i == words.size - 1) {
-                    if (word.contains(fencedBlock)) {
-                        continue
-                    }
-                }
-
-                builder.append(word)
-
-                if (i >= 5 || i == words.size - 1) {
-                    builder.append("...")
-                    break
-                }
-
-                // append space in place of new line
-                builder.append(" ")
-            }
-
-            var shortened = builder.toString()
-            // just in case we somehow ended up with a really long string after all of that
-            // cap its max length at 100 chars
-            if (shortened.length > 100) {
-                shortened = shortened.substring(0, 100)
-            }
-
-            return "$shortened $pasteUrl"
+        if (message.hasApplied(this.javaClass)) {
+            throw IllegalStateException("Twice!")
         }
+
+        // called when we were unable to submit the paste
+        val onError = Consumer<PasteService.Response> {
+            resubmitToBridge(message)
+        }
+
+        // called when we were able to submit the paste
+        val onSuccess = Consumer<PasteService.Response> {
+            // just in case
+            if (it.type != PasteService.Response.Type.SUCCESS || it.pasteUrl == null) {
+                resubmitToBridge(message)
+                return@Consumer
+            }
+
+            val cleaned = msgContents
+                .replace("\n", " ")
+                .replace("```", "")
+                .replace("`", "")
+
+            val maxLength = Math.min(100, cleaned.length)
+            val shortened = cleaned.substring(0, maxLength) + "..."
+
+            message.contents = "$shortened ${it.pasteUrl}"
+            resubmitToBridge(message)
+        }
+
+        // try and clean it up a bit before submitting
+        // maybe figure out the highlight language
+        var highlightLang: String? = null
+
+        val builder = StringBuilder()
+        val lines = msgContents.split("\n")
+        for ((i, rawLine) in lines.withIndex()) {
+            var line = rawLine
+
+            if (i == 0 || i == lines.size - 1) {
+                line = line.replace("```", "")
+
+                // use whatever is left as the highlight lang
+                // only if the length of the line is less than 10
+                if (highlightLang == null && line.trim().isNotEmpty() && line.length < 10) {
+                    highlightLang = line
+                    line = "" // get rid of language str
+                }
+
+                // if we made the first or last line empty, just skip it
+                if (line.trim() == "") {
+                    continue
+                }
+            }
+
+            builder.append(line).append("\n")
+        }
+
+        // call out to paste service for response at some unknown point in the future
+        pasteService.dispatchPaste(builder.toString(), highlightLang, onSuccess, onError)
+
+        // message will be resubmitted in the future with mutated content string
+        // we want this version to die here
+        return null
+    }
+
+    /**
+     * Marks that this message has gone through the paste system
+     */
+    private fun resubmitToBridge(message: Message) {
+        bridge.logger.debug("Resubmitting to bridge: $message")
+        bridge.submitMessage(message)
     }
 
     /**
      * Paste service handler using https://paste.gg/
      */
-    class PasteService {
+    private class PasteService {
         private val httpClient = OkHttpClient()
         private val logger = LoggerFactory.getLogger("PasteService")
+        private val supportedHighlights = makeSupportedLangsSet()
 
-        // blocking // todo - its blocking...
-        internal fun pasteSync(message: String): Response {
+        /**
+         * Dispatches a paste asynchronously to the paste service
+         *
+         * @param message contents to paste
+         * @param highlightLang language name to use for syntax highlighting
+         * @param successConsumer consumer to run if the paste is submitted successfully
+         * @param errorConsumer consumer to run if there is any problem submitting the paste
+         */
+        internal fun dispatchPaste(
+            message: String,
+            highlightLang: String?,
+            successConsumer: Consumer<Response>,
+            errorConsumer: Consumer<Response>
+        ) {
             fun OffsetDateTime.toIso8601(): String = this.format(DateTimeFormatter.ISO_DATE_TIME)
             val rightNow = OffsetDateTime.now()
 
@@ -124,47 +175,33 @@ class PasteLongMessages : Mutator {
             val visibility = PasteVisibility.UNLISTED.toString()
             val format = PasteFormat.TEXT.toString()
             val expires = rightNow.plusDays(7).toIso8601()
-            var highlightLang: String? = null
 
-            // sanitize a bit
-            val sanitizer = StringBuilder()
-            val lines = message.split("\n")
-            for ((i, rawLine) in lines.withIndex()) {
-                var line = rawLine
-
-                if (i == 0 || i == lines.size - 1) {
-                    line = line.replace("```", "")
-
-                    // use whatever is left as the highlight lang
-                    if (highlightLang == null && line.trim() != "") {
-                        highlightLang = line
-                        line = "" // get rid of language str
-                    }
-
-                    // if we made the first or last line empty, just skip it
-                    if (line.trim() == "") {
-                        continue
-                    }
-                }
-
-                sanitizer.append(line).append("\n")
+            // the paste service will barf if you send it an unsupported highlight language
+            // so we must validate it before we use it
+            var validatedLang: String? = null
+            if (highlightLang != null && supportedHighlights.contains(highlightLang.toLowerCase())) {
+                validatedLang = highlightLang.toLowerCase()
             }
-
-            val pasteContents = sanitizer.toString()
 
             // https://github.com/jkcclemens/paste/blob/b05ad0f468afa46170e46e2a73a2bd2ffec93db2/api.md#post-pastes
             val jsonPayload = JSONObject()
                 .put("name", pasteName)
                 .put("visibility", visibility)
                 .put("expires", expires)
-                .put("files", JSONArray(arrayOf(JSONObject()
-                    .put("name", "paste1")
-                    .put("content", JSONObject()
-                        .put("format", format)
-                        .put("highlight_language", highlightLang)
-                        .put("value", pasteContents)
+                .put(
+                    "files", JSONArray(
+                        arrayOf(
+                            JSONObject()
+                                .put("name", "paste1")
+                                .put("highlight_language", validatedLang)
+                                .put(
+                                    "content", JSONObject()
+                                        .put("format", format)
+                                        .put("value", message)
+                                )
+                        )
                     )
-                )))
+                )
 
             logger.debug("JSON payload")
             logJson(jsonPayload)
@@ -175,40 +212,49 @@ class PasteLongMessages : Mutator {
                 .post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonPayload.toString(2)))
                 .build()
 
-            val response = httpClient.newCall(request).execute()
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onResponse(call: Call, httpResponse: okhttp3.Response) {
+                    val rawResp = httpResponse.body()?.string()
+                    val respJson: JSONObject? = try {
+                        JSONObject(rawResp)
+                    } catch (ignored: JSONException) {
+                        null
+                    }
 
-            val rawResp = response.body()?.string()
-            val respJson: JSONObject? = try {
-                JSONObject(rawResp)
-            } catch (ignored: JSONException) {
-                null
-            }
+                    // log response regardless of result
+                    logger.debug("JSON response")
+                    if (respJson != null) {
+                        logJson(respJson)
+                    } else {
+                        logger.warn("Unable to parse response body as JSON!")
+                        logger.debug("Raw: $rawResp")
+                    }
 
-            // debug log response
-            logger.debug("JSON response")
-            if (respJson != null) {
-                logJson(respJson)
-            } else {
-                logger.debug(rawResp)
-            }
+                    if (!httpResponse.isSuccessful || respJson == null) {
+                        logger.debug("Received HTTP response FAILURE")
 
-            if (!response.isSuccessful) {
-                logger.debug("Received HTTP response FAILURE")
+                        val failureResponse = Response(Response.Type.FAILURE, null, respJson, rawResp)
+                        errorConsumer.accept(failureResponse)
+                    } else {
+                        logger.debug("Received HTTP response SUCCESS")
 
-                return Response(Response.Type.FAILURE, null, respJson, rawResp)
-            } else {
-                logger.debug("Received HTTP response SUCCESS")
-
-                // successful but invalid json? treat as failure
-                if (respJson == null) {
-                    logger.warn("Null JSON response from successful response!")
-                    return Response(Response.Type.FAILURE, null, respJson, rawResp)
+                        val pasteId = respJson.getJSONObject("result").getString("id")
+                        val deletionKey = respJson.getJSONObject("result").getString("deletion_key")
+                        val pasteUrl = PASTE_SERVICE_OUT_BASE_URL + pasteId
+                        val response = Response(Response.Type.SUCCESS, pasteUrl, respJson, rawResp)
+                        logger.info("Deletion key for $pasteName is: $deletionKey")
+                        successConsumer.accept(response)
+                    }
                 }
 
-                val pasteId = respJson.getJSONObject("result").getString("id")
-                val pasteUrl = PASTE_SERVICE_OUT_BASE_URL + pasteId
-                return Response(Response.Type.SUCCESS, pasteUrl, respJson, rawResp)
-            }
+                override fun onFailure(call: Call, ex: IOException) {
+                    logger.error("Unable to make outgoing call to paste service! $ex")
+                    ex.printStackTrace()
+
+                    errorConsumer.accept(Response(Response.Type.FAILURE, null, null, null))
+                }
+
+            })
         }
 
         private fun logJson(json: JSONObject) {
@@ -251,8 +297,198 @@ class PasteLongMessages : Mutator {
         }
 
         companion object {
-            private const val PASTE_SERVICE_POST_URL = "https://api.paste.gg/v1/pastes"
+            private const val PASTE_SERVICE_POST_URL = "https://api.paste.gg/v1/pastes/"
             private const val PASTE_SERVICE_OUT_BASE_URL = "https://paste.gg/p/anonymous/"
+
+            /**
+             * Constructs a new set of supported highlight languages
+             *
+             * This could be an enum or something but this isn't a public API and I'm never going
+             * to use it as an enum.
+             *
+             * https://github.com/jkcclemens/paste/blob/942d1ede8abe80a594553197f2b03c1d6d70efd0/webserver/src/utils/language.rs
+             */
+            private fun makeSupportedLangsSet(): HashSet<String> {
+                val set = HashSet<String>()
+                set.add("onec")
+                set.add("abnf")
+                set.add("accesslog")
+                set.add("actionscript")
+                set.add("ada")
+                set.add("apache")
+                set.add("applescript")
+                set.add("arduino")
+                set.add("armasm")
+                set.add("asciidoc")
+                set.add("aspectj")
+                set.add("autohotkey")
+                set.add("autoit")
+                set.add("avrasm")
+                set.add("awk")
+                set.add("axapta")
+                set.add("bash")
+                set.add("basic")
+                set.add("bnf")
+                set.add("brainfuck")
+                set.add("cal")
+                set.add("capnproto")
+                set.add("ceylon")
+                set.add("clean")
+                set.add("clojure")
+                set.add("clojurerepl")
+                set.add("cmake")
+                set.add("coffeescript")
+                set.add("coq")
+                set.add("cos")
+                set.add("cplusplus")
+                set.add("crmsh")
+                set.add("crystal")
+                set.add("csharp")
+                set.add("csp")
+                set.add("css")
+                set.add("d")
+                set.add("dart")
+                set.add("delphi")
+                set.add("diff")
+                set.add("django")
+                set.add("dns")
+                set.add("dockerfile")
+                set.add("dos")
+                set.add("dsconfig")
+                set.add("dts")
+                set.add("dust")
+                set.add("ebnf")
+                set.add("elixir")
+                set.add("elm")
+                set.add("embeddedruby")
+                set.add("erlang")
+                set.add("erlangrepl")
+                set.add("excel")
+                set.add("fix")
+                set.add("flix")
+                set.add("fortran")
+                set.add("fsharp")
+                set.add("gams")
+                set.add("gauss")
+                set.add("gcode")
+                set.add("gherkin")
+                set.add("glsl")
+                set.add("go")
+                set.add("golo")
+                set.add("gradle")
+                set.add("groovy")
+                set.add("haml")
+                set.add("handlebars")
+                set.add("haskell")
+                set.add("haxe")
+                set.add("hsp")
+                set.add("htmlbars")
+                set.add("http")
+                set.add("hy")
+                set.add("inform7")
+                set.add("ini")
+                set.add("irpf90")
+                set.add("java")
+                set.add("javascript")
+                set.add("jbosscli")
+                set.add("json")
+                set.add("julia")
+                set.add("juliarepl")
+                set.add("kotlin")
+                set.add("lasso")
+                set.add("ldif")
+                set.add("leaf")
+                set.add("less")
+                set.add("lisp")
+                set.add("livecodeserver")
+                set.add("livescript")
+                set.add("llvm")
+                set.add("lindenscriptinglanguage")
+                set.add("lua")
+                set.add("makefile")
+                set.add("markdown")
+                set.add("mathematica")
+                set.add("matlab")
+                set.add("maxima")
+                set.add("mel")
+                set.add("mercury")
+                set.add("mipsasm")
+                set.add("mizar")
+                set.add("mojolicious")
+                set.add("monkey")
+                set.add("moonscript")
+                set.add("n1ql")
+                set.add("nginx")
+                set.add("nimrod")
+                set.add("nix")
+                set.add("nsis")
+                set.add("objectivec")
+                set.add("ocaml")
+                set.add("openscad")
+                set.add("oxygene")
+                set.add("parser3")
+                set.add("perl")
+                set.add("pf")
+                set.add("php")
+                set.add("pony")
+                set.add("powershell")
+                set.add("processing")
+                set.add("profile")
+                set.add("prolog")
+                set.add("protocolbuffers")
+                set.add("puppet")
+                set.add("purebasic")
+                set.add("python")
+                set.add("q")
+                set.add("qml")
+                set.add("r")
+                set.add("rib")
+                set.add("roboconf")
+                set.add("routeros")
+                set.add("rsl")
+                set.add("ruby")
+                set.add("ruleslanguage")
+                set.add("rust")
+                set.add("scala")
+                set.add("scheme")
+                set.add("scilab")
+                set.add("scss")
+                set.add("shell")
+                set.add("smali")
+                set.add("smalltalk")
+                set.add("standardml")
+                set.add("sqf")
+                set.add("sql")
+                set.add("stan")
+                set.add("stata")
+                set.add("step21")
+                set.add("stylus")
+                set.add("subunit")
+                set.add("swift")
+                set.add("taggerscript")
+                set.add("tap")
+                set.add("tcl")
+                set.add("tex")
+                set.add("thrift")
+                set.add("tp")
+                set.add("twig")
+                set.add("typescript")
+                set.add("vala")
+                set.add("vbnet")
+                set.add("vbscript")
+                set.add("vbscripthtml")
+                set.add("verilog")
+                set.add("vhdl")
+                set.add("vim")
+                set.add("x86asm")
+                set.add("xl")
+                set.add("xml")
+                set.add("xquery")
+                set.add("yaml")
+                set.add("zephir")
+
+                return set
+            }
         }
     }
 }

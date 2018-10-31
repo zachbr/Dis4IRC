@@ -17,9 +17,10 @@
 
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
-import io.zachbr.dis4irc.bridge.message.Channel
-import io.zachbr.dis4irc.bridge.message.Sender
+import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
+import io.zachbr.dis4irc.util.countSubstring
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.*
@@ -41,10 +42,10 @@ class TranslateFormatting : Mutator {
         .nodeRendererFactory { context -> IrcRenderer(context) }
         .build()
 
-    override fun mutate(message: String, source: Channel, sender: Sender, attachments: MutableList<String>?): String? {
-        return when (source.type) {
-            Channel.Type.IRC -> formatForDiscord(message)
-            Channel.Type.DISCORD -> formatForIrc(message)
+    override fun mutate(message: Message): String? {
+        return when (message.source.type) {
+            Source.Type.IRC -> formatForDiscord(message.contents)
+            Source.Type.DISCORD -> formatForIrc(message.contents)
         }
     }
 
@@ -52,7 +53,7 @@ class TranslateFormatting : Mutator {
      * Takes a message from IRC and translates the formatting to Discord compatible rendering chars
      */
     private fun formatForDiscord(message: String): String {
-        var out = fixIrcFormattingBalance(message)
+        var out = fixFormattingBalance(message, IrcFormattingCodes.values())
 
         out = out.replace(IrcFormattingCodes.BOLD.code, DiscordFormattingCodes.BOLD.code)
         out = out.replace(IrcFormattingCodes.ITALICS.code, DiscordFormattingCodes.ITALICS.code)
@@ -67,13 +68,12 @@ class TranslateFormatting : Mutator {
      * Ensures that IRC formatting chars are balanced, that is even, as there is no requirement
      * for them to be.
      */
-    private fun fixIrcFormattingBalance(message: String): String {
-        fun countSub(str: String, sub: Char): Int = str.split(sub).size - 1
+    private fun <T: Enum<T>> fixFormattingBalance(message: String, values: Array<T>): String {
         var out = message
 
-        for (formattingCode in IrcFormattingCodes.values()) {
-            if (countSub(out, formattingCode.char) % 2 != 0) {
-                out += formattingCode.char
+        for (formattingCode in values) {
+            if (countSubstring(out, formattingCode.toString()) % 2 != 0) {
+                out += formattingCode.toString()
             }
         }
 
@@ -84,7 +84,9 @@ class TranslateFormatting : Mutator {
      * Takes a message from Discord and translates the formatting to IRC compatible rendering chars
      */
     private fun formatForIrc(message: String): String {
-        val parsed = markdownParser.parse(message)
+        val out = fixFormattingBalance(message, DiscordFormattingCodes.values())
+
+        val parsed = markdownParser.parse(out)
         return ircMarkdownRenderer.render(parsed)
     }
 }
@@ -242,8 +244,10 @@ enum class DiscordFormattingCodes(val code: String) {
     ITALICS("*"),
     UNDERLINE("__"),
     STRIKETHROUGH("~~"),
-    MONOSPACE("`"),
-    MONOSPACE_PARA("```")
+    MONOSPACE_PARA("```"),
+    MONOSPACE("`");
+
+    override fun toString(): String = code
 }
 
 /**
@@ -258,4 +262,5 @@ enum class IrcFormattingCodes(val char: Char) {
     RESET(0x0F.toChar());
 
     val code: String = char.toString()
+    override fun toString(): String = code
 }

@@ -20,7 +20,7 @@ package io.zachbr.dis4irc.bridge
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
 import io.zachbr.dis4irc.bridge.command.BOT_SENDER
 import io.zachbr.dis4irc.bridge.command.CommandManager
-import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -36,7 +36,7 @@ class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
     private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
-    private val mutatorManager = MutatorManager()
+    private val mutatorManager = MutatorManager(this)
 
     private val discordConn: Pier
     private val ircConn: Pier
@@ -69,11 +69,11 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Bridges communication between the two piers
      */
-    internal fun handleMessage(message: Message) {
-        val bridgeTarget: String? = channelMappings.getMappingFor(message.channel)
+    internal fun submitMessage(message: Message) {
+        val bridgeTarget: String? = channelMappings.getMappingFor(message.source)
 
         if (bridgeTarget == null) {
-            logger.debug("Discarding message with no bridge target from: ${message.channel}")
+            logger.debug("Discarding message with no bridge target from: ${message.source}")
             return
         }
 
@@ -81,12 +81,12 @@ class Bridge(private val config: BridgeConfiguration) {
         message.contents = mutatorManager.applyMutators(message) ?: return
 
         if (message.shouldSendToIrc()) {
-            val target: String = if (message.channel.type == Channel.Type.IRC) message.channel.name else bridgeTarget
+            val target: String = if (message.source.type == Source.Type.IRC) message.source.channelName else bridgeTarget
             ircConn.sendMessage(target, message)
         }
 
         if (message.shouldSendToDiscord()) {
-            val target = if (message.channel.type == Channel.Type.DISCORD) message.channel.discordId.toString() else bridgeTarget
+            val target = if (message.source.type == Source.Type.DISCORD) message.source.discordId.toString() else bridgeTarget
             discordConn.sendMessage(target, message)
         }
 

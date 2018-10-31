@@ -126,6 +126,6 @@ class IrcPier(private val bridge: Bridge) : Pier {
      * Sends a message to the bridge for processing
      */
     fun sendToBridge(message: Message) {
-        bridge.handleMessage(message)
+        bridge.submitMessage(message)
     }
 }

@@ -17,17 +17,17 @@
 
 package io.zachbr.dis4irc.bridge.message
 
-data class Channel(
+data class Source(
     /**
      * Name of the channel
      */
-    val name: String,
+    val channelName: String,
     /**
      * Discord ID of the channel
      */
     val discordId: Long?,
     /**
-     * Channel type
+     * Source type
      */
     val type: Type
 ) {

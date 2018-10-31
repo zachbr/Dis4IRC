@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.bridge.message.Channel
+import io.zachbr.dis4irc.bridge.message.Source
 
 /**
  * Responsible for maintaining the channel-to-channel mappings between IRC and Discord
@@ -38,10 +38,10 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
     /**
      * Gets the opposite channel mapping for the given channel
      */
-    internal fun getMappingFor(source: Channel): String? {
+    internal fun getMappingFor(source: Source): String? {
         return when (source.type) {
-            Channel.Type.IRC -> ircMappingByName(source.name)
-            Channel.Type.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.name)
+            Source.Type.IRC -> ircMappingByName(source.channelName)
+            Source.Type.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.channelName)
         }
     }
 

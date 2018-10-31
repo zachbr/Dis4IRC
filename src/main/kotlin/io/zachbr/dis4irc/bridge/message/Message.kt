@@ -17,7 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.message
 
-class Message(
+import io.zachbr.dis4irc.bridge.mutator.api.Mutator
+
+data class Message(
     /**
      * Message content, '\n' for newlines
      */
@@ -27,9 +29,9 @@ class Message(
      */
     var sender: Sender,
     /**
-     * Channel the message originated from
+     * Source the message originated from
      */
-    val channel: Channel,
+    val source: Source,
     /**
      * Original receive timestamp in nanoseconds
      */
@@ -41,7 +43,12 @@ class Message(
     /**
      * Destination to be bridged to
      */
-    var destination: Destination = Destination.OPPOSITE
+    var destination: Destination = Destination.OPPOSITE,
+    /**
+     * A list of mutators that have been applied to this message
+     * stored as class hashcodes because... reasons?
+     */
+    private val appliedMutators: MutableList<Int> = ArrayList()
 ) {
     /**
      * Gets whether the message should be sent to IRC
@@ -50,8 +57,8 @@ class Message(
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> true
-            Destination.ORIGIN -> channel.type == Channel.Type.IRC
-            Destination.OPPOSITE -> channel.type != Channel.Type.IRC
+            Destination.ORIGIN -> source.type == Source.Type.IRC
+            Destination.OPPOSITE -> source.type != Source.Type.IRC
             Destination.DISCORD -> false
         }
     }
@@ -63,9 +70,19 @@ class Message(
         return when (destination) {
             Destination.BOTH -> true
             Destination.IRC -> false
-            Destination.ORIGIN -> channel.type == Channel.Type.DISCORD
-            Destination.OPPOSITE -> channel.type != Channel.Type.DISCORD
+            Destination.ORIGIN -> source.type == Source.Type.DISCORD
+            Destination.OPPOSITE -> source.type != Source.Type.DISCORD
             Destination.DISCORD -> true
         }
     }
+
+    /**
+     * Marks this message as having already been affected by a mutator
+     */
+    fun <T: Mutator> markMutatorApplied(clazz: Class<T>) = appliedMutators.add(clazz.hashCode())
+
+    /**
+     * Gets whether this class has been affected by the given mutator
+     */
+    fun <T: Mutator> hasApplied(clazz: Class<T>): Boolean = appliedMutators.contains(clazz.hashCode())
 }
