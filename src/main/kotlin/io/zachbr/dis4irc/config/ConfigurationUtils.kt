@@ -63,6 +63,9 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircRealName = ircBaseNode.getNode("realname")
     ircRealName.value = "BridgeBot"
 
+    val ircAntiPing = ircBaseNode.getNode("anti-ping")
+    ircAntiPing.value = true
+
     val noPrefixString = ircBaseNode.getNode("no-prefix-str")
     noPrefixString.value = null
     noPrefixString.setComment("Messages prefixed with this value will be passed to IRC without a user prefix")
@@ -108,6 +111,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircNickName = getStringNonNull("IRC nickname cannot be null in $bridgeName!", "irc", "nickname")
     val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
+    val ircAntiPing = this.getNode("irc", "anti-ping").boolean
     val ircNoPrefix = this.getNode("irc", "no-prefix-str").string // nullable
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
 
@@ -169,6 +173,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircNickName,
         ircUserName,
         ircRealName,
+        ircAntiPing,
         ircNoPrefix,
         discordApiKey,
         webhookMappings,

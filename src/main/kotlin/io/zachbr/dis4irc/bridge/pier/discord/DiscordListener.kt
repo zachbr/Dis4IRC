@@ -61,9 +61,21 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
             attachmentUrls.add(url)
         }
 
+        // handle custom emotes
+        var messageText = event.message.contentDisplay
+
+        for (emote in event.message.emotes) {
+            // managed emotes are discord provided (*usually* standard unicode)
+            // I've no idea what a fake emote is but it seems like a good thing to avoid
+            if (!emote.isManaged || !emote.isFake) {
+                messageText = messageText.replaceFirst(":${emote.name}:", "")
+                attachmentUrls.add(emote.imageUrl)
+            }
+        }
+
         val displayName = guildMember?.effectiveName ?: event.author.name
         val sender = Sender(displayName, event.author.idLong, null)
-        val message = Message(event.message.contentDisplay, sender, channel, receiveTimestamp, attachmentUrls)
+        val message = Message(messageText, sender, channel, receiveTimestamp, attachmentUrls)
         pier.sendToBridge(message)
     }
 }

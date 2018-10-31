@@ -24,10 +24,14 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
 import org.slf4j.Logger
+import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
+
+private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
+    private var antiPing: Boolean = false
     private var ircConn: Client? = null
     private var noPrefix: String? = null
 
@@ -51,6 +55,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         ircConn?.eventManager?.registerEventListener(IrcListener(this))
         noPrefix = config.ircNoPrefixVal
+        antiPing = config.ircAntiPing
 
         logger.info("Connected to IRC!")
     }
@@ -73,7 +78,14 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         val channel = ircChannel.get()
-        val senderPrefix = if (msg.sender == BOT_SENDER) "" else "<${msg.sender.displayName}> "
+
+        var senderPrefix = "<${msg.sender.displayName}> "
+        if (msg.sender == BOT_SENDER) {
+            senderPrefix = ""
+        } else if (antiPing) {
+            senderPrefix = StringBuilder(senderPrefix).insert(3, ANTI_PING_CHAR).toString()
+        }
+
         var msgContent = msg.contents
 
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {

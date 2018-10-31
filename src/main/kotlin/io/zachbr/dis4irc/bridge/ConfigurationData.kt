@@ -29,6 +29,7 @@ data class BridgeConfiguration(
     val ircNickName: String,
     val ircUserName: String,
     val ircRealName: String,
+    val ircAntiPing: Boolean,
     val ircNoPrefixVal: String?,
     val discordApiKey: String,
     val discordWebHooks: List<WebhookMapping>,
