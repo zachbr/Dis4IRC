@@ -26,6 +26,7 @@ data class BridgeConfiguration(
     val ircPassword: String?,
     val ircPort: Int,
     val ircSslEnabled: Boolean,
+    val ircAllowInvalidCerts: Boolean,
     val ircNickName: String,
     val ircUserName: String,
     val ircRealName: String,

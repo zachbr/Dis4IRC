@@ -54,6 +54,9 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircSslEnabled = ircBaseNode.getNode("use-ssl")
     ircSslEnabled.value = true
 
+    val ircAllowInvalidCerts = ircBaseNode.getNode("allow-invalid-ssl-certs")
+    ircAllowInvalidCerts.value = false
+
     val ircNickName = ircBaseNode.getNode("nickname")
     ircNickName.value = "BridgeBot"
 
@@ -108,6 +111,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircPass = this.getNode("irc", "password").string // nullable
     val ircPort = this.getNode("irc", "port").int
     val ircUseSsl = this.getNode("irc", "use-ssl").boolean
+    val ircAllowBadSsl = this.getNode("irc", "allow-invalid-ssl-certs").boolean
     val ircNickName = getStringNonNull("IRC nickname cannot be null in $bridgeName!", "irc", "nickname")
     val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
@@ -170,6 +174,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircPass,
         ircPort,
         ircUseSsl,
+        ircAllowBadSsl,
         ircNickName,
         ircUserName,
         ircRealName,

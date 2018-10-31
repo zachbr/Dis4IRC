@@ -38,7 +38,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
     override fun init(config: BridgeConfiguration) {
         logger.info("Connecting to IRC Server")
 
-        ircConn = Client.builder()
+        // configure IRC
+        val builder = Client.builder()
             .nick(config.ircNickName)
             .serverHost(config.ircHostname)
             .serverPort(config.ircPort)
@@ -46,8 +47,15 @@ class IrcPier(private val bridge: Bridge) : Pier {
             .secure(config.ircSslEnabled)
             .user(config.ircUserName)
             .realName(config.ircRealName)
-            .buildAndConnect()
 
+        if (config.ircAllowInvalidCerts) {
+            builder.secureTrustManagerFactory(null)
+        }
+
+        // connect
+        ircConn = builder.buildAndConnect()
+
+        // join all mapped channels
         for (mapping in config.channelMappings) {
             ircConn?.addChannel(mapping.ircChannel)
             logger.debug("Joined ${mapping.ircChannel}")
