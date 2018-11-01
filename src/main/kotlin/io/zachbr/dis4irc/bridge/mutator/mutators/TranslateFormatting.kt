@@ -30,6 +30,8 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext
 import org.commonmark.renderer.text.TextContentRenderer
 import java.util.*
 
+private val UNIQUE_KEY_STR = UUID.randomUUID().toString()
+
 /**
  * Translates Discord's markdown formatting to the IRC formatting codes and vice versa
  */
@@ -90,7 +92,7 @@ class TranslateFormatting : Mutator {
 
         // poor shrug man needs special handling to be spared the markdown parser
         val shrugMan = "¯\\_(ツ)_/¯"
-        val shrugKey = UUID.randomUUID().toString()
+        val shrugKey = UNIQUE_KEY_STR
         out = out.replace(shrugMan, shrugKey)
 
         // render as markdown
