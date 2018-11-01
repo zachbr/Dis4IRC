@@ -24,6 +24,7 @@ import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.ConfigurationNode
+import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
@@ -80,10 +81,13 @@ class Dis4IRC(args: Array<String>) {
         }
 
         if (bridgesNode.hasMapChildren()) {
-            bridgesNode.childrenMap.forEach { startBridge(it.value) }
+            bridgesNode.childrenMap.forEach { startBridge(it.value, config.getNode("bridges")) }
         } else {
             logger.error("No bridge configurations found!")
         }
+
+        // re-save config now that bridges have init'd to hopefully update the file with any defaults
+        config.saveConfig()
 
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             override fun run() {
@@ -97,11 +101,11 @@ class Dis4IRC(args: Array<String>) {
     /**
      * Initializes and starts a bridge instance
      */
-    private fun startBridge(node: ConfigurationNode) {
+    private fun startBridge(node: ConfigurationNode, bridgesNode: CommentedConfigurationNode) {
         logger.info("Starting bridge: ${node.key}")
 
         val bridgeConf = node.toBridgeConfiguration()
-        val bridge = Bridge(bridgeConf)
+        val bridge = Bridge(bridgeConf, bridgesNode.getNode(bridgeConf.bridgeName))
         bridgesByName[bridgeConf.bridgeName] = bridge
 
         bridge.startBridge()

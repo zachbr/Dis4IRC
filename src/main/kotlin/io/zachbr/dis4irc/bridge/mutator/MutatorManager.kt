@@ -23,13 +23,14 @@ import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
 import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
+import ninja.leaping.configurate.commented.CommentedConfigurationNode
 
-class MutatorManager(bridge: Bridge) {
+class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     private val mutators = ArrayList<Mutator>()
 
     init {
         registerMutator(BlockHereEveryone())
-        registerMutator(PasteLongMessages(bridge))
+        registerMutator(PasteLongMessages(bridge, config.getNode("paste-service")))
         registerMutator(TranslateFormatting())
     }
 

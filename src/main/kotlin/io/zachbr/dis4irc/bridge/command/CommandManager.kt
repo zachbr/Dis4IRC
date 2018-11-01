@@ -23,13 +23,14 @@ import io.zachbr.dis4irc.bridge.command.executors.StatsCommand
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
+import ninja.leaping.configurate.commented.CommentedConfigurationNode
 
 const val COMMAND_PREFIX: String = "!"
 
 /**
  * Responsible for managing, looking up, and delegating to command executors
  */
-class CommandManager(private val bridge: Bridge) {
+class CommandManager(private val bridge: Bridge, config: CommentedConfigurationNode) {
     private val executorsByCommand = HashMap<String, Executor>()
     private val logger = bridge.logger
 

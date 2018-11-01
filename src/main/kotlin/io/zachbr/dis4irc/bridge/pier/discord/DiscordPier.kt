@@ -26,10 +26,12 @@ import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
+import java.lang.StringBuilder
 
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -85,24 +87,44 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {
+        val channel = getTextChannelBy(targetChan)
+        if (channel == null) {
+            logger.error("Unable to get a discord channel by name for: $targetChan")
+            return
+        }
+
         val webhook = webhookMap[targetChan]
-        if (webhook == null) {
-            sendMessageOldStyle(targetChan, msg)
-        } else {
+        val guild = channel.guild
+
+        // convert mentions and emotes
+        val builder = StringBuilder()
+        for (word in msg.contents.split(" ")) {
+            val mentions = guild.getMembersByEffectiveName(word.removePrefix("@"), true)
+            val emotes = guild.getEmotesByName(word.removePrefix(":").removeSuffix(":"), true)
+            when {
+                mentions.isNotEmpty() -> builder.append(mentions.first().asMention)
+                emotes.isNotEmpty() -> builder.append(emotes.first().asMention)
+                else -> builder.append(word)
+            }
+
+            builder.append(" ")
+        }
+
+        if (builder.isNotEmpty()) {
+            msg.contents = builder.toString()
+        }
+
+        if (webhook != null) {
             sendMessageWebhook(webhook, msg)
+        } else {
+            sendMessageOldStyle(channel, msg)
         }
 
         val outTimestamp = System.nanoTime()
         bridge.updateStatistics(msg, outTimestamp)
     }
 
-    private fun sendMessageOldStyle(targetChan: String, msg: Message) {
-        val discordChannel = discordApi?.getTextChannelById(targetChan)
-        if (discordChannel == null) {
-            logger.warn("Bridge is not present in Discord channel $targetChan!")
-            return
-        }
-
+    private fun sendMessageOldStyle(discordChannel: TextChannel, msg: Message) {
         if (!discordChannel.canTalk()) {
             logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $msg")
             return
@@ -110,7 +132,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val prefix = if (msg.originatesFromBridgeItself()) "" else "<${msg.sender.displayName}> "
 
-        discordChannel.sendMessage("$prefix${msg.contents}")
+        discordChannel.sendMessage("$prefix${msg.contents}").queue()
     }
 
     private fun sendMessageWebhook(webhook: WebhookClient, msg: Message) {
@@ -161,5 +183,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      */
     fun sendToBridge(message: io.zachbr.dis4irc.bridge.message.Message) {
         bridge.submitMessage(message)
+    }
+
+    fun getTextChannelBy(string: String): TextChannel? {
+        return discordApi?.getTextChannelById(string) ?: discordApi?.getTextChannelsByName(string, false)?.first()
     }
 }

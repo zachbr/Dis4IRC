@@ -14,12 +14,53 @@ Features
 * Non-prefixed messages for other IRC bots to handle
 * IRC anti-ping zero width character in usernames
 
+Example Config
+--------------
+```hocon
+# Dis4IRC Configuration File
+
+# A list of bridges that Dis4IRC should start up
+# Each bridge can bridge multiple channels between a single IRC and Discord Server
+bridges {
+    # A bridge is a single bridged connection operating in its own space away from all the other bridges
+    # Most people will only need this one default bridge
+    default {
+        # Mappings are the channel <-> channel bridging configurations
+        channel-mappings {
+            "712345611123456811"="#bridgedChannel"
+        }
+        # Your discord API key you registered your bot with
+        discord-api-key="NTjhWZj1MTq0L10gMDU0MSQ1.Zpj02g.4QiWlNw9W5xd150qXsC3e-oc156"
+        # Match a channel id to a webhook URL to enable webhooks for that channel
+        discord-webhooks {
+            "712345611123456811"="https://discordapp.com/api/webhooks/712345611123456811/blahblahurl"
+        }
+        # Configuration for connecting to the IRC server
+        irc {
+            anti-ping=true
+            nickname=TestBridge2
+            no-prefix-str="."
+            port="6697"
+            realname=BridgeBot
+            server="irc.esper.net"
+            use-ssl=true
+            username=BridgeBot
+        }
+        mutators {
+            paste-service {
+                max-message-length=450
+                max-new-lines=4
+            }
+        }
+    }
+}
+debug-logging=true
+
+```
+
 Built using
 -----------
-* [Kotlin](https://kotlinlang.org)
 * [KittehIRCClientLib](https://github.com/KittehOrg/KittehIRCClientLib)
 * [JDA (Java Discord API)](https://github.com/DV8FromTheWorld/JDA)
 * [Configurate](https://github.com/SpongePowered/configurate)
-* [SLF4J (api)](https://www.slf4j.org)
-* [Log4J (runtime)](https://logging.apache.org/log4j/2.x/)
 

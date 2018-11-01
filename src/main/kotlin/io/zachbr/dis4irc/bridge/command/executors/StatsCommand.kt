@@ -27,16 +27,6 @@ import java.util.concurrent.TimeUnit
 class StatsCommand(private val bridge: Bridge) : Executor {
 
     private fun isAuthorized(sender: Sender): Boolean {
-        // todo - add authorized users from config
-        // todo - if config authorized users empty, allow all
-        if (sender.ircNickServ != null && sender.ircNickServ == "Z750") { // todo - config
-            return true
-        }
-
-        if (sender.discordId != null && sender.discordId == 107387791683416064) { // todo - config
-            return true
-        }
-
         return true
     }
 
@@ -49,13 +39,10 @@ class StatsCommand(private val bridge: Bridge) : Executor {
         val meanMillis = TimeUnit.NANOSECONDS.toMillis(mean(sortedTimings))
         val medianMillis = TimeUnit.NANOSECONDS.toMillis(median(sortedTimings))
 
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().uptime)
-        val minutes = seconds / 60 % 60
-        val hours = minutes / 60 % 24
-        val days= hours / 24
-        val uptime = "$days days, $hours hours, $minutes minutes"
+        val uptime = ManagementFactory.getRuntimeMXBean().uptime
+        val uptimeStr = convertMillisToPretty(uptime)
 
-        return "Uptime: $uptime\n" +
+        return "Uptime: $uptimeStr\n" +
                 "Message Handling: ${meanMillis}ms / ${medianMillis}ms (mean/median)\n" +
                 "Count from IRC: ${bridge.statsManager.getTotalFromIrc()}\n" +
                 "Count from Discord: ${bridge.statsManager.getTotalFromDiscord()}"
@@ -86,4 +73,29 @@ class StatsCommand(private val bridge: Bridge) : Executor {
         }
     }
 
+    /**
+     * Converts the given amount of milliseconds to a presentable elapsed time string
+     */
+    private fun convertMillisToPretty(diffMillis: Long): String {
+        var left = diffMillis
+
+        val secondsInMilli: Long = 1000
+        val minutesInMilli = secondsInMilli * 60
+        val hoursInMilli = minutesInMilli * 60
+        val daysInMilli = hoursInMilli * 24
+
+        val elapsedDays = left / daysInMilli
+        left %= daysInMilli
+
+        val elapsedHours = left / hoursInMilli
+        left %= hoursInMilli
+
+        val elapsedMinutes = left / minutesInMilli
+        left %= minutesInMilli
+
+        val elapsedSeconds = left / secondsInMilli
+
+        return String.format("%d days, %d hours, %d minutes, %d seconds",
+            elapsedDays, elapsedHours, elapsedMinutes, elapsedSeconds)
+    }
 }

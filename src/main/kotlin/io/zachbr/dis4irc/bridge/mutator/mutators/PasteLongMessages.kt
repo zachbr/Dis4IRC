@@ -22,6 +22,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
+import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -32,16 +33,28 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
 
-//
-// TODO clean this shit up
-//
+private const val FENCED_BLOCK = "```"
 
-class PasteLongMessages(val bridge: Bridge) : Mutator {
+class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) : Mutator {
     private val pasteService = PasteService()
 
-    private val maxNewlines = 4 // todo - config
-    private val fencedBlock = "```"
-    private val maxMsgLength = 450 // todo - config
+    private var maxNewlines: Int = 4
+    private var maxMsgLength: Int = 450
+
+    init {
+        val msgNewlineCount = config.getNode("max-new-lines")
+        if (msgNewlineCount.isVirtual) {
+            msgNewlineCount.value = maxNewlines
+        }
+
+        val msgLengthNode = config.getNode("max-message-length")
+        if (msgLengthNode.isVirtual) {
+            msgLengthNode.value = maxMsgLength
+        }
+
+        maxNewlines = msgNewlineCount.int
+        maxMsgLength = msgLengthNode.int
+    }
 
     override fun mutate(message: Message): Mutator.LifeCycle {
         val msgContents = message.contents
@@ -53,11 +66,11 @@ class PasteLongMessages(val bridge: Bridge) : Mutator {
 
         var shouldPaste = false
 
-        if (msgContents.split("\n").size > maxNewlines) {
+        if (countSubstring(msgContents, "\n") > maxNewlines) {
             shouldPaste = true
         }
 
-        if (countSubstring(msgContents, fencedBlock) >= 2) {
+        if (countSubstring(msgContents, FENCED_BLOCK) >= 2) {
             shouldPaste = true
         }
 
