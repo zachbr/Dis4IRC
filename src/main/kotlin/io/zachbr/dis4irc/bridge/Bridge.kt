@@ -19,6 +19,7 @@ package io.zachbr.dis4irc.bridge
 
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
 import io.zachbr.dis4irc.bridge.command.CommandManager
+import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
@@ -82,12 +83,12 @@ class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfig
         // mutate message contents
         val mutatedMessage = mutatorManager.applyMutators(messageIn) ?: return
 
-        if (mutatedMessage.shouldSendToIrc()) {
+        if (mutatedMessage.shouldSendTo(Destination.IRC)) {
             val target: String = if (mutatedMessage.source.type == Source.Type.IRC) mutatedMessage.source.channelName else bridgeTarget
             ircConn.sendMessage(target, mutatedMessage)
         }
 
-        if (mutatedMessage.shouldSendToDiscord()) {
+        if (mutatedMessage.shouldSendTo(Destination.DISCORD)) {
             val target = if (mutatedMessage.source.type == Source.Type.DISCORD) mutatedMessage.source.discordId.toString() else bridgeTarget
             discordConn.sendMessage(target, mutatedMessage)
         }
