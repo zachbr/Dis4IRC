@@ -25,6 +25,7 @@ import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
+import net.dv8tion.jda.core.entities.Emote
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.webhook.WebhookClient
@@ -32,6 +33,7 @@ import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
 import java.lang.StringBuilder
+import java.util.*
 
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -100,7 +102,15 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val builder = StringBuilder()
         for (word in msg.contents.split(" ")) {
             val mentions = guild.getMembersByEffectiveName(word.removePrefix("@"), true)
-            val emotes = guild.getEmotesByName(word.removePrefix(":").removeSuffix(":"), true)
+
+            // todo - this is nasty, clean it up
+            // don't want it to trigger all the time, only if they're trying for an emote
+            val emotes = if (word.startsWith(":") && word.endsWith(":")) {
+                guild.getEmotesByName(word.replace(":", ""), true)
+            } else {
+                Collections.emptyList()
+            }
+
             when {
                 mentions.isNotEmpty() -> builder.append(mentions.first().asMention)
                 emotes.isNotEmpty() -> builder.append(emotes.first().asMention)
