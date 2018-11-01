@@ -51,28 +51,15 @@ data class Message(
     private val appliedMutators: MutableList<Int> = ArrayList()
 ) {
     /**
-     * Gets whether the message should be sent to IRC
+     * Gets whether the message should be sent to [destination]
      */
-    fun shouldSendToIrc(): Boolean {
-        return when (destination) {
+    fun shouldSendTo(destination: Destination): Boolean {
+        return when (this.destination) {
             Destination.BOTH -> true
-            Destination.IRC -> true
-            Destination.ORIGIN -> source.type == Source.Type.IRC
-            Destination.OPPOSITE -> source.type != Source.Type.IRC
-            Destination.DISCORD -> false
-        }
-    }
-
-    /**
-     * Gets whether the message should be sent to Discord
-     */
-    fun shouldSendToDiscord(): Boolean {
-        return when (destination) {
-            Destination.BOTH -> true
-            Destination.IRC -> false
-            Destination.ORIGIN -> source.type == Source.Type.DISCORD
-            Destination.OPPOSITE -> source.type != Source.Type.DISCORD
-            Destination.DISCORD -> true
+            Destination.IRC -> destination == Destination.IRC
+            Destination.ORIGIN -> source.type == destination
+            Destination.OPPOSITE -> source.type != destination
+            Destination.DISCORD -> destination == Destination.DISCORD
         }
     }
 
