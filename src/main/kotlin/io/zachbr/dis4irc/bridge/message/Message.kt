@@ -53,6 +53,7 @@ data class Message(
     /**
      * Gets whether the message should be sent to [destination]
      */
+    // todo - this is broken - always double sends
     fun shouldSendTo(destination: Destination): Boolean {
         return when (this.destination) {
             Destination.BOTH -> true
