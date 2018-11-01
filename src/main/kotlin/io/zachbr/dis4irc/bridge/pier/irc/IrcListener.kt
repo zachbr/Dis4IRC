@@ -46,7 +46,7 @@ class IrcListener(private val pier: IrcPier) {
         val sender = BOT_SENDER
         val source = Source(event.channel.name, null, Source.Type.IRC)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp, null)
+        val message = Message(msgContent, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
     }
 
@@ -63,7 +63,7 @@ class IrcListener(private val pier: IrcPier) {
         val sender = BOT_SENDER
         val source = Source(event.channel.name, null, Source.Type.IRC)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp, null)
+        val message = Message(msgContent, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
     }
 
@@ -80,7 +80,7 @@ class IrcListener(private val pier: IrcPier) {
         val nickserv = getNickServAccountName(event.actor)
         val sender = Sender(event.actor.nick, null, nickserv)
         val source = Source(event.channel.name, null, Source.Type.IRC)
-        val message = Message(event.message, sender, source, receiveTimestamp, null)
+        val message = Message(event.message, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
     }
 

@@ -50,7 +50,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         logger.debug("DISCORD JOIN ${event.user.name}")
 
         val sender = BOT_SENDER
-        val message = Message("${event.user.name} has joined the Discord", sender, source, receiveTimestamp, null)
+        val message = Message("${event.user.name} has joined the Discord", sender, source, receiveTimestamp)
         pier.sendToBridge(message)
     }
 
@@ -72,7 +72,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         logger.debug("DISCORD PART ${event.user.name}")
 
         val sender = BOT_SENDER
-        val message = Message("${event.user.name} has left the Discord", sender, source, receiveTimestamp, null)
+        val message = Message("${event.user.name} has left the Discord", sender, source, receiveTimestamp)
         pier.sendToBridge(message)
     }
 
