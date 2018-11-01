@@ -36,10 +36,10 @@ import java.util.concurrent.TimeUnit
 class Bridge(private val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
 
-    private val messageHandlingTimes = EvictingQueue.create<Long>(1000)
     private val channelMappings = ChannelMappingManager(config)
     private val commandManager = CommandManager(this)
     private val mutatorManager = MutatorManager(this)
+    internal val statsManager = StatisticsManager(this)
 
     private val discordConn: Pier
     private val ircConn: Pier
@@ -114,20 +114,7 @@ class Bridge(private val config: BridgeConfiguration) {
     /**
      * Adds a message's handling time to the bridge's collection for monitoring purposes
      */
-    fun addToTiming(message: Message, timestampOut: Long) {
-        val difference = timestampOut - message.timestamp
-
-        if (!message.originatesFromBridgeItself()) {
-            messageHandlingTimes.add(difference)
-        }
-
-        logger.debug("Message from ${message.source} ${message.sender} took ${TimeUnit.NANOSECONDS.toMillis(difference)} to handle")
-    }
-
-    /**
-     * Gets an array of the message handling collection's contents for inspection
-     */
-    internal fun getMessageTimes(): LongArray {
-        return messageHandlingTimes.toLongArray()
+    fun updateStatistics(message: Message, timestampOut: Long) {
+        statsManager.processMessage(message, timestampOut)
     }
 }

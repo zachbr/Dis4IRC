@@ -110,7 +110,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         val outTimestamp = System.nanoTime()
-        bridge.addToTiming(msg, outTimestamp)
+        bridge.updateStatistics(msg, outTimestamp)
     }
 
     /**

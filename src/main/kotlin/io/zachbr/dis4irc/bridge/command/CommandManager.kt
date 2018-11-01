@@ -19,7 +19,7 @@ package io.zachbr.dis4irc.bridge.command
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.command.api.Executor
-import io.zachbr.dis4irc.bridge.command.executors.SystemInfo
+import io.zachbr.dis4irc.bridge.command.executors.StatsCommand
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
@@ -34,7 +34,7 @@ class CommandManager(private val bridge: Bridge) {
     private val logger = bridge.logger
 
     init {
-        registerExecutor("system", SystemInfo(bridge))
+        registerExecutor("stats", StatsCommand(bridge))
     }
 
     /**

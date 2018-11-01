@@ -24,12 +24,11 @@ import io.zachbr.dis4irc.bridge.message.Sender
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
-class SystemInfo(private val bridge: Bridge) : Executor {
+class StatsCommand(private val bridge: Bridge) : Executor {
 
-    /**
-     * Checks that the sender is authorized to use this command
-     */
     private fun isAuthorized(sender: Sender): Boolean {
+        // todo - add authorized users from config
+        // todo - if config authorized users empty, allow all
         if (sender.ircNickServ != null && sender.ircNickServ == "Z750") { // todo - config
             return true
         }
@@ -38,7 +37,7 @@ class SystemInfo(private val bridge: Bridge) : Executor {
             return true
         }
 
-        return false
+        return true
     }
 
     override fun onCommand(command: Message): String? {
@@ -46,24 +45,20 @@ class SystemInfo(private val bridge: Bridge) : Executor {
             return null
         }
 
-        val runtimeMX = ManagementFactory.getRuntimeMXBean()
-
-        val uptime = TimeUnit.MILLISECONDS.toDays(runtimeMX.uptime)
-        val totalAllocated = Runtime.getRuntime().maxMemory() / (1024 * 1024)
-        val currentMemory = Runtime.getRuntime().totalMemory() / (1024 * 1024)
-        val javaVersion = "${runtimeMX.vmName} ${runtimeMX.vmVersion}"
-        val osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + "(" + System.getProperty("os.arch") + ")"
-
-        val sortedTimings = bridge.getMessageTimes().sortedArray()
+        val sortedTimings = bridge.statsManager.getMessageTimings().sortedArray()
         val meanMillis = TimeUnit.NANOSECONDS.toMillis(mean(sortedTimings))
         val medianMillis = TimeUnit.NANOSECONDS.toMillis(median(sortedTimings))
 
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().uptime)
+        val minutes = seconds / 60 % 60
+        val hours = minutes / 60 % 24
+        val days= hours / 24
+        val uptime = "$days days, $hours hours, $minutes minutes"
 
-        return "Uptime: $uptime days\n" +
-                "Message Handling (mean/median): ${meanMillis}ms / ${medianMillis}ms" +
-                "Memory: $currentMemory / $totalAllocated (MiB)\n" +
-                "Java: $javaVersion\n" +
-                "OS: $osInfo"
+        return "Uptime: $uptime\n" +
+                "Message Handling: ${meanMillis}ms / ${medianMillis}ms (mean/median)\n" +
+                "Count from IRC: ${bridge.statsManager.getTotalFromIrc()}\n" +
+                "Count from Discord: ${bridge.statsManager.getTotalFromDiscord()}"
     }
 
     /**
@@ -90,4 +85,5 @@ class SystemInfo(private val bridge: Bridge) : Executor {
             (a[middle - 1] + a[middle]) / 2
         }
     }
+
 }

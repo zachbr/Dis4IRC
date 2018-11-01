@@ -89,7 +89,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         val receiveTimestamp = System.nanoTime()
-        logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name} ${event.message.contentStripped}")
+        logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name}: ${event.message.contentStripped}")
 
         // We need to get the guild member in order to grab their display name
         val guildMember = event.guild.getMember(event.author)
@@ -112,12 +112,8 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         var messageText = event.message.contentDisplay
 
         for (emote in event.message.emotes) {
-            // managed emotes are discord provided (*usually* standard unicode)
-            // I've no idea what a fake emote is but it seems like a good thing to avoid
-            if (!emote.isManaged || !emote.isFake) {
-                messageText = messageText.replaceFirst(":${emote.name}:", "")
-                attachmentUrls.add(emote.imageUrl)
-            }
+            messageText = messageText.replace(":${emote.name}:", "")
+            attachmentUrls.add(emote.imageUrl)
         }
 
         val displayName = guildMember?.effectiveName ?: event.author.name
