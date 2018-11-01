@@ -58,6 +58,11 @@ debug-logging=true
 
 ```
 
+The Name
+--------
+The name is a typo of a typo of a bad idea of a misspoken phrase.
+Let's just not go there :p
+
 Built using
 -----------
 * [KittehIRCClientLib](https://github.com/KittehOrg/KittehIRCClientLib)

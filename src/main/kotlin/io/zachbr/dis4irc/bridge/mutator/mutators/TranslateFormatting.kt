@@ -43,7 +43,7 @@ class TranslateFormatting : Mutator {
         .build()
 
     override fun mutate(message: Message): Mutator.LifeCycle {
-        message.contents =  when (message.source.type) {
+        message.contents = when (message.source.type) {
             Source.Type.IRC -> formatForDiscord(message.contents)
             Source.Type.DISCORD -> formatForIrc(message.contents)
         }
@@ -70,7 +70,7 @@ class TranslateFormatting : Mutator {
      * Ensures that IRC formatting chars are balanced, that is even, as there is no requirement
      * for them to be.
      */
-    private fun <T: Enum<T>> fixFormattingBalance(message: String, values: Array<T>): String {
+    private fun <T : Enum<T>> fixFormattingBalance(message: String, values: Array<T>): String {
         var out = message
 
         for (formattingCode in values) {
@@ -86,10 +86,19 @@ class TranslateFormatting : Mutator {
      * Takes a message from Discord and translates the formatting to IRC compatible rendering chars
      */
     private fun formatForIrc(message: String): String {
-        val out = fixFormattingBalance(message, DiscordFormattingCodes.values())
+        var out = fixFormattingBalance(message, DiscordFormattingCodes.values()) // required for markdown parsing
 
+        // poor shrug man needs special handling to be spared the markdown parser
+        val shrugMan = "¯\\_(ツ)_/¯"
+        val shrugKey = UUID.randomUUID().toString()
+        out = out.replace(shrugMan, shrugKey)
+
+        // render as markdown
         val parsed = markdownParser.parse(out)
-        return ircMarkdownRenderer.render(parsed)
+        val rendered =  ircMarkdownRenderer.render(parsed)
+
+        // put shrug man back
+        return rendered.replace(shrugKey, shrugMan)
     }
 }
 
