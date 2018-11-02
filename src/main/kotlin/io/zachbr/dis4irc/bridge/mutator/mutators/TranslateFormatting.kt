@@ -21,6 +21,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
+import org.kitteh.irc.client.library.util.Format
 import java.util.*
 
 // I haven't seen it be an issue but the back of my head says it could be, so remove dashes from this key
@@ -50,6 +51,9 @@ class TranslateFormatting : Mutator {
         out = out.replace(IrcFormattingCodes.UNDERLINE.code, DiscordFormattingCodes.UNDERLINE.code)
         out = out.replace(IrcFormattingCodes.STRIKETHROUGH.code, DiscordFormattingCodes.STRIKETHROUGH.code)
         out = out.replace(IrcFormattingCodes.MONOSPACE.code, DiscordFormattingCodes.MONOSPACE.code)
+
+        // strip color from messages: https://github.com/zachbr/Dis4IRC/issues/4
+        out = Format.stripColor(out)
 
         return out
     }
