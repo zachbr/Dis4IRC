@@ -19,8 +19,6 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Source
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
@@ -39,7 +37,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
         logger.debug("IRC JOIN ${event.channel.name}  ${event.user.nick}")
 
         val sender = BOT_SENDER
-        val source = Source(event.channel.name, null, PlatformType.IRC)
+        val source = event.channel.asBridgeSource()
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
         val message = Message(msgContent, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
@@ -56,7 +54,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
         logger.debug("IRC PART ${event.channel.name}  ${event.user.nick}")
 
         val sender = BOT_SENDER
-        val source = Source(event.channel.name, null, PlatformType.IRC)
+        val source = event.channel.asBridgeSource()
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
         val message = Message(msgContent, sender, source, receiveTimestamp)
         pier.sendToBridge(message)

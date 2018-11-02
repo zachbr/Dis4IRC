@@ -17,12 +17,9 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.message.*
+import io.zachbr.dis4irc.bridge.message.Message
 import net.engio.mbassy.listener.Handler
-import org.kitteh.irc.client.library.element.User
-import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
-import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
 
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
@@ -40,17 +37,9 @@ class IrcMessageListener(private val pier: IrcPier) {
         val receiveTimestamp = System.nanoTime()
         logger.debug("IRC MSG ${event.channel.name} ${event.actor.nick}: ${event.message}")
 
-        val nickserv = getNickServAccountName(event.actor)
-        val sender = Sender(event.actor.nick, null, nickserv)
-        val source = Source(event.channel.name, null, PlatformType.IRC)
+        val sender = event.actor.asBridgeSender()
+        val source = event.channel.asBridgeSource()
         val message = Message(event.message, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
-    }
-
-    /**
-     * Gets a user's nickserv account name or null if it cannot be found
-     */
-    private fun getNickServAccountName(user: User): String? {
-        return if (user.account.isPresent) user.account.get() else null
     }
 }

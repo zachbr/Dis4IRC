@@ -17,9 +17,8 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import io.zachbr.dis4irc.bridge.message.*
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
+import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Sender
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 
@@ -36,7 +35,7 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         // dont bridge itself
-        val source = Source(event.channel.name, event.channel.idLong, PlatformType.DISCORD)
+        val source = event.channel.asBridgeSource()
         if (pier.isThisBot(source, event.author.idLong)) {
             return
         }
