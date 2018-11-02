@@ -58,6 +58,11 @@ class IrcPier(private val bridge: Bridge) : Pier {
             logger.debug("Joined ${mapping.ircChannel}")
         }
 
+        // execute any commands
+        for (command in config.ircCommandsInit) {
+            ircConn?.sendRawLine(command)
+        }
+
         ircConn?.eventManager?.registerEventListener(IrcListener(this))
         noPrefix = config.ircNoPrefixVal
         antiPing = config.ircAntiPing
@@ -106,7 +111,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 ircMsgOut = "$senderPrefix$line"
             }
 
-            channel.sendMessage(ircMsgOut)
+            channel.sendMultiLineMessage(ircMsgOut)
         }
 
         val outTimestamp = System.nanoTime()

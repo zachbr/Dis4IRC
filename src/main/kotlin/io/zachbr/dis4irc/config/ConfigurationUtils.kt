@@ -73,6 +73,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     noPrefixString.value = null
     noPrefixString.setComment("Messages prefixed with this value will be passed to IRC without a user prefix")
 
+    val ircCommandsList = ircBaseNode.getNode("init-commands-list")
+    ircCommandsList.value = arrayListOf("PRIVMSG NICKSERV info", "PRIVMSG NICKSERV help")
+    ircCommandsList.setComment("A list of __raw__ irc messages to send")
+
     val discordApiKey = this.getNode("discord-api-key")
     discordApiKey.setComment("Your discord API key you registered your bot with")
     discordApiKey.value = ""
@@ -117,6 +121,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
     val ircAntiPing = this.getNode("irc", "anti-ping").boolean
     val ircNoPrefix = this.getNode("irc", "no-prefix-str").string // nullable
+    val ircCommandsChildren = this.getNode("irc", "init-commands-list").childrenList
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
 
     val webhookMappings = ArrayList<WebhookMapping>()
@@ -125,6 +130,12 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         if (mapping != null) {
             webhookMappings.add(mapping)
         }
+    }
+
+    val ircCommandsList = ArrayList<String>()
+    for (node in ircCommandsChildren) {
+        val command = node.string ?: continue
+        ircCommandsList.add(command)
     }
 
     val channelMappings = ArrayList<ChannelMapping>()
@@ -180,6 +191,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircRealName,
         ircAntiPing,
         ircNoPrefix,
+        ircCommandsList,
         discordApiKey,
         webhookMappings,
         channelMappings

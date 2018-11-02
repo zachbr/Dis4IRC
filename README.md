@@ -40,6 +40,11 @@ bridges {
             anti-ping=true
             nickname=TestBridge2
             no-prefix-str="."
+            # A list of __raw__ irc messages to send
+            init-commands-list=[
+                "PRIVMSG NICKSERV info",
+                "PRIVMSG NICKSERV help"
+            ]
             port="6697"
             realname=BridgeBot
             server="irc.esper.net"

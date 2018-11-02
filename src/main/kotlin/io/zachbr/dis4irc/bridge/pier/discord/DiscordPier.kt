@@ -25,14 +25,12 @@ import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
-import net.dv8tion.jda.core.entities.Emote
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
-import java.lang.StringBuilder
 import java.util.*
 
 class DiscordPier(private val bridge: Bridge) : Pier {
@@ -195,7 +193,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         bridge.submitMessage(message)
     }
 
-    fun getTextChannelBy(string: String): TextChannel? {
+    private fun getTextChannelBy(string: String): TextChannel? {
         return discordApi?.getTextChannelById(string) ?: discordApi?.getTextChannelsByName(string, false)?.first()
     }
 }

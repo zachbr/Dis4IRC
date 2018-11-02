@@ -32,6 +32,7 @@ data class BridgeConfiguration(
     val ircRealName: String,
     val ircAntiPing: Boolean,
     val ircNoPrefixVal: String?,
+    val ircCommandsInit: List<String>,
     val discordApiKey: String,
     val discordWebHooks: List<WebhookMapping>,
     val channelMappings: List<ChannelMapping>
