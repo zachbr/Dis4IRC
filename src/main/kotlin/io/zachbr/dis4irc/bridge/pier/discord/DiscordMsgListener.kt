@@ -41,6 +41,11 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
             return
         }
 
+        // don't bridge empty messages (discord does this on join)
+        if (event.message.contentDisplay.isEmpty()) {
+            return
+        }
+
         val receiveTimestamp = System.nanoTime()
         logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name}: ${event.message.contentStripped}")
 
