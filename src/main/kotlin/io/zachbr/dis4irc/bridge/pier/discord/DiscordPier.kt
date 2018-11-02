@@ -44,10 +44,16 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     override fun init(config: BridgeConfiguration) {
         logger.info("Connecting to Discord API...")
 
-        discordApi = JDABuilder()
+        val discordApiBuilder = JDABuilder()
             .setToken(config.discordApiKey)
             .setGame(Game.of(Game.GameType.DEFAULT, "IRC"))
-            .addEventListener(DiscordListener(this))
+            .addEventListener(DiscordMsgListener(this))
+
+        if (config.announceJoinsQuits) {
+            discordApiBuilder.addEventListener(DiscordJoinQuitListener(this))
+        }
+
+        discordApi = discordApiBuilder
             .build()
             .awaitReady()
 

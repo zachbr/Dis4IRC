@@ -25,6 +25,7 @@ bridges {
     # A bridge is a single bridged connection operating in its own space away from all the other bridges
     # Most people will only need this one default bridge
     default {
+        announce-joins-and-quits=false
         # Mappings are the channel <-> channel bridging configurations
         channel-mappings {
             "712345611123456811"="#bridgedChannel"

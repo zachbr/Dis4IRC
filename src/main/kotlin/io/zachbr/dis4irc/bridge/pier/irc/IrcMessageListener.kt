@@ -27,42 +27,8 @@ import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
  */
-class IrcListener(private val pier: IrcPier) {
+class IrcMessageListener(private val pier: IrcPier) {
     private val logger = pier.logger
-
-    @Handler
-    fun onUserJoinChan(event: ChannelJoinEvent) {
-        // don't log our own joins
-        if (event.user.nick == pier.getBotNick()) {
-            return
-        }
-
-        val receiveTimestamp = System.nanoTime()
-        logger.debug("IRC JOIN ${event.channel.name}  ${event.user.nick}")
-
-        val sender = BOT_SENDER
-        val source = Source(event.channel.name, null, PlatformType.IRC)
-        val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp)
-        pier.sendToBridge(message)
-    }
-
-    @Handler
-    fun onUserLeaveChan(event: ChannelPartEvent) {
-        // don't log our own leaving
-        if (event.user.nick == pier.getBotNick()) {
-            return
-        }
-
-        val receiveTimestamp = System.nanoTime()
-        logger.debug("IRC PART ${event.channel.name}  ${event.user.nick}")
-
-        val sender = BOT_SENDER
-        val source = Source(event.channel.name, null, PlatformType.IRC)
-        val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp)
-        pier.sendToBridge(message)
-    }
 
     @Handler
     fun onMessage(event: ChannelMessageEvent) {

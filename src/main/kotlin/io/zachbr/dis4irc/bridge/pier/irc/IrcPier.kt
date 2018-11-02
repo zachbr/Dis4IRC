@@ -63,7 +63,13 @@ class IrcPier(private val bridge: Bridge) : Pier {
             ircConn?.sendRawLine(command)
         }
 
-        ircConn?.eventManager?.registerEventListener(IrcListener(this))
+        // listeners
+        ircConn?.eventManager?.registerEventListener(IrcMessageListener(this))
+
+        if (config.announceJoinsQuits) {
+            ircConn?.eventManager?.registerEventListener(IrcJoinQuitListener(this))
+        }
+
         noPrefix = config.ircNoPrefixVal
         antiPing = config.ircAntiPing
 

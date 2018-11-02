@@ -34,6 +34,7 @@ data class BridgeConfiguration(
     val ircNoPrefixVal: String?,
     val ircCommandsInit: List<String>,
     val discordApiKey: String,
+    val announceJoinsQuits: Boolean,
     val discordWebHooks: List<WebhookMapping>,
     val channelMappings: List<ChannelMapping>
 )
