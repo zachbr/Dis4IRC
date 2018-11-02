@@ -22,9 +22,11 @@ import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
+import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
+private val NICK_COLORS = intArrayOf(10, 6, 3, 7, 12, 11, 13, 9, 2)
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -95,12 +97,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         val channel = ircChannel.get()
 
-        var senderPrefix = "<${msg.sender.displayName}> "
-        if (msg.originatesFromBridgeItself()) {
-            senderPrefix = ""
-        } else if (antiPing) {
-            senderPrefix = StringBuilder(senderPrefix).insert(3, ANTI_PING_CHAR).toString()
-        }
+        var senderPrefix = getSenderPrefix(msg)
 
         var msgContent = msg.contents
 
@@ -122,6 +119,22 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         val outTimestamp = System.nanoTime()
         bridge.updateStatistics(msg, outTimestamp)
+    }
+
+    private fun getSenderPrefix(msg: Message): String {
+        if (msg.originatesFromBridgeItself()) {
+            return ""
+        }
+        return getDisplayName(msg.sender.displayName)
+    }
+
+    // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
+    private fun getDisplayName(nick: String): String {
+        var index = 0
+        nick.toCharArray().forEach { index += it.toByte() }
+        val color = NICK_COLORS[index % NICK_COLORS.size].toString()
+        val newNick = if (antiPing) StringBuilder(nick).insert(3, ANTI_PING_CHAR).toString() else nick
+        return color + newNick + Format.RESET
     }
 
     /**
