@@ -18,6 +18,7 @@
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
@@ -46,8 +47,8 @@ class TranslateFormatting : Mutator {
 
     override fun mutate(message: Message): Mutator.LifeCycle {
         message.contents = when (message.source.type) {
-            Source.Type.IRC -> formatForDiscord(message.contents)
-            Source.Type.DISCORD -> formatForIrc(message.contents)
+            PlatformType.IRC -> formatForDiscord(message.contents)
+            PlatformType.DISCORD -> formatForIrc(message.contents)
         }
 
         return Mutator.LifeCycle.CONTINUE

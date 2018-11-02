@@ -17,10 +17,7 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import io.zachbr.dis4irc.bridge.message.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.Sender
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.*
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -39,7 +36,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         val channel = event.guild.systemChannel
-        val source = Source(channel.name, channel.idLong, Source.Type.DISCORD)
+        val source = Source(channel.name, channel.idLong, PlatformType.DISCORD)
 
         // don't bridge itself
         if (pier.isThisBot(source, event.user.idLong)) {
@@ -61,7 +58,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         val channel = event.guild.systemChannel
-        val source = Source(channel.name, channel.idLong, Source.Type.DISCORD)
+        val source = Source(channel.name, channel.idLong, PlatformType.DISCORD)
 
         // don't bridge itself
         if (pier.isThisBot(source, event.user.idLong)) {
@@ -83,7 +80,7 @@ class DiscordListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         // dont bridge itself
-        val source = Source(event.channel.name, event.channel.idLong, Source.Type.DISCORD)
+        val source = Source(event.channel.name, event.channel.idLong, PlatformType.DISCORD)
         if (pier.isThisBot(source, event.author.idLong)) {
             return
         }

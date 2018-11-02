@@ -19,6 +19,7 @@ package io.zachbr.dis4irc.bridge
 
 import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Source
 import java.util.concurrent.TimeUnit
 
@@ -40,8 +41,8 @@ class StatisticsManager(private val bridge: Bridge) {
         }
 
         when (message.source.type) {
-            Source.Type.DISCORD -> totalFromDiscord++
-            Source.Type.IRC -> totalFromIrc++
+            PlatformType.DISCORD -> totalFromDiscord++
+            PlatformType.IRC -> totalFromIrc++
         }
 
         val difference = nanoTimestamp - message.timestamp

@@ -51,16 +51,15 @@ data class Message(
     private val appliedMutators: MutableList<Int> = ArrayList()
 ) {
     /**
-     * Gets whether the message should be sent to [destination]
+     * Gets whether the message should be sent to [destinationType]
      */
-    // todo - this is broken - always double sends
-    fun shouldSendTo(destination: Destination): Boolean {
+    fun shouldSendTo(destinationType: PlatformType): Boolean {
         return when (this.destination) {
             Destination.BOTH -> true
-            Destination.IRC -> destination == Destination.IRC
-            Destination.ORIGIN -> source.type == destination
-            Destination.OPPOSITE -> source.type != destination
-            Destination.DISCORD -> destination == Destination.DISCORD
+            Destination.IRC -> destinationType == PlatformType.IRC
+            Destination.ORIGIN -> source.type == destinationType
+            Destination.OPPOSITE -> source.type != destinationType
+            Destination.DISCORD -> destinationType == PlatformType.IRC
         }
     }
 

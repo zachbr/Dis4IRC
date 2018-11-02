@@ -19,6 +19,7 @@ package io.zachbr.dis4irc.bridge.mutator.mutators
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
@@ -60,7 +61,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
         val msgContents = message.contents
 
         // we only need to run paste service on discord messages
-        if (message.source.type != Source.Type.DISCORD) {
+        if (message.source.type != PlatformType.DISCORD) {
             return Mutator.LifeCycle.CONTINUE
         }
 
@@ -163,7 +164,6 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
     private class PasteService {
         private val httpClient = OkHttpClient()
         private val logger = LoggerFactory.getLogger("PasteService")
-        private val supportedHighlights = makeSupportedLangsSet()
 
         /**
          * Dispatches a paste asynchronously to the paste service
@@ -191,7 +191,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             // the paste service will barf if you send it an unsupported highlight language
             // so we must validate it before we use it
             var validatedLang: String? = null
-            if (highlightLang != null && supportedHighlights.contains(highlightLang.toLowerCase())) {
+            if (highlightLang != null && SUPPORTED_HIGHLIGHT_LANGS.contains(highlightLang.toLowerCase())) {
                 validatedLang = highlightLang.toLowerCase()
             }
 
@@ -320,6 +320,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
              *
              * https://github.com/jkcclemens/paste/blob/942d1ede8abe80a594553197f2b03c1d6d70efd0/webserver/src/utils/language.rs
              */
+            private val SUPPORTED_HIGHLIGHT_LANGS = makeSupportedLangsSet()
             private fun makeSupportedLangsSet(): HashSet<String> {
                 val set = HashSet<String>()
                 set.add("onec")

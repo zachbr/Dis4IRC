@@ -29,16 +29,5 @@ data class Source(
     /**
      * Source type
      */
-    val type: Type
-) {
-    enum class Type {
-        /**
-         * Message originated in Discord
-         */
-        DISCORD,
-        /**
-         * Message originated in IRC
-         */
-        IRC
-    }
-}
+    val type: PlatformType
+)

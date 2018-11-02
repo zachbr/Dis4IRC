@@ -17,6 +17,7 @@
 
 package io.zachbr.dis4irc.bridge
 
+import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Source
 
 /**
@@ -40,8 +41,8 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
      */
     internal fun getMappingFor(source: Source): String? {
         return when (source.type) {
-            Source.Type.IRC -> ircMappingByName(source.channelName)
-            Source.Type.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.channelName)
+            PlatformType.IRC -> ircMappingByName(source.channelName)
+            PlatformType.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.channelName)
         }
     }
 
