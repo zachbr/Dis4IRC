@@ -19,10 +19,8 @@ package io.zachbr.dis4irc.bridge
 
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
 import io.zachbr.dis4irc.bridge.command.CommandManager
-import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier

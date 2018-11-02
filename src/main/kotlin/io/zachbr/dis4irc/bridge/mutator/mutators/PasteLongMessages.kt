@@ -20,7 +20,6 @@ package io.zachbr.dis4irc.bridge.mutator.mutators
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
 import ninja.leaping.configurate.commented.CommentedConfigurationNode

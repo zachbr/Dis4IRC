@@ -20,7 +20,6 @@ package io.zachbr.dis4irc.bridge
 import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Source
 import java.util.concurrent.TimeUnit
 
 /**
