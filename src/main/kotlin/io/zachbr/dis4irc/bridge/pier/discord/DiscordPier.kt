@@ -89,7 +89,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     override fun sendMessage(targetChan: String, msg: Message) {
         val channel = getTextChannelBy(targetChan)
         if (channel == null) {
-            logger.error("Unable to get a discord channel by name for: $targetChan")
+            logger.error("Unable to get a discord channel for: $targetChan | Is bot present?")
             return
         }
 
@@ -194,6 +194,16 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     private fun getTextChannelBy(string: String): TextChannel? {
-        return discordApi?.getTextChannelById(string) ?: discordApi?.getTextChannelsByName(string, false)?.first()
+        val byId = discordApi?.getTextChannelById(string)
+        if (byId != null) {
+            return byId
+        }
+
+        val byName = discordApi?.getTextChannelsByName(string, false) ?: return null
+        return if (byName.isNotEmpty()) {
+            byName.first()
+        } else {
+            null
+        }
     }
 }
