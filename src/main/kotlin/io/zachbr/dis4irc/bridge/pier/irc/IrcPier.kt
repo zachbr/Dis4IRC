@@ -134,7 +134,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
         nick.toCharArray().forEach { index += it.toByte() }
         val color = NICK_COLORS[index % NICK_COLORS.size].toString()
         val newNick = if (antiPing) StringBuilder(nick).insert(3, ANTI_PING_CHAR).toString() else nick
-        return color + newNick + Format.RESET
+
+        return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
     }
 
     /**
