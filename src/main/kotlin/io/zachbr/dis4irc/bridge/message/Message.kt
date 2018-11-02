@@ -59,7 +59,7 @@ data class Message(
             Destination.IRC -> destinationType == PlatformType.IRC
             Destination.ORIGIN -> source.type == destinationType
             Destination.OPPOSITE -> source.type != destinationType
-            Destination.DISCORD -> destinationType == PlatformType.IRC
+            Destination.DISCORD -> destinationType == PlatformType.DISCORD
         }
     }
 

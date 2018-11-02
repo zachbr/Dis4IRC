@@ -44,8 +44,8 @@ class StatsCommand(private val bridge: Bridge) : Executor {
 
         return "Uptime: $uptimeStr\n" +
                 "Message Handling: ${meanMillis}ms / ${medianMillis}ms (mean/median)\n" +
-                "Count from IRC: ${bridge.statsManager.getTotalFromIrc()}\n" +
-                "Count from Discord: ${bridge.statsManager.getTotalFromDiscord()}"
+                "Messages from IRC: ${bridge.statsManager.getTotalFromIrc()}\n" +
+                "Messages from Discord: ${bridge.statsManager.getTotalFromDiscord()}"
     }
 
     /**
