@@ -19,7 +19,7 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 
 /**
@@ -28,7 +28,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter
 class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
     private val logger = pier.logger
 
-    override fun onMessageReceived(event: MessageReceivedEvent?) {
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent?) {
         if (event == null) {
             logger.debug("Null Discord message event from JDA")
             return
