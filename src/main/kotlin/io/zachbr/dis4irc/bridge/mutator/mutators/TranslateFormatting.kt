@@ -55,6 +55,9 @@ class TranslateFormatting : Mutator {
         // strip color from messages: https://github.com/zachbr/Dis4IRC/issues/4
         out = Format.stripColor(out)
 
+        // strip reset code
+        out = out.replace(IrcFormattingCodes.RESET.code, "")
+
         return out
     }
 
