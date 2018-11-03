@@ -31,6 +31,7 @@ import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
+import java.lang.StringBuilder
 import java.util.*
 
 class DiscordPier(private val bridge: Bridge) : Pier {
@@ -102,13 +103,28 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val webhook = webhookMap[targetChan]
         val guild = channel.guild
 
-        // convert mentions and emotes
+        // convert name use to proper mentions
+        for (member in guild.members) {
+            // find where and if the member name is used
+            val startingIndex = msg.contents.indexOf(member.effectiveName, ignoreCase = true)
+            if (startingIndex != -1) {
+                fun isWhiteSpace(i: Int): Boolean {
+                    return i == -1 || i == msg.contents.length || msg.contents[i].isWhitespace()
+                }
+
+                // calc prior and post indexes
+                val priorIndex = startingIndex - 1
+                val postIndex = startingIndex + member.effectiveName.length
+
+                if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
+                    msg.contents = msg.contents.replace(member.effectiveName, member.asMention, true)
+                }
+            }
+        }
+
+        // TODO: see all this garbage? its garbage. Rip it out, redo it, blah blah, nasty
         val builder = StringBuilder()
         for (word in msg.contents.split(" ")) {
-            val mentions = guild.getMembersByEffectiveName(word.removePrefix("@"), true)
-
-            // todo - this is nasty, clean it up
-            // don't want it to trigger all the time, only if they're trying for an emote
             val emotes = if (word.startsWith(":") && word.endsWith(":")) {
                 guild.getEmotesByName(word.replace(":", ""), true)
             } else {
@@ -116,7 +132,6 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
 
             when {
-                mentions.isNotEmpty() -> builder.append(mentions.first().asMention)
                 emotes.isNotEmpty() -> builder.append(emotes.first().asMention)
                 else -> builder.append(word)
             }
@@ -127,6 +142,8 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         if (builder.isNotEmpty()) {
             msg.contents = builder.toString()
         }
+        // TODO: end
+
 
         if (webhook != null) {
             sendMessageWebhook(webhook, msg)
