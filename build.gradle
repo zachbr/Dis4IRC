@@ -11,25 +11,32 @@ version '1.0-SNAPSHOT'
 
 repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap/' }
-    maven { url 'https://dl.bintray.com/dv8fromtheworld/maven/'}
-    maven { url 'https://repo.spongepowered.org/maven'}
+    maven { url 'https://dl.bintray.com/dv8fromtheworld/maven/' }
+    maven { url 'https://repo.spongepowered.org/maven' }
     mavenCentral()
 }
 
 jar {
-    manifest {
-        attributes(
-                'Main-Class': "io.zachbr.dis4irc.Dis4IRCKt",
-                'Name': rootProject.name,
-                'Version': version,
-                'Build-Date': new Date().format("yyyy-MM-dd 'at' HH:mm z"),
-                'Source-Repo': "https://github.com/zachbr/Dis4IRC"
-        )
-    }
+    manifest.attributes(
+            'Main-Class': "io.zachbr.dis4irc.Dis4IRCKt",
+    )
 }
 
 jar.enabled = false
 build.dependsOn(shadowJar)
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [
+                'project-name'       : rootProject.name,
+                'project-version'    : version,
+                'project-build-date' : new Date().format("yyyy-MM-dd 'at' HH:mm z"),
+                'project-source-repo': 'https://github.com/zachbr/Dis4IRC'
+        ]
+    }
+}
 
 artifacts {
     shadowJar
@@ -45,7 +52,7 @@ shadowJar {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.kitteh.irc:client-lib:4.0.2"
-    compile ("net.dv8tion:JDA:3.8.0_436") {
+    compile("net.dv8tion:JDA:3.8.0_436") {
         exclude module: 'opus-java'
     }
     compile "org.slf4j:slf4j-api:1.7.25"

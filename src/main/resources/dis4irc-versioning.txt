@@ -1,0 +1,4 @@
+Name: @project-name@
+Version: @project-version@
+Build-Date: @project-build-date@
+Source-Repo: @project-source-repo@

@@ -19,6 +19,8 @@ package io.zachbr.dis4irc.util
 
 import java.util.jar.Manifest
 
+private const val JAR_PATH_TO_VERSIONING_INFO = "dis4irc-versioning.txt"
+
 /**
  * Fetches and provides versioning information from the jar's manifest
  */
@@ -37,7 +39,7 @@ class Versioning {
     val sourceRepo: String
 
     init {
-        val resources = this.javaClass.classLoader.getResources("META-INF/MANIFEST.MF")
+        val resources = this.javaClass.classLoader.getResources(JAR_PATH_TO_VERSIONING_INFO)
         var verOut = "Unknown version"
         var dateOut = "Unknown build date"
         var repoOut = "Unknown source repo"
