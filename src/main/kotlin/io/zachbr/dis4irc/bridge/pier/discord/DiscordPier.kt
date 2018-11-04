@@ -31,7 +31,6 @@ import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
 import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
-import java.lang.StringBuilder
 import java.util.*
 
 class DiscordPier(private val bridge: Bridge) : Pier {

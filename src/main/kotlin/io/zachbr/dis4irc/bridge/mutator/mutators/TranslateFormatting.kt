@@ -21,6 +21,13 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
+import org.commonmark.ext.gfm.strikethrough.Strikethrough
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
+import org.commonmark.node.*
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.NodeRenderer
+import org.commonmark.renderer.text.TextContentNodeRendererContext
+import org.commonmark.renderer.text.TextContentRenderer
 import org.kitteh.irc.client.library.util.Format
 import java.util.*
 
@@ -31,6 +38,14 @@ private val UNIQUE_KEY_STR = UUID.randomUUID().toString().replace("-", "")
  * Translates Discord's markdown formatting to the IRC formatting codes and vice versa
  */
 class TranslateFormatting : Mutator {
+    private val markdownParser = Parser.Builder()
+        .extensions(Collections.singletonList(StrikethroughExtension.create()))
+        .build()
+
+    private val ircMarkdownRenderer = TextContentRenderer.builder()
+        .nodeRendererFactory { context -> IrcRenderer(context) }
+        .build()
+
     override fun mutate(message: Message): Mutator.LifeCycle {
         message.contents = when (message.source.type) {
             PlatformType.IRC -> formatForDiscord(message.contents)
@@ -81,23 +96,163 @@ class TranslateFormatting : Mutator {
      * Takes a message from Discord and translates the formatting to IRC compatible rendering chars
      */
     private fun formatForIrc(message: String): String {
-        var out = fixFormattingBalance(message, DiscordFormattingCodes.values()) // required for markdown parsing
-
         // poor shrug man needs special handling to be spared the markdown parser
         val shrugMan = "¯\\_(ツ)_/¯"
         val shrugKey = UNIQUE_KEY_STR
-        out = out.replace(shrugMan, shrugKey)
+        val out = message.replace(shrugMan, shrugKey)
 
-        out = out.replace(DiscordFormattingCodes.BOLD.code, IrcFormattingCodes.BOLD.code)
-        out = out.replace(DiscordFormattingCodes.ITALICS.code, IrcFormattingCodes.ITALICS.code)
-        out = out.replace(DiscordFormattingCodes.UNDERLINE.code, IrcFormattingCodes.UNDERLINE.code)
-        out = out.replace(DiscordFormattingCodes.STRIKETHROUGH.code, IrcFormattingCodes.STRIKETHROUGH.code)
-        out = out.replace(DiscordFormattingCodes.MONOSPACE.code, IrcFormattingCodes.MONOSPACE.code)
-        out = out.replace(DiscordFormattingCodes.ITALICS_ALT.code, IrcFormattingCodes.ITALICS.code)
+        // render as markdown
+        val parsed = markdownParser.parse(out)
+        val rendered =  ircMarkdownRenderer.render(parsed)
 
         // put shrug man back
-        return out.replace(shrugKey, shrugMan)
+        return rendered.replace(shrugKey, shrugMan)
     }
+}
+
+/**
+ * Custom renderer to take standard markdown (plus strikethrough) and emit IRC compatible formatting codes
+ */
+class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), NodeRenderer {
+    private val textContent = context.writer
+
+    override fun render(node: Node?) {
+        node?.accept(this)
+    }
+
+    override fun getNodeTypes(): HashSet<Class<out Node>> {
+        return HashSet(
+            Arrays.asList(
+                Document::class.java,
+                Heading::class.java,
+                Paragraph::class.java,
+                BlockQuote::class.java,
+                BulletList::class.java,
+                FencedCodeBlock::class.java,
+                HtmlBlock::class.java,
+                ThematicBreak::class.java,
+                IndentedCodeBlock::class.java,
+                Link::class.java,
+                ListItem::class.java,
+                OrderedList::class.java,
+                Image::class.java,
+                Emphasis::class.java,
+                StrongEmphasis::class.java,
+                Text::class.java,
+                Code::class.java,
+                HtmlInline::class.java,
+                SoftLineBreak::class.java,
+                HardLineBreak::class.java
+            )
+        )
+    }
+
+    override fun visit(blockQuote: BlockQuote?) {
+        visitChildren(blockQuote)
+    }
+
+    override fun visit(bulletList: BulletList?) {
+        visitChildren(bulletList)
+    }
+
+    override fun visit(code: Code?) {
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+        textContent.write(code?.literal)
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+    }
+
+    override fun visit(document: Document?) {
+        visitChildren(document)
+    }
+
+    override fun visit(emphasis: Emphasis?) {
+        textContent.write(IrcFormattingCodes.ITALICS.char)
+        visitChildren(emphasis)
+        textContent.write(IrcFormattingCodes.ITALICS.char)
+    }
+
+    override fun visit(fencedCodeBlock: FencedCodeBlock?) {
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+        textContent.write(fencedCodeBlock?.literal)
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+    }
+
+    override fun visit(hardLineBreak: HardLineBreak?) {
+        textContent.line()
+    }
+
+    override fun visit(heading: Heading?) {
+        visitChildren(heading)
+    }
+
+    override fun visit(thematicBreak: ThematicBreak?) {
+        visitChildren(thematicBreak)
+    }
+
+    override fun visit(htmlInline: HtmlInline?) {
+        textContent.write(htmlInline?.literal)
+    }
+
+    override fun visit(htmlBlock: HtmlBlock?) {
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+        textContent.write(htmlBlock?.literal)
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+    }
+
+    override fun visit(image: Image?) {
+        textContent.write(image?.destination)
+    }
+
+    override fun visit(indentedCodeBlock: IndentedCodeBlock?) {
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+        textContent.write(indentedCodeBlock?.literal)
+        textContent.write(IrcFormattingCodes.MONOSPACE.char)
+    }
+
+    override fun visit(link: Link?) {
+        textContent.write(link?.destination)
+    }
+
+    override fun visit(listItem: ListItem?) {
+        visitChildren(listItem)
+    }
+
+    override fun visit(orderedList: OrderedList?) {
+        visitChildren(orderedList)
+    }
+
+    override fun visit(paragraph: Paragraph?) {
+        visitChildren(paragraph)
+    }
+
+    override fun visit(softLineBreak: SoftLineBreak?) {
+        textContent.line()
+    }
+
+    override fun visit(strongEmphasis: StrongEmphasis?) {
+        textContent.write(IrcFormattingCodes.BOLD.char)
+        visitChildren(strongEmphasis)
+        textContent.write(IrcFormattingCodes.BOLD.char)
+    }
+
+    override fun visit(text: Text?) {
+        textContent.write(text?.literal)
+    }
+
+    override fun visit(customBlock: CustomBlock?) {
+        TODO("not implemented")
+    }
+
+    override fun visit(customNode: CustomNode?) {
+        if (customNode is Strikethrough) {
+            textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
+            visitChildren(customNode)
+            textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
+        } else {
+            TODO("not implemented")
+        }
+    }
+
 }
 
 /**
@@ -109,8 +264,7 @@ enum class DiscordFormattingCodes(val code: String) {
     UNDERLINE("__"),
     STRIKETHROUGH("~~"),
     MONOSPACE_PARA("```"),
-    MONOSPACE("`"),
-    ITALICS_ALT("_");
+    MONOSPACE("`");
 
     override fun toString(): String = code
 }
