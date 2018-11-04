@@ -223,6 +223,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         val byName = discordApi?.getTextChannelsByName(string, false) ?: return null
-        return if (byName.isNotEmpty()) byName.first() else null
+        return if (byName.isNotEmpty()) {
+            byName.first()
+        } else {
+            null
+        }
     }
 }

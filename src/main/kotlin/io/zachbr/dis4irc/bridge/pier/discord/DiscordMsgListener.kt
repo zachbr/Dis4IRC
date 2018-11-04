@@ -48,6 +48,12 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
         val receiveTimestamp = System.nanoTime()
         logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name}: ${event.message.contentStripped}")
 
+        // We need to get the guild member in order to grab their display name
+        val guildMember = event.guild.getMember(event.author)
+        if (guildMember == null && !event.author.isBot) {
+            logger.debug("Cannot get Discord guild member from user information: ${event.author}!")
+        }
+
         // handle attachments
         val attachmentUrls = ArrayList<String>()
         for (attachment in event.message.attachments) {
@@ -67,7 +73,7 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
             attachmentUrls.add(emote.imageUrl)
         }
 
-        val displayName = event.member.effectiveName
+        val displayName = guildMember?.effectiveName ?: event.author.name // webhooks won't have an effective name
         val sender = Sender(displayName, event.author.idLong, null)
         val message = Message(messageText, sender, source, receiveTimestamp, attachmentUrls)
         pier.sendToBridge(message)
