@@ -48,7 +48,7 @@ class IrcMessageListener(private val pier: IrcPier) {
     }
 
     @Handler
-    fun onCtcp(event: ChannelCtcpEvent) {
+    fun onChannelCtcp(event: ChannelCtcpEvent) {
         // ignore messages sent by this bot
         if (event.actor.nick == pier.getBotNick()) {
             return
@@ -56,7 +56,6 @@ class IrcMessageListener(private val pier: IrcPier) {
 
         val receiveTimestamp = System.nanoTime()
         logger.debug("IRC CTCP ${event.channel.name} ${event.actor.nick}: ${event.message}")
-
 
         // if it's not an action we probably don't care
         if (!event.message.startsWith(CTCP_ACTION)) {
