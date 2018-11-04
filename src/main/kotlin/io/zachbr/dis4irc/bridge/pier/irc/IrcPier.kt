@@ -24,6 +24,7 @@ import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
+import java.lang.StringBuilder
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 private val NICK_COLORS = intArrayOf(10, 6, 3, 7, 12, 11, 13, 9, 2)
@@ -96,9 +97,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         val channel = ircChannel.get()
-
-        var senderPrefix = getSenderPrefix(msg)
-
+        val senderPrefix = getSenderPrefix(msg)
         var msgContent = msg.contents
 
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {
@@ -133,7 +132,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         var index = 0
         nick.toCharArray().forEach { index += it.toByte() }
         val color = NICK_COLORS[index % NICK_COLORS.size].toString()
-        val newNick = if (antiPing) StringBuilder(nick).insert(3, ANTI_PING_CHAR).toString() else nick
+        val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
         return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
     }
@@ -150,5 +149,19 @@ class IrcPier(private val bridge: Bridge) : Pier {
      */
     fun sendToBridge(message: Message) {
         bridge.submitMessage(message)
+    }
+
+    /**
+     * Rebuilds a string with the [ANTI_PING_CHAR] character placed strategically
+     */
+    private fun rebuildWithAntiPing(nick: String): String {
+        val builder = StringBuilder()
+        for (i in nick.indices) {
+            if (i % 2 == 0) {
+                builder.append(ANTI_PING_CHAR)
+            }
+            builder.append(nick[i])
+        }
+        return builder.toString()
     }
 }
