@@ -104,45 +104,15 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         // convert name use to proper mentions
         for (member in guild.members) {
-            // find where and if the member name is used
-            val startingIndex = msg.contents.indexOf(member.effectiveName, ignoreCase = true)
-            if (startingIndex != -1) {
-                fun isWhiteSpace(i: Int): Boolean {
-                    return i == -1 || i == msg.contents.length || msg.contents[i].isWhitespace()
-                }
-
-                // calc prior and post indexes
-                val priorIndex = startingIndex - 1
-                val postIndex = startingIndex + member.effectiveName.length
-
-                if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
-                    msg.contents = msg.contents.replace(member.effectiveName, member.asMention, true)
-                }
-            }
+            val mentionTrigger = "@${member.effectiveName}" // require @ prefix
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)
         }
 
-        // TODO: see all this garbage? its garbage. Rip it out, redo it, blah blah, nasty
-        val builder = StringBuilder()
-        for (word in msg.contents.split(" ")) {
-            val emotes = if (word.startsWith(":") && word.endsWith(":")) {
-                guild.getEmotesByName(word.replace(":", ""), true)
-            } else {
-                Collections.emptyList()
-            }
-
-            when {
-                emotes.isNotEmpty() -> builder.append(emotes.first().asMention)
-                else -> builder.append(word)
-            }
-
-            builder.append(" ")
+        // convert emotes to show properly
+        for (emote in guild.emotes) {
+            val mentionTrigger = ":${emote.name}:"
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention, requireSeparation = false)
         }
-
-        if (builder.isNotEmpty()) {
-            msg.contents = builder.toString()
-        }
-        // TODO: end
-
 
         if (webhook != null) {
             sendMessageWebhook(webhook, msg)
@@ -215,6 +185,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         bridge.submitMessage(message)
     }
 
+    /**
+     * Gets a text channel by snowflake ID or string
+     */
     private fun getTextChannelBy(string: String): TextChannel? {
         val byId = discordApi?.getTextChannelById(string)
         if (byId != null) {
@@ -222,10 +195,29 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         val byName = discordApi?.getTextChannelsByName(string, false) ?: return null
-        return if (byName.isNotEmpty()) {
-            byName.first()
-        } else {
-            null
+        return if (byName.isNotEmpty()) byName.first() else null
+    }
+
+    /**
+     * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
+     */
+    private fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
+        // find where and if the target string is used
+        val startingIndex = base.indexOf(target, ignoreCase = true)
+        if (startingIndex != -1) {
+            fun isWhiteSpace(i: Int): Boolean {
+                return i == -1 || i == base.length || !requireSeparation || base[i].isWhitespace()
+            }
+
+            // calc prior and post indexes
+            val priorIndex = startingIndex - 1
+            val postIndex = startingIndex + target.length
+
+            if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
+                return base.replace(target, replacement, true)
+            }
         }
+
+        return base
     }
 }
