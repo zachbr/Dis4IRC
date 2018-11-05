@@ -131,7 +131,8 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val prefix = if (msg.originatesFromBridgeItself()) "" else "<${msg.sender.displayName}> "
+        val senderName = enforceSenderNameRequirement(msg.sender.displayName)
+        val prefix = if (msg.originatesFromBridgeItself()) "" else "<${senderName}> "
 
         discordChannel.sendMessage("$prefix${msg.contents}").queue()
     }
@@ -144,7 +145,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             avatarUrl = matchingUsers.first().user.avatarUrl
         }
 
-        var senderName = msg.sender.displayName
+        var senderName = enforceSenderNameRequirement(msg.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
         if (msg.sender == BOT_SENDER) {
             senderName = botName ?: senderName
@@ -220,5 +221,24 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         return base
+    }
+
+    companion object {
+        private const val NICK_ENFORCEMENT_CHAR = "-"
+
+        /**
+         * Ensures name is within Discord's requirements
+         */
+        fun enforceSenderNameRequirement(name: String): String {
+            if (name.length < 2) {
+                return NICK_ENFORCEMENT_CHAR + name + NICK_ENFORCEMENT_CHAR
+            }
+
+            if (name.length > 32) {
+                return name.substring(0, 32)
+            }
+
+            return name
+        }
     }
 }
