@@ -91,7 +91,7 @@ license {
 
 test {
     testLogging.showStandardStreams = true
-    useJUnit()
+    useJUnitPlatform()
 }
 
 jacoco {
