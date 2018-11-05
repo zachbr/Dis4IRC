@@ -151,17 +151,22 @@ class IrcPier(private val bridge: Bridge) : Pier {
         bridge.submitMessage(message)
     }
 
-    /**
-     * Rebuilds a string with the [ANTI_PING_CHAR] character placed strategically
-     */
-    private fun rebuildWithAntiPing(nick: String): String {
-        val builder = StringBuilder()
-        for (i in nick.indices) {
-            if (i % 2 == 0) {
-                builder.append(ANTI_PING_CHAR)
+    companion object {
+        /**
+         * Rebuilds a string with the [ANTI_PING_CHAR] character placed strategically
+         */
+        fun rebuildWithAntiPing(nick: String): String {
+            val builder = StringBuilder()
+            val length = nick.length
+            for (i in nick.indices) {
+                builder.append(nick[i])
+                if (i + 1 >= length || !Character.isSurrogatePair(nick[i], nick[i +  1])) {
+                    if (i % 2 == 0) {
+                        builder.append(ANTI_PING_CHAR)
+                    }
+                }
             }
-            builder.append(nick[i])
+            return builder.toString()
         }
-        return builder.toString()
     }
 }
