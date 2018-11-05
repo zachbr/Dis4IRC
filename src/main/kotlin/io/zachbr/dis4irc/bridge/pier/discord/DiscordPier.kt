@@ -26,6 +26,7 @@ import io.zachbr.dis4irc.bridge.pier.Pier
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.webhook.WebhookClient
 import net.dv8tion.jda.webhook.WebhookClientBuilder
@@ -115,7 +116,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         if (webhook != null) {
-            sendMessageWebhook(webhook, msg)
+            sendMessageWebhook(guild, webhook, msg)
         } else {
             sendMessageOldStyle(channel, msg)
         }
@@ -135,12 +136,12 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         discordChannel.sendMessage("$prefix${msg.contents}").queue()
     }
 
-    private fun sendMessageWebhook(webhook: WebhookClient, msg: Message) {
+    private fun sendMessageWebhook(guild: Guild, webhook: WebhookClient, msg: Message) {
         // try and get avatar for matching user
         var avatarUrl: String? = null
-        val matchingUsers = discordApi?.getUsersByName(msg.sender.displayName, true)
+        val matchingUsers = guild.getMembersByEffectiveName(msg.sender.displayName, true)
         if (matchingUsers != null && matchingUsers.isNotEmpty()) {
-            avatarUrl = matchingUsers.first().avatarUrl
+            avatarUrl = matchingUsers.first().user.avatarUrl
         }
 
         var senderName = msg.sender.displayName
