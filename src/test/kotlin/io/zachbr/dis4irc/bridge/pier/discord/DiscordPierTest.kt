@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 
 class DiscordPierTest {
     @Test
-    private fun testReplaceTarget() {
+    fun testReplaceTarget() {
         // test no separation
         val noSepBase = ":potato::potato::potato:"
         val noSepTarget = ":potato:"
@@ -36,7 +36,6 @@ class DiscordPierTest {
         val middleOfStr = "some text @Z750 some more"
         val endOfStr = "some text @Z750"
         val failNoSep = "some text@Z750more text"
-        val multiStep = "valid @Z750 invalid@Z750"
 
         val target = "@Z750"
         val replacement = "12345"
@@ -44,12 +43,11 @@ class DiscordPierTest {
         assertEquals(noLeadingChars.replace(target, replacement), DiscordPier.replaceTarget(noLeadingChars, target, replacement))
         assertEquals(middleOfStr.replace(target, replacement), DiscordPier.replaceTarget(middleOfStr, target, replacement))
         assertEquals(endOfStr.replace(target, replacement), DiscordPier.replaceTarget(endOfStr, target, replacement))
-        assertEquals("valid 12345 invalid@Z750", DiscordPier.replaceTarget(multiStep, target, replacement))
         assertEquals(failNoSep, DiscordPier.replaceTarget(failNoSep, target, replacement))
     }
 
     @Test
-    private fun testUsernameValidation() {
+    fun testUsernameValidation() {
         val minimumAcceptedLength = 2
         val maximumAcceptedLength = 32
 
@@ -65,6 +63,6 @@ class DiscordPierTest {
         assertEquals(okay, DiscordPier.enforceSenderName(okay))
 
         assertTrue(DiscordPier.enforceSenderName(tooShort).length >= minimumAcceptedLength)
-        assertTrue(DiscordPier.enforceSenderName(tooLong).length >= maximumAcceptedLength)
+        assertTrue(DiscordPier.enforceSenderName(tooLong).length <= maximumAcceptedLength)
     }
 }
