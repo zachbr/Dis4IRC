@@ -131,8 +131,8 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val senderName = enforceSenderNameRequirement(msg.sender.displayName)
-        val prefix = if (msg.originatesFromBridgeItself()) "" else "<${senderName}> "
+        val senderName = enforceSenderName(msg.sender.displayName)
+        val prefix = if (msg.originatesFromBridgeItself()) "" else "<$senderName> "
 
         discordChannel.sendMessage("$prefix${msg.contents}").queue()
     }
@@ -145,7 +145,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             avatarUrl = matchingUsers.first().user.avatarUrl
         }
 
-        var senderName = enforceSenderNameRequirement(msg.sender.displayName)
+        var senderName = enforceSenderName(msg.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
         if (msg.sender == BOT_SENDER) {
             senderName = botName ?: senderName
@@ -200,36 +200,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         return if (byName.isNotEmpty()) byName.first() else null
     }
 
-    /**
-     * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
-     */
-    private fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
-        // find where and if the target string is used
-        val startingIndex = base.indexOf(target, ignoreCase = true)
-        if (startingIndex != -1) {
-            fun isWhiteSpace(i: Int): Boolean {
-                return i == -1 || i == base.length || !requireSeparation || base[i].isWhitespace()
-            }
-
-            // calc prior and post indexes
-            val priorIndex = startingIndex - 1
-            val postIndex = startingIndex + target.length
-
-            if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
-                return base.replace(target, replacement, true)
-            }
-        }
-
-        return base
-    }
-
     companion object {
         private const val NICK_ENFORCEMENT_CHAR = "-"
 
         /**
          * Ensures name is within Discord's requirements
          */
-        fun enforceSenderNameRequirement(name: String): String {
+        fun enforceSenderName(name: String): String {
             if (name.length < 2) {
                 return NICK_ENFORCEMENT_CHAR + name + NICK_ENFORCEMENT_CHAR
             }
@@ -239,6 +216,29 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
 
             return name
+        }
+
+        /**
+         * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
+         */
+        fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
+            // find where and if the target string is used
+            val startingIndex = base.indexOf(target, ignoreCase = true)
+            if (startingIndex != -1) {
+                fun isWhiteSpace(i: Int): Boolean {
+                    return i == -1 || i == base.length || !requireSeparation || base[i].isWhitespace()
+                }
+
+                // calc prior and post indexes
+                val priorIndex = startingIndex - 1
+                val postIndex = startingIndex + target.length
+
+                if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
+                    return base.replace(target, replacement, true)
+                }
+            }
+
+            return base
         }
     }
 }
