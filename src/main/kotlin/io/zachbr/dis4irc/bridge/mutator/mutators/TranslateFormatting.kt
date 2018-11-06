@@ -20,7 +20,6 @@ package io.zachbr.dis4irc.bridge.mutator.mutators
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
-import io.zachbr.dis4irc.util.countSubstring
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.*
@@ -28,7 +27,6 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.NodeRenderer
 import org.commonmark.renderer.text.TextContentNodeRendererContext
 import org.commonmark.renderer.text.TextContentRenderer
-import org.kitteh.irc.client.library.util.Format
 import java.util.*
 
 // I haven't seen it be an issue but the back of my head says it could be, so remove dashes from this key
@@ -59,37 +57,8 @@ class TranslateFormatting : Mutator {
      * Takes a message from IRC and translates the formatting to Discord compatible rendering chars
      */
     private fun formatForDiscord(message: String): String {
-        var out = fixFormattingBalance(message, IrcFormattingCodes.values())
-
-        out = out.replace(IrcFormattingCodes.BOLD.code, DiscordFormattingCodes.BOLD.code)
-        out = out.replace(IrcFormattingCodes.ITALICS.code, DiscordFormattingCodes.ITALICS.code)
-        out = out.replace(IrcFormattingCodes.UNDERLINE.code, DiscordFormattingCodes.UNDERLINE.code)
-        out = out.replace(IrcFormattingCodes.STRIKETHROUGH.code, DiscordFormattingCodes.STRIKETHROUGH.code)
-        out = out.replace(IrcFormattingCodes.MONOSPACE.code, DiscordFormattingCodes.MONOSPACE.code)
-
-        // strip color from messages: https://github.com/zachbr/Dis4IRC/issues/4
-        out = Format.stripColor(out)
-
-        // strip reset code
-        out = out.replace(IrcFormattingCodes.RESET.code, "")
-
-        return out
-    }
-
-    /**
-     * Ensures that IRC formatting chars are balanced, that is even, as there is no requirement
-     * for them to be.
-     */
-    private fun <T : Enum<T>> fixFormattingBalance(message: String, values: Array<T>): String {
-        var out = message
-
-        for (formattingCode in values) {
-            if (countSubstring(out, formattingCode.toString()) % 2 != 0) {
-                out += formattingCode.toString()
-            }
-        }
-
-        return out
+        val stack = DiscordStack(message)
+        return stack.toString()
     }
 
     /**
@@ -273,6 +242,7 @@ enum class DiscordFormattingCodes(val code: String) {
  * Based on info from https://modern.ircdocs.horse/formatting.html
  */
 enum class IrcFormattingCodes(val char: Char) {
+    COLOR(0x03.toChar()),
     BOLD(0x02.toChar()),
     ITALICS(0x1D.toChar()),
     UNDERLINE(0x1F.toChar()),
@@ -282,4 +252,77 @@ enum class IrcFormattingCodes(val char: Char) {
 
     val code: String = char.toString()
     override fun toString(): String = code
+}
+
+class DiscordStack(string: String) {
+    private val builder = StringBuilder()
+    private val stack = Stack<DiscordFormattingCodes>()
+    private var isColor = false
+    private var wasDigit = false
+    private var digits = 0
+
+    init {
+        string.toCharArray().forEach { character ->
+            when(character) {
+                IrcFormattingCodes.COLOR.char -> this.pushColor()
+                IrcFormattingCodes.BOLD.char -> this.pushFormat(DiscordFormattingCodes.BOLD)
+                IrcFormattingCodes.ITALICS.char -> this.pushFormat(DiscordFormattingCodes.ITALICS)
+                IrcFormattingCodes.UNDERLINE.char -> this.pushFormat(DiscordFormattingCodes.UNDERLINE)
+                IrcFormattingCodes.STRIKETHROUGH.char -> this.pushFormat(DiscordFormattingCodes.STRIKETHROUGH)
+                IrcFormattingCodes.MONOSPACE.char -> this.pushFormat(DiscordFormattingCodes.MONOSPACE)
+                IrcFormattingCodes.RESET.char -> this.pushReset()
+                else -> this.push(character)
+            }
+        }
+    }
+
+    private fun push(character: Char) {
+        if (this.isColor) {
+            if (character.isDigit()) {
+                this.digits++
+                if (this.digits >= 3) {
+                    this.resetColor()
+                } else {
+                    return
+                }
+            } else if (this.digits > 0 && character == ',') {
+                this.digits = 0
+                return
+            } else {
+                this.resetColor()
+            }
+        }
+
+        this.builder.append(character)
+    }
+
+    private fun pushColor() {
+        this.isColor = true
+    }
+
+    private fun resetColor() {
+        this.isColor = false
+        this.digits = 0
+    }
+
+    private fun pushFormat(format: DiscordFormattingCodes) {
+        // remove an encountered format when already in the stack
+        if (this.stack.contains(format)) {
+            this.stack.remove(format)
+        } else {
+            this.stack.push(format)
+        }
+        this.builder.append(format)
+    }
+
+    private fun pushReset() {
+        while (!this.stack.isEmpty()) {
+            this.builder.append(this.stack.pop())
+        }
+    }
+
+    override fun toString(): String {
+        this.pushReset() // reset is not required, simulate one to finish
+        return this.builder.toString()
+    }
 }
