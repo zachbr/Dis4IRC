@@ -258,7 +258,6 @@ class DiscordStack(string: String) {
     private val builder = StringBuilder()
     private val stack = Stack<DiscordFormattingCodes>()
     private var isColor = false
-    private var wasDigit = false
     private var digits = 0
 
     init {
@@ -306,13 +305,23 @@ class DiscordStack(string: String) {
     }
 
     private fun pushFormat(format: DiscordFormattingCodes) {
-        // remove an encountered format when already in the stack
-        if (this.stack.contains(format)) {
+        val contained = this.stack.contains(format)
+        if (contained) {
             this.stack.remove(format)
         } else {
             this.stack.push(format)
         }
+        if (contained) {
+            this.pushStack()
+        }
         this.builder.append(format)
+        if (contained) {
+            this.pushStack()
+        }
+    }
+
+    private fun pushStack() {
+        this.stack.forEach { format -> this.builder.append(format) }
     }
 
     private fun pushReset() {

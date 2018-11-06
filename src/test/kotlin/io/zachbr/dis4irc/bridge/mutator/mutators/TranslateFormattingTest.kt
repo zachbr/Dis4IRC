@@ -35,6 +35,7 @@ class TranslateFormattingTest {
         this.testIrcToDiscord("**boldkitten**unbold", Format.BOLD.toString() + "bold" + Format.MAGENTA.toString() + "kitten" + Format.BOLD.toString() + "unbold")
         this.testIrcToDiscord("destroy", "\u000311,08d\u000302,07e\u000312,06s\u000306,07t\u000313,02r\u000305,09o\u000304,07y\u000F")
         this.testIrcToDiscord("d1e2s3t4r5o6y7", "\u000307,11d\u000308,101\u000303,11e\u000309,132\u000310,07s\u000311,093\u000302,09t\u000312,084\u000306,03r\u000313,115\u000305,12o\u000304,136\u000307,13y\u000308,027\u000F")
+        this.testIrcToDiscord("**bold__underline__**__tacos__", "\u0002bold\u001Funderline\u0002tacos")
     }
 
     private fun testIrcToDiscord(expected: String, string: String) {
