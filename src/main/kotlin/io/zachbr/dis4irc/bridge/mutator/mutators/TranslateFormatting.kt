@@ -268,7 +268,7 @@ class DiscordStack(string: String) {
                 IrcFormattingCodes.ITALICS.char -> this.pushFormat(DiscordFormattingCodes.ITALICS)
                 IrcFormattingCodes.UNDERLINE.char -> this.pushFormat(DiscordFormattingCodes.UNDERLINE)
                 IrcFormattingCodes.STRIKETHROUGH.char -> this.pushFormat(DiscordFormattingCodes.STRIKETHROUGH)
-                IrcFormattingCodes.MONOSPACE.char -> this.pushFormat(DiscordFormattingCodes.MONOSPACE)
+                IrcFormattingCodes.MONOSPACE.char -> this.pushMonospace()
                 IrcFormattingCodes.RESET.char -> this.pushReset()
                 else -> this.push(character)
             }
@@ -305,19 +305,40 @@ class DiscordStack(string: String) {
     }
 
     private fun pushFormat(format: DiscordFormattingCodes) {
+        val peekMatch = this.peekMatch(format)
+        val contained = this.toggleFormat(format)
+        val repush = contained && !peekMatch
+        if (repush) {
+            this.pushStack()
+        }
+        this.builder.append(format)
+        if (repush) {
+            this.pushStack()
+        }
+    }
+
+    private fun peekMatch(format: DiscordFormattingCodes): Boolean {
+        return !this.stack.isEmpty() && this.stack.peek() == format
+    }
+
+    private fun pushMonospace() {
+        val contained = this.toggleFormat(DiscordFormattingCodes.MONOSPACE)
+        if (!contained) {
+            this.pushStack()
+        } else {
+            this.builder.append(DiscordFormattingCodes.MONOSPACE)
+            this.pushStack()
+        }
+    }
+
+    private fun toggleFormat(format: DiscordFormattingCodes): Boolean {
         val contained = this.stack.contains(format)
         if (contained) {
             this.stack.remove(format)
         } else {
             this.stack.push(format)
         }
-        if (contained) {
-            this.pushStack()
-        }
-        this.builder.append(format)
-        if (contained) {
-            this.pushStack()
-        }
+        return contained
     }
 
     private fun pushStack() {
