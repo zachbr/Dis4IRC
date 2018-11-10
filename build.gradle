@@ -27,12 +27,23 @@ build.dependsOn(shadowJar)
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
+def getGitHash = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+
+    return stdout.toString().trim()
+}
+
 processResources {
     from(sourceSets.main.resources.srcDirs) {
         filter ReplaceTokens, tokens: [
                 'project-name'       : rootProject.name,
                 'project-version'    : version,
-                'project-build-date' : new Date().format("yyyy-MM-dd 'at' HH:mm z"),
+                'project-git-hash'   : getGitHash(),
+                'project-build-date' : new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC")), // use ISO8601
                 'project-source-repo': 'https://github.com/zachbr/Dis4IRC'
         ]
     }

@@ -30,9 +30,14 @@ class Versioning {
      */
     val version: String
     /**
+     * Gets the top of tree git hash this version was built against
+     */
+    val gitHash: String
+    /**
      * Gets the build date of this jar
      */
     val buildDate: String
+
     /**
      * Gets the source repo of this project
      */
@@ -41,6 +46,7 @@ class Versioning {
     init {
         val resources = this.javaClass.classLoader.getResources(JAR_PATH_TO_VERSIONING_INFO)
         var verOut = "Unknown version"
+        var gitHashOut = "Unknown Git Commit"
         var dateOut = "Unknown build date"
         var repoOut = "Unknown source repo"
 
@@ -51,12 +57,14 @@ class Versioning {
                 }
 
                 verOut = getValue("Version")
+                gitHashOut = getValue("Git-Hash")
                 dateOut = getValue("Build-Date")
                 repoOut = getValue("Source-Repo")
             }
         }
 
         version = verOut
+        gitHash = gitHashOut
         buildDate = dateOut
         sourceRepo = repoOut
     }

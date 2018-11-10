@@ -17,7 +17,7 @@
 
 package io.zachbr.dis4irc.config
 
-import io.zachbr.dis4irc.Dis4IRC.Static.logger
+import io.zachbr.dis4irc.Dis4IRC.Companion.logger
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.ChannelMapping
 import io.zachbr.dis4irc.bridge.WebhookMapping

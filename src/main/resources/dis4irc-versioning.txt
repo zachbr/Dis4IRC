@@ -1,4 +1,5 @@
 Name: @project-name@
 Version: @project-version@
+Git-Hash: @project-git-hash@
 Build-Date: @project-build-date@
 Source-Repo: @project-source-repo@

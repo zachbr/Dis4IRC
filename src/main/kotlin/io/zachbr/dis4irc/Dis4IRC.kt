@@ -17,7 +17,6 @@
 
 package io.zachbr.dis4irc
 
-import io.zachbr.dis4irc.Dis4IRC.Static.logger
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.config.Configuration
 import io.zachbr.dis4irc.config.makeDefaultNode
@@ -39,16 +38,12 @@ class Dis4IRC(args: Array<String>) {
     private val bridgesByName = HashMap<String, Bridge>()
 
     init {
-        val versioning = Versioning()
+        parseArguments(args)
 
-        logger.info("Starting Dis4IRC v${versioning.version}")
+        logger.info("Dis4IRC v${versioning.version}-${versioning.gitHash}")
         logger.info("Built on ${versioning.buildDate}")
         logger.info("Source available at ${versioning.sourceRepo}")
         logger.info("Licensed under the GNU Affero General Public License v3")
-
-        if (args.isNotEmpty()) {
-            configPath = args[0] // todo better parsing
-        }
 
         logger.info("Loading config from: $configPath")
         val config = Configuration(configPath)
@@ -111,11 +106,44 @@ class Dis4IRC(args: Array<String>) {
         bridge.startBridge()
     }
 
-    object Static {
+    private fun parseArguments(args: Array<String>) {
+        for ((i, arg) in args.withIndex()) {
+            when (arg.toLowerCase()) {
+                "-v","--version" -> {
+                    printVersionInfo(minimal = true)
+                    System.exit(0)
+                }
+                "--about" -> {
+                    printVersionInfo(minimal = false)
+                    System.exit(0)
+                }
+                "-c", "--config" -> {
+                    if (args.size >= i + 2) {
+                        configPath = args[i + 1]
+                    }
+                }
+            }
+        }
+    }
+
+    private fun printVersionInfo(minimal: Boolean = false) {
+        // can't use logger, this has to be bare bones without prefixes or timestamps
+        System.out.println("Dis4IRC v${versioning.version}-${versioning.gitHash}")
+        if (minimal) {
+            return
+        }
+
+        System.out.println("Built on ${versioning.buildDate}")
+        System.out.println("Source available at ${versioning.sourceRepo}")
+        System.out.println("Licensed under the GNU Affero General Public License v3")
+    }
+
+    companion object {
         /**
          * Static logger for use *only* during initialization, bridges have their own loggers
          */
         val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
+        val versioning = Versioning()
     }
 }
 
