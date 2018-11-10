@@ -101,6 +101,11 @@ class Dis4IRC(args: Array<String>) {
 
         val bridgeConf = node.toBridgeConfiguration()
         val bridge = Bridge(bridgeConf, bridgesNode.getNode(bridgeConf.bridgeName))
+
+        if (bridgesByName[bridgeConf.bridgeName] != null) {
+            throw IllegalArgumentException("Cannot register multiple bridges with the same name!")
+        }
+
         bridgesByName[bridgeConf.bridgeName] = bridge
 
         bridge.startBridge()
