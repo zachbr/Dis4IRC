@@ -26,16 +26,19 @@ class DiscordPierTest {
     fun testReplaceTarget() {
         // test no separation
         val noSepBase = ":potato::potato::potato:"
+        val noSepReplaceSpaces = ":potato: :potato: :potato:"
         val noSepTarget = ":potato:"
         val noSepReplace = ":taco:"
 
         assertEquals(":taco::taco::taco:", DiscordPier.replaceTarget(noSepBase, noSepTarget, noSepReplace, requireSeparation = false))
+        assertEquals(":taco: :taco: :taco:", DiscordPier.replaceTarget(noSepReplaceSpaces, noSepTarget, noSepReplace, requireSeparation = false))
 
         // test require separation
         val noLeadingChars = "@Z750 some text"
         val middleOfStr = "some text @Z750 some more"
         val endOfStr = "some text @Z750"
         val failNoSep = "some text@Z750more text"
+        val mixedCase = "@Z750 should replace but@Z750should not"
 
         val target = "@Z750"
         val replacement = "12345"
@@ -44,6 +47,7 @@ class DiscordPierTest {
         assertEquals(middleOfStr.replace(target, replacement), DiscordPier.replaceTarget(middleOfStr, target, replacement))
         assertEquals(endOfStr.replace(target, replacement), DiscordPier.replaceTarget(endOfStr, target, replacement))
         assertEquals(failNoSep, DiscordPier.replaceTarget(failNoSep, target, replacement))
+        assertEquals("12345 should replace but@Z750should not", DiscordPier.replaceTarget(mixedCase, target, replacement))
     }
 
     @Test

@@ -222,23 +222,25 @@ class DiscordPier(private val bridge: Bridge) : Pier {
          * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
          */
         fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
-            // find where and if the target string is used
-            val startingIndex = base.indexOf(target, ignoreCase = true)
-            if (startingIndex != -1) {
-                fun isWhiteSpace(i: Int): Boolean {
-                    return i == -1 || i == base.length || !requireSeparation || base[i].isWhitespace()
-                }
+            var out = base
 
-                // calc prior and post indexes
-                val priorIndex = startingIndex - 1
-                val postIndex = startingIndex + target.length
-
-                if (isWhiteSpace(priorIndex) && isWhiteSpace(postIndex)) {
-                    return base.replace(target, replacement, true)
-                }
+            fun isWhiteSpace(i: Int): Boolean {
+                return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
             }
 
-            return base
+            var start = out.indexOf(target, 0)
+            while (start > -1) {
+                val end = start + target.length
+                val nextSearchStart = start + replacement.length
+
+                if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
+                    out = out.replaceFirst(target, replacement)
+                }
+
+                start = out.indexOf(target, nextSearchStart)
+            }
+
+            return out
         }
     }
 }
