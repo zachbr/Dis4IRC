@@ -41,7 +41,7 @@ bridges {
             anti-ping=true
             nickname=TestBridge2
             # Messages that match this regular expression will be passed to IRC without a user prefix
-            no-prefix-regex=null
+            no-prefix-regex="^\\.[A-Za-z0-9]"
             # A list of __raw__ irc messages to send
             init-commands-list=[
                 "PRIVMSG NICKSERV info",
