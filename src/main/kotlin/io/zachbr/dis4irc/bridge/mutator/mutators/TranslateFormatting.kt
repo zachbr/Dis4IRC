@@ -117,6 +117,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(blockQuote: BlockQuote?) {
+        textContent.write("> ") // don't strip this off as part of parse, block quotes aren't a thing in discord
         visitChildren(blockQuote)
     }
 
@@ -183,7 +184,15 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(listItem: ListItem?) {
+        // discord doesn't do anything fancy for lists, neither should we, present them as they are
+        textContent.write("- ")
+
         visitChildren(listItem)
+
+        // spaces between list items
+        if (listItem?.parent?.lastChild != listItem) {
+            textContent.write(" ")
+        }
     }
 
     override fun visit(orderedList: OrderedList?) {
