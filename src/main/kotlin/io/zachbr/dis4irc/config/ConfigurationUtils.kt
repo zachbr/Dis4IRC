@@ -23,6 +23,7 @@ import io.zachbr.dis4irc.bridge.ChannelMapping
 import io.zachbr.dis4irc.bridge.WebhookMapping
 import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import java.util.regex.Pattern
 
 /**
  * Creates a "default" node, pre-populated with settings
@@ -69,9 +70,9 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircAntiPing = ircBaseNode.getNode("anti-ping")
     ircAntiPing.value = true
 
-    val noPrefixString = ircBaseNode.getNode("no-prefix-str")
+    val noPrefixString = ircBaseNode.getNode("no-prefix-regex")
     noPrefixString.value = null
-    noPrefixString.setComment("Messages prefixed with this value will be passed to IRC without a user prefix")
+    noPrefixString.setComment("Messages that match this regular expression will be passed to IRC without a user prefix")
 
     val ircCommandsList = ircBaseNode.getNode("init-commands-list")
     ircCommandsList.value = arrayListOf("PRIVMSG NICKSERV info", "PRIVMSG NICKSERV help")
@@ -123,7 +124,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
     val ircAntiPing = this.getNode("irc", "anti-ping").boolean
-    val ircNoPrefix = this.getNode("irc", "no-prefix-str").string // nullable
+    val ircNoPrefix = this.getNode("irc", "no-prefix-regex").string // nullable
     val ircCommandsChildren = this.getNode("irc", "init-commands-list").childrenList
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.getNode("announce-joins-and-quits").boolean
@@ -165,8 +166,10 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         validateStringNotEmpty(ircPass, "IRC pass cannot be left empty")
     }
 
+    var ircNoPrefixPattern: Pattern? = null
     if (ircNoPrefix != null) {
-        validateStringNotEmpty(ircNoPrefix, "IRC no prefix str cannot be left empty")
+        validateStringNotEmpty(ircNoPrefix, "IRC no prefix cannot be left empty")
+        ircNoPrefixPattern = Pattern.compile(ircNoPrefix)
     }
 
     if (ircPort == 0) {
@@ -194,7 +197,7 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircUserName,
         ircRealName,
         ircAntiPing,
-        ircNoPrefix,
+        ircNoPrefixPattern,
         ircCommandsList,
         discordApiKey,
         announceJoinsQuits,

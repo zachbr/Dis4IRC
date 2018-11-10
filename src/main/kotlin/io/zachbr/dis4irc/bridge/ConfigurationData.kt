@@ -17,6 +17,8 @@
 
 package io.zachbr.dis4irc.bridge
 
+import java.util.regex.Pattern
+
 /**
  * Main bridge configuration data class
  */
@@ -31,7 +33,7 @@ data class BridgeConfiguration(
     val ircUserName: String,
     val ircRealName: String,
     val ircAntiPing: Boolean,
-    val ircNoPrefixVal: String?,
+    val ircNoPrefixRegex: Pattern?,
     val ircCommandsInit: List<String>,
     val discordApiKey: String,
     val announceJoinsQuits: Boolean,

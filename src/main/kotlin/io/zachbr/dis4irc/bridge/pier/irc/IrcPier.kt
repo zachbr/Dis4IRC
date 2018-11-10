@@ -25,6 +25,7 @@ import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
 import java.lang.StringBuilder
+import java.util.regex.Pattern
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 private val NICK_COLORS = intArrayOf(10, 6, 3, 7, 12, 11, 13, 9, 2)
@@ -33,7 +34,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private var antiPing: Boolean = false
     private var ircConn: Client? = null
-    private var noPrefix: String? = null
+    private var noPrefix: Pattern? = null
 
     override fun init(config: BridgeConfiguration) {
         logger.info("Connecting to IRC Server")
@@ -73,7 +74,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
             ircConn?.eventManager?.registerEventListener(IrcJoinQuitListener(this))
         }
 
-        noPrefix = config.ircNoPrefixVal
+        noPrefix = config.ircNoPrefixRegex
         antiPing = config.ircAntiPing
 
         logger.info("Connected to IRC!")
@@ -104,12 +105,12 @@ class IrcPier(private val bridge: Bridge) : Pier {
             msg.attachments.forEach { msgContent += " $it"}
         }
 
-        val prefixNoPrefix = noPrefix
+        val noPrefixPattern = noPrefix
         val msgLines = msgContent.split("\n")
         for (line in msgLines) {
             var ircMsgOut = line
 
-            if (prefixNoPrefix == null || !line.startsWith(prefixNoPrefix)) {
+            if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
                 ircMsgOut = "$senderPrefix$line"
             }
 
