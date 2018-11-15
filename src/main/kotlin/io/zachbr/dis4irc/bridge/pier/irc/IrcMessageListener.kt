@@ -21,6 +21,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelCtcpEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
+import org.kitteh.irc.client.library.event.client.ClientConnectionClosedEvent
 import org.kitteh.irc.client.library.util.Format
 
 private const val CTCP_ACTION = "ACTION"
@@ -69,5 +70,14 @@ class IrcMessageListener(private val pier: IrcPier) {
         val source = event.channel.asBridgeSource()
         val message = Message(messageText, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
+    }
+
+    @Handler
+    fun onConnectionClosed(event: ClientConnectionClosedEvent) {
+        event.setAttemptReconnect(true)
+        event.reconnectionDelay = 3000
+
+        logger.warn("IRC connection closed: ${event.cause.toNullable()?.localizedMessage ?: "null reason"}")
+        logger.info("Will attempt to reconnect")
     }
 }

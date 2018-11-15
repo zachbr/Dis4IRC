@@ -22,6 +22,7 @@ import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
+import org.kitteh.irc.client.library.element.Channel
 import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
 import java.lang.StringBuilder
@@ -85,19 +86,13 @@ class IrcPier(private val bridge: Bridge) : Pier {
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {
-        val ircChannel = ircConn?.getChannel(targetChan)
-        if (ircChannel == null) {
-            logger.error("Null optional for IRC channel!")
-            Throwable().printStackTrace()
+        val channel = getChannelByName(targetChan)
+        if (channel == null) {
+            logger.error("Unable to get or join $targetChan to send message from ${msg.sender.displayName}")
+            logger.debug(msg.toString())
             return
         }
 
-        if (!ircChannel.isPresent) {
-            logger.warn("Bridge is not present in IRC channel $targetChan")
-            return
-        }
-
-        val channel = ircChannel.get()
         val senderPrefix = getSenderPrefix(msg)
         var msgContent = msg.contents
 
@@ -136,6 +131,20 @@ class IrcPier(private val bridge: Bridge) : Pier {
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
         return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
+    }
+
+    /**
+     * Gets a channel by name, joining it if necessary
+     */
+    private fun getChannelByName(name: String): Channel? {
+        val chan = ircConn?.getChannel(name)?.toNullable()
+        if (chan == null) {
+            logger.warn("Bridge not in expected channel $name, was it kicked?")
+            logger.debug("Attempting to rejoin $name")
+            ircConn?.addChannel(name)
+        }
+
+        return chan ?: ircConn?.getChannel(name)?.toNullable()
     }
 
     /**
