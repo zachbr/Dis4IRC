@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
  * Responsible for keeping and providing various statistics for the bridge
  */
 class StatisticsManager(private val bridge: Bridge) {
-    private val messageTimings = EvictingQueue.create<Long>(500)
+    private val messageTimings = EvictingQueue.create<Long>(1000)
     private var totalFromIrc: Long = 0
     private var totalFromDiscord: Long = 0
 
