@@ -1,5 +1,5 @@
 This file is part of ${name}.
 
-Copyright (c) ${year} Dis4IRC contributors
+Copyright (c) ${year} ${name} contributors
 
 MIT License
