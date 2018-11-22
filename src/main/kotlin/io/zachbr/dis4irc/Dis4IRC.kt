@@ -40,9 +40,9 @@ class Dis4IRC(args: Array<String>) {
     init {
         parseArguments(args)
 
-        logger.info("Dis4IRC v${versioning.version}-${versioning.gitHash}")
-        logger.info("Built on ${versioning.buildDate}")
-        logger.info("Source available at ${versioning.sourceRepo}")
+        logger.info("Dis4IRC v${Versioning.version}-${Versioning.gitHash}")
+        logger.info("Built on ${Versioning.buildDate}")
+        logger.info("Source available at ${Versioning.sourceRepo}")
         logger.info("Licensed under the GNU Affero General Public License v3")
 
         logger.info("Loading config from: $configPath")
@@ -55,7 +55,7 @@ class Dis4IRC(args: Array<String>) {
         }
 
         if (debugNode.boolean) {
-            val logContext = (LogManager.getContext(false) as LoggerContext)
+            val logContext = LogManager.getContext(false) as LoggerContext
             val logConfig = logContext.configuration
             logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = org.apache.logging.log4j.Level.DEBUG
             logContext.updateLoggers(logConfig)
@@ -84,13 +84,7 @@ class Dis4IRC(args: Array<String>) {
         // re-save config now that bridges have init'd to hopefully update the file with any defaults
         config.saveConfig()
 
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                for (bridge in bridgesByName.values) {
-                    bridge.shutdown()
-                }
-            }
-        })
+        Runtime.getRuntime().addShutdownHook(Thread { bridgesByName.values.forEach { it.shutdown() } })
     }
 
     /**
@@ -133,14 +127,14 @@ class Dis4IRC(args: Array<String>) {
 
     private fun printVersionInfo(minimal: Boolean = false) {
         // can't use logger, this has to be bare bones without prefixes or timestamps
-        System.out.println("Dis4IRC v${versioning.version}-${versioning.gitHash}")
+        println("Dis4IRC v${Versioning.version}-${Versioning.gitHash}")
         if (minimal) {
             return
         }
 
-        System.out.println("Built on ${versioning.buildDate}")
-        System.out.println("Source available at ${versioning.sourceRepo}")
-        System.out.println("Licensed under the GNU Affero General Public License v3")
+        println("Built on ${Versioning.buildDate}")
+        println("Source available at ${Versioning.sourceRepo}")
+        println("Licensed under the GNU Affero General Public License v3")
     }
 
     companion object {
@@ -148,7 +142,6 @@ class Dis4IRC(args: Array<String>) {
          * Static logger for use *only* during initialization, bridges have their own loggers
          */
         val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
-        val versioning = Versioning()
     }
 }
 

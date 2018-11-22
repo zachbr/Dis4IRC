@@ -24,7 +24,7 @@ private const val JAR_PATH_TO_VERSIONING_INFO = "dis4irc-versioning.txt"
 /**
  * Fetches and provides versioning information from the jar's manifest
  */
-class Versioning {
+object Versioning {
     /**
      * Gets the build version of this jar
      */

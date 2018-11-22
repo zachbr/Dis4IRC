@@ -26,7 +26,7 @@ interface Mutator {
     /**
      * Called on a given message to mutate the contents
      *
-     * @return the mutated message contents value or null if the message is not to be sent
+     * @return how to proceed with the message's lifecycle
      */
     fun mutate(message: Message): LifeCycle
 
