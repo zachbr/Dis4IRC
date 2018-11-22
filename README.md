@@ -3,7 +3,7 @@ Dis4IRC
 
 A modern Discord <-> IRC Bridge
 
-Licensed [AGPLv3](https://github.com/zachbr/Dis4IRC/blob/master/LICENSE.md)
+Published under the [MIT License](https://github.com/zachbr/Dis4IRC/blob/master/LICENSE.md)
 
 Features
 --------

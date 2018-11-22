@@ -13,12 +13,12 @@ that it's missing some important information and exit.
 
 It should look like this:
 ```bash                                                               
-$ java -jar Dis4IRC-1.0-SNAPSHOT.jar 
-[19:17:10] [init] [INFO] - Dis4IRC v1.0-SNAPSHOT-7e7f58c
-[19:17:10] [init] [INFO] - Built on 2018-11-21T20:15:52Z
-[19:17:10] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
-[19:17:10] [init] [INFO] - Licensed under the GNU Affero General Public License v3
-[19:17:10] [init] [INFO] - Loading config from: config.hocon
+$ java -jar Dis4IRC-1.0.1-SNAPSHOT.jar 
+[15:51:51] [init] [INFO] - Dis4IRC v1.0.1-SNAPSHOT-0bfce4e
+[15:51:51] [init] [INFO] - Built on 2018-11-22T20:51:35Z
+[15:51:51] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
+[15:51:51] [init] [INFO] - Available under the MIT License
+[15:51:51] [init] [INFO] - Loading config from: config.hocon
 [19:17:10] [init] [INFO] - Starting bridge: default
 [19:17:10] [init] [ERROR] - Discord API key left empty for bridge: default
 Exception in thread "main" java.lang.IllegalArgumentException: Cannot start default bridge with above configuration errors!
