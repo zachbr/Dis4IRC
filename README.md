@@ -14,6 +14,10 @@ Features
 * Non-prefixed messages for other IRC bots to handle
 * IRC anti-ping zero width character in usernames
 
+Getting Started
+---------------
+Please see the [Getting Started page](https://github.com/zachbr/Dis4IRC/blob/master/docs/Getting-Started.md)
+
 Example Config
 --------------
 ```hocon
