@@ -32,7 +32,6 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     private val webhookMap = HashMap<String, WebhookClient>()
 
     private var discordApi: JDA? = null
-    private var botName: String? = null
     private var botAvatarUrl: String? = null
 
     override fun init(config: BridgeConfiguration) {
@@ -70,8 +69,6 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
         }
 
-        // load bot name and avatar url
-        botName = discordApi?.selfUser?.name
         botAvatarUrl = discordApi?.selfUser?.avatarUrl
 
         logger.info("Discord Bot Invite URL: ${discordApi?.asBot()?.getInviteUrl()}")
@@ -146,7 +143,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         var senderName = enforceSenderName(msg.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
         if (msg.sender == BOT_SENDER) {
-            senderName = botName ?: senderName
+            senderName = guild.getMember(discordApi?.selfUser)?.effectiveName ?: senderName
             avatarUrl = botAvatarUrl ?: avatarUrl
         }
 
