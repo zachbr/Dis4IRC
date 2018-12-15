@@ -25,6 +25,8 @@ import net.dv8tion.jda.webhook.WebhookMessageBuilder
 import org.slf4j.Logger
 import java.util.*
 
+private const val ZERO_WIDTH_SPACE = 0x200B.toChar()
+
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private val webhookMap = HashMap<String, WebhookClient>()
@@ -104,6 +106,11 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         for (emote in guild.emotes) {
             val mentionTrigger = ":${emote.name}:"
             msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention, requireSeparation = false)
+        }
+
+        // Discord won't broadcast messages that are just whitespace
+        if (msg.contents.trim() == "") {
+            msg.contents = "$ZERO_WIDTH_SPACE"
         }
 
         if (webhook != null) {
