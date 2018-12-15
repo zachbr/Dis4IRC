@@ -15,10 +15,20 @@ import io.zachbr.dis4irc.bridge.message.Sender
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
+private const val EXEC_DELAY_MILLIS = 60_000
+
 class StatsCommand(private val bridge: Bridge) : Executor {
+    private var lastExecution = 0L
 
     private fun isAuthorized(sender: Sender): Boolean {
-        return true
+        val now = System.currentTimeMillis()
+
+        return if (now - lastExecution > EXEC_DELAY_MILLIS) {
+            lastExecution = now
+            true
+        } else {
+            false
+        }
     }
 
     override fun onCommand(command: Message): String? {
