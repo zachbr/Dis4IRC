@@ -41,16 +41,18 @@ object Versioning {
         var dateOut = "Unknown build date"
         var repoOut = "Unknown source repo"
 
-        resources.nextElement().openStream().use {
-            with(Manifest(it).mainAttributes) {
-                if (getValue("Name") != "Dis4IRC") {
-                    return@use
-                }
+        if (resources.hasMoreElements()) {
+            resources.nextElement().openStream().use {
+                with(Manifest(it).mainAttributes) {
+                    if (getValue("Name") != "Dis4IRC") {
+                        return@use
+                    }
 
-                verOut = getValue("Version")
-                gitHashOut = getValue("Git-Hash")
-                dateOut = getValue("Build-Date")
-                repoOut = getValue("Source-Repo")
+                    verOut = getValue("Version")
+                    gitHashOut = getValue("Git-Hash")
+                    dateOut = getValue("Build-Date")
+                    repoOut = getValue("Source-Repo")
+                }
             }
         }
 
