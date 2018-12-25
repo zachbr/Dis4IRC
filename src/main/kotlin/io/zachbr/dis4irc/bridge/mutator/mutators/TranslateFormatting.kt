@@ -20,6 +20,7 @@ import org.commonmark.renderer.text.TextContentNodeRendererContext
 import org.commonmark.renderer.text.TextContentRenderer
 import java.util.*
 
+private const val MINIMUM_DISCORD_MESSAGE_LENGTH = 3
 // I haven't seen it be an issue but the back of my head says it could be, so remove dashes from this key
 private val UNIQUE_KEY_STR = UUID.randomUUID().toString().replace("-", "")
 
@@ -56,6 +57,12 @@ class TranslateFormatting : Mutator {
      * Takes a message from Discord and translates the formatting to IRC compatible rendering chars
      */
     private fun formatForIrc(message: String): String {
+        // no-op short messages that the markdown parser would incorrectly interpret
+        // as part of a larger text section
+        if (message.length < MINIMUM_DISCORD_MESSAGE_LENGTH) {
+            return message
+        }
+
         // poor shrug man needs special handling to be spared the markdown parser
         val shrugMan = "¯\\_(ツ)_/¯"
         val shrugKey = UNIQUE_KEY_STR
