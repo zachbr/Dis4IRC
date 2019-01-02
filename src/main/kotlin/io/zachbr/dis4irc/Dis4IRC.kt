@@ -73,7 +73,7 @@ class Dis4IRC(args: Array<String>) {
         }
 
         // re-save config now that bridges have init'd to hopefully update the file with any defaults
-        config.saveConfig()
+        //config.saveConfig() // Can throw NFE as a result of a HOCON lib issue, see https://github.com/zachbr/Dis4IRC/issues/19
 
         Runtime.getRuntime().addShutdownHook(Thread { bridgesByName.values.forEach { it.shutdown() } })
     }
