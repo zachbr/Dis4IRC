@@ -18,7 +18,7 @@ import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IrcPier
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.slf4j.LoggerFactory
-import java.io.IOException
+import java.lang.Exception
 
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs
@@ -48,15 +48,14 @@ class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfig
         try {
             discordConn.init(config)
             ircConn.init(config)
-        } catch (ex: IOException) {
-            logger.error("IOException while initializing connections: $ex")
+        } catch (ex: Exception) { // just catch everything - "conditions that a reasonable application might want to catch"
+            logger.error("Unable to initialize bridge connections: $ex")
             ex.printStackTrace()
             this.shutdown()
-        } catch (ex: IllegalArgumentException) {
-            logger.error("IllegalArgumentException while initializing connections: $ex")
-            ex.printStackTrace()
-            this.shutdown()
+            return
         }
+
+        logger.info("Bridge initialized and running")
     }
 
     /**
@@ -93,12 +92,12 @@ class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfig
      * Clean up and disconnect from the IRC and Discord platforms
      */
     internal fun shutdown() {
-        logger.info("Stopping...")
+        logger.debug("Stopping bridge...")
 
         discordConn.shutdown()
         ircConn.shutdown()
 
-        logger.info("${config.bridgeName} stopped")
+        logger.info("Bridge stopped")
     }
 
     /**
