@@ -43,10 +43,25 @@ class StatsCommand(private val bridge: Bridge) : Executor {
         val uptime = ManagementFactory.getRuntimeMXBean().uptime
         val uptimeStr = convertMillisToPretty(uptime)
 
+        val fromIrc = bridge.statsManager.getTotalFromIrc()
+        val fromDiscord = bridge.statsManager.getTotalFromDiscord()
+
+        val fromIrcPercent = percent(fromIrc, fromDiscord)
+        val fromDiscordPercent = 100 - fromIrcPercent
+
         return "Uptime: $uptimeStr\n" +
                 "Message Handling: ${meanMillis}ms / ${medianMillis}ms (mean/median)\n" +
-                "Messages from IRC: ${bridge.statsManager.getTotalFromIrc()}\n" +
-                "Messages from Discord: ${bridge.statsManager.getTotalFromDiscord()}"
+                "Messages from IRC: $fromIrc ($fromIrcPercent%)\n" +
+                "Messages from Discord: $fromDiscord ($fromDiscordPercent%)"
+    }
+
+    private fun percent(a: Long, b: Long): Int {
+        if (b == 0L) {
+            return 100
+        } else if (a == b) {
+            return 50
+        }
+        return ((a * 100.0) / b).toInt()
     }
 
     /**
