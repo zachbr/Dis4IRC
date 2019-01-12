@@ -8,6 +8,7 @@
 
 package io.zachbr.dis4irc.bridge
 
+import io.zachbr.dis4irc.Dis4IRC
 import io.zachbr.dis4irc.bridge.command.COMMAND_PREFIX
 import io.zachbr.dis4irc.bridge.command.CommandManager
 import io.zachbr.dis4irc.bridge.message.Message
@@ -23,7 +24,7 @@ import java.lang.Exception
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs
  */
-class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfigurationNode) {
+class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration, rawConfig: CommentedConfigurationNode) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
 
     private val channelMappings = ChannelMappingManager(config)
@@ -51,7 +52,7 @@ class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfig
         } catch (ex: Exception) { // just catch everything - "conditions that a reasonable application might want to catch"
             logger.error("Unable to initialize bridge connections: $ex")
             ex.printStackTrace()
-            this.shutdown()
+            this.shutdown(inErr = true)
             return
         }
 
@@ -91,13 +92,14 @@ class Bridge(private val config: BridgeConfiguration, rawConfig: CommentedConfig
     /**
      * Clean up and disconnect from the IRC and Discord platforms
      */
-    internal fun shutdown() {
+    internal fun shutdown(inErr: Boolean = false) {
         logger.debug("Stopping bridge...")
 
         discordConn.shutdown()
         ircConn.shutdown()
 
         logger.info("Bridge stopped")
+        main.notifyOfBridgeShutdown(this, inErr)
     }
 
     /**

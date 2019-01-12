@@ -27,6 +27,7 @@ fun main(args: Array<String>) {
 class Dis4IRC(args: Array<String>) {
     private var configPath: String = "config.hocon"
     private val bridgesByName = HashMap<String, Bridge>()
+    private var shuttingDown = false
 
     init {
         parseArguments(args)
@@ -75,7 +76,10 @@ class Dis4IRC(args: Array<String>) {
         // re-save config now that bridges have init'd to hopefully update the file with any defaults
         //config.saveConfig() // Can throw NFE as a result of a HOCON lib issue, see https://github.com/zachbr/Dis4IRC/issues/19
 
-        Runtime.getRuntime().addShutdownHook(Thread { bridgesByName.values.forEach { it.shutdown() } })
+        Runtime.getRuntime().addShutdownHook(Thread {
+            shuttingDown = true
+            ArrayList(bridgesByName.values).forEach { it.shutdown() }
+        })
     }
 
     /**
@@ -85,7 +89,7 @@ class Dis4IRC(args: Array<String>) {
         logger.info("Starting bridge: ${node.key}")
 
         val bridgeConf = node.toBridgeConfiguration()
-        val bridge = Bridge(bridgeConf, bridgesNode.getNode(bridgeConf.bridgeName))
+        val bridge = Bridge(this, bridgeConf, bridgesNode.getNode(bridgeConf.bridgeName))
 
         if (bridgesByName[bridgeConf.bridgeName] != null) {
             throw IllegalArgumentException("Cannot register multiple bridges with the same name!")
@@ -94,6 +98,17 @@ class Dis4IRC(args: Array<String>) {
         bridgesByName[bridgeConf.bridgeName] = bridge
 
         bridge.startBridge()
+    }
+
+    // todo - at some point we should make it reflect the exit state of individual bridges, but additional tracking will be needed for that
+    internal fun notifyOfBridgeShutdown(bridge: Bridge, inErr: Boolean) {
+        val name = bridge.config.bridgeName
+        bridgesByName.remove(name) ?: throw IllegalArgumentException("Unknown bridge: $name has shutdown, why wasn't it tracked?")
+
+        if (!shuttingDown && bridgesByName.size == 0) {
+            logger.info("No bridges running - Exiting")
+            System.exit(0)
+        }
     }
 
     private fun parseArguments(args: Array<String>) {
