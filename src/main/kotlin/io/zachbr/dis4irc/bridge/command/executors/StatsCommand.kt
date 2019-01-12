@@ -14,6 +14,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 private const val EXEC_DELAY_MILLIS = 60_000
 
@@ -46,7 +47,7 @@ class StatsCommand(private val bridge: Bridge) : Executor {
         val fromIrc = bridge.statsManager.getTotalFromIrc()
         val fromDiscord = bridge.statsManager.getTotalFromDiscord()
 
-        val fromIrcPercent = percent(fromIrc, fromDiscord)
+        val fromIrcPercent = percent(fromIrc, fromDiscord + fromIrc)
         val fromDiscordPercent = 100 - fromIrcPercent
 
         return "Uptime: $uptimeStr\n" +
@@ -55,13 +56,12 @@ class StatsCommand(private val bridge: Bridge) : Executor {
                 "Messages from Discord: $fromDiscord ($fromDiscordPercent%)"
     }
 
-    private fun percent(a: Long, b: Long): Int {
-        if (b == 0L) {
+    private fun percent(value: Long, total: Long): Int {
+        if (total == 0L || value == total) {
             return 100
-        } else if (a == b) {
-            return 50
         }
-        return ((a * 100.0) / b).toInt()
+
+        return ((value * 100.0) / total).roundToInt()
     }
 
     /**
