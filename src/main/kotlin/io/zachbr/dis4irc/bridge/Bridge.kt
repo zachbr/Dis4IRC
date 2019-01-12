@@ -17,19 +17,18 @@ import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IrcPier
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs
  */
-class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration, rawConfig: CommentedConfigurationNode) {
+class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration) {
     internal val logger = LoggerFactory.getLogger(config.bridgeName) ?: throw IllegalStateException("Could not init logger")
 
     private val channelMappings = ChannelMappingManager(config)
-    private val commandManager = CommandManager(this, rawConfig.getNode("commands"))
-    private val mutatorManager = MutatorManager(this, rawConfig.getNode("mutators"))
+    private val commandManager = CommandManager(this, config.rawNode.getNode("commands"))
+    private val mutatorManager = MutatorManager(this, config.rawNode.getNode("mutators"))
     internal val statsManager = StatisticsManager(this)
 
     private val discordConn: Pier
@@ -44,7 +43,7 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
      * Connects to IRC and Discord
      */
     fun startBridge() {
-        logger.debug(config.toString())
+        logger.debug(config.toLoggable())
 
         try {
             discordConn.init(config)

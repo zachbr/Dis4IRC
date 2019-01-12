@@ -94,7 +94,7 @@ fun CommentedConfigurationNode.makeDefaultNode() {
  *
  * @throws IllegalArgumentException if called from any node other than direct children of the bridges node
  */
-fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
+fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     if (this.parent?.key != "bridges") {
         throw IllegalArgumentException("Cannot make bridge configuration from anything but a direct child of bridges node!")
     }
@@ -193,7 +193,8 @@ fun ConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         discordApiKey,
         announceJoinsQuits,
         webhookMappings,
-        channelMappings
+        channelMappings,
+        this
     )
 }
 

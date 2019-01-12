@@ -13,7 +13,6 @@ import io.zachbr.dis4irc.config.Configuration
 import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.Versioning
-import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
@@ -68,7 +67,7 @@ class Dis4IRC(args: Array<String>) {
         }
 
         if (bridgesNode.hasMapChildren()) {
-            bridgesNode.childrenMap.forEach { startBridge(it.value, config.getNode("bridges")) }
+            bridgesNode.childrenMap.forEach { startBridge(it.value) }
         } else {
             logger.error("No bridge configurations found!")
         }
@@ -85,11 +84,11 @@ class Dis4IRC(args: Array<String>) {
     /**
      * Initializes and starts a bridge instance
      */
-    private fun startBridge(node: ConfigurationNode, bridgesNode: CommentedConfigurationNode) {
+    private fun startBridge(node: CommentedConfigurationNode) {
         logger.info("Starting bridge: ${node.key}")
 
         val bridgeConf = node.toBridgeConfiguration()
-        val bridge = Bridge(this, bridgeConf, bridgesNode.getNode(bridgeConf.bridgeName))
+        val bridge = Bridge(this, bridgeConf)
 
         if (bridgesByName[bridgeConf.bridgeName] != null) {
             throw IllegalArgumentException("Cannot register multiple bridges with the same name!")
