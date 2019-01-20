@@ -9,7 +9,6 @@
 package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
@@ -28,20 +27,20 @@ class IrcPier(private val bridge: Bridge) : Pier {
     private var ircConn: Client? = null
     private var noPrefix: Pattern? = null
 
-    override fun init(config: BridgeConfiguration) {
+    override fun start() {
         logger.info("Connecting to IRC Server")
 
         // configure IRC
         val builder = Client.builder()
-            .nick(config.ircNickName)
-            .serverHost(config.ircHostname)
-            .serverPort(config.ircPort)
-            .serverPassword(config.ircPassword)
-            .secure(config.ircSslEnabled)
-            .user(config.ircUserName)
-            .realName(config.ircRealName)
+            .nick(bridge.config.irc.nickName)
+            .serverHost(bridge.config.irc.hostname)
+            .serverPort(bridge.config.irc.port)
+            .serverPassword(bridge.config.irc.password)
+            .secure(bridge.config.irc.sslEnabled)
+            .user(bridge.config.irc.userName)
+            .realName(bridge.config.irc.realName)
 
-        if (config.ircAllowInvalidCerts) {
+        if (bridge.config.irc.allowInvalidCerts) {
             builder.secureTrustManagerFactory(null)
         }
 
@@ -49,25 +48,25 @@ class IrcPier(private val bridge: Bridge) : Pier {
         ircConn = builder.buildAndConnect()
 
         // join all mapped channels
-        for (mapping in config.channelMappings) {
+        for (mapping in bridge.config.channelMappings) {
             ircConn?.addChannel(mapping.ircChannel)
             logger.debug("Joined ${mapping.ircChannel}")
         }
 
         // execute any commands
-        for (command in config.ircCommandsInit) {
+        for (command in bridge.config.irc.startupRawCommands) {
             ircConn?.sendRawLine(command)
         }
 
         // listeners
         ircConn?.eventManager?.registerEventListener(IrcMessageListener(this))
 
-        if (config.announceJoinsQuits) {
+        if (bridge.config.announceJoinsQuits) {
             ircConn?.eventManager?.registerEventListener(IrcJoinQuitListener(this))
         }
 
-        noPrefix = config.ircNoPrefixRegex
-        antiPing = config.ircAntiPing
+        noPrefix = bridge.config.irc.noPrefixRegex
+        antiPing = bridge.config.irc.antiPing
 
         logger.info("Connected to IRC!")
     }
@@ -98,7 +97,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
             if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
                 ircMsgOut = "$senderPrefix$line"
-            } else if (bridge.config.ircAnnounceForwardedCommands) {
+            } else if (bridge.config.irc.announceForwardedCommands) {
                 channel.sendMessage("Forwarded command from ${getDisplayName(msg.sender.displayName)}")
             }
 

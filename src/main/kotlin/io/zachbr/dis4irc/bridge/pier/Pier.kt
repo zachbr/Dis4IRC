@@ -8,15 +8,14 @@
 
 package io.zachbr.dis4irc.bridge.pier
 
-import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.message.Message
 
 interface Pier {
 
     /**
-     * Initializes a pier, connecting it to whatever backend it needs, and readying it for use
+     * Starts a pier, connecting it to whatever backend it needs, and readying it for use
      */
-    fun init(config: BridgeConfiguration)
+    fun start()
 
     /**
      * Safely shuts down a pier

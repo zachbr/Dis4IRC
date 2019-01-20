@@ -9,7 +9,6 @@
 package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
@@ -34,15 +33,15 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     private var discordApi: JDA? = null
     private var botAvatarUrl: String? = null
 
-    override fun init(config: BridgeConfiguration) {
+    override fun start() {
         logger.info("Connecting to Discord API...")
 
         val discordApiBuilder = JDABuilder()
-            .setToken(config.discordApiKey)
+            .setToken(bridge.config.discord.apiKey)
             .setGame(Game.of(Game.GameType.DEFAULT, "IRC"))
             .addEventListener(DiscordMsgListener(this))
 
-        if (config.announceJoinsQuits) {
+        if (bridge.config.announceJoinsQuits) {
             discordApiBuilder.addEventListener(DiscordJoinQuitListener(this))
         }
 
@@ -51,10 +50,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             .awaitReady()
 
         // init webhooks
-        if (config.discordWebHooks.isNotEmpty()) {
+        if (bridge.config.discord.webHooks.isNotEmpty()) {
             logger.info("Initializing Discord webhooks")
 
-            for (hook in config.discordWebHooks) {
+            for (hook in bridge.config.discord.webHooks) {
                 val webhook: WebhookClient
                 try {
                     webhook = WebhookClientBuilder(hook.webhookUrl).build()

@@ -46,8 +46,8 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
         logger.debug(config.toLoggable())
 
         try {
-            discordConn.init(config)
-            ircConn.init(config)
+            discordConn.start()
+            ircConn.start()
         } catch (ex: Exception) { // just catch everything - "conditions that a reasonable application might want to catch"
             logger.error("Unable to initialize bridge connections: $ex")
             ex.printStackTrace()

@@ -9,9 +9,7 @@
 package io.zachbr.dis4irc.config
 
 import io.zachbr.dis4irc.Dis4IRC.Companion.logger
-import io.zachbr.dis4irc.bridge.BridgeConfiguration
-import io.zachbr.dis4irc.bridge.ChannelMapping
-import io.zachbr.dis4irc.bridge.WebhookMapping
+import io.zachbr.dis4irc.bridge.*
 import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import java.util.regex.Pattern
@@ -181,24 +179,16 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         throw IllegalArgumentException("Cannot start $bridgeName bridge with above configuration errors!")
     }
 
+    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings)
+    val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
+        ircRealName, ircAntiPing, ircNoPrefixPattern, ircAnnounceForwards, ircCommandsList)
+
     return BridgeConfiguration(
         bridgeName,
-        ircHost,
-        ircPass,
-        ircPort,
-        ircUseSsl,
-        ircAllowBadSsl,
-        ircNickName,
-        ircUserName,
-        ircRealName,
-        ircAntiPing,
-        ircNoPrefixPattern,
-        ircAnnounceForwards,
-        ircCommandsList,
-        discordApiKey,
         announceJoinsQuits,
-        webhookMappings,
         channelMappings,
+        ircConfig,
+        discordConfig,
         this
     )
 }
