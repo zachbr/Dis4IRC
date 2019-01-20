@@ -100,7 +100,7 @@ license {
     header = project.file('HEADER.txt')
     ext {
         name = rootProject.name
-        year = "2018"
+        year = "2018-2019"
     }
 }
 
