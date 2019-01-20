@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.stream.Collectors
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
@@ -27,6 +28,7 @@ val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateExcept
 class Dis4IRC(args: Array<String>) {
     private var configPath: String = "config.hocon"
     private val bridgesByName = HashMap<String, Bridge>()
+    private val bridgesInErr = ArrayList<String>()
     private var shuttingDown = false
 
     init {
@@ -100,14 +102,25 @@ class Dis4IRC(args: Array<String>) {
         bridge.startBridge()
     }
 
-    // todo - at some point we should make it reflect the exit state of individual bridges, but additional tracking will be needed for that
     internal fun notifyOfBridgeShutdown(bridge: Bridge, inErr: Boolean) {
         val name = bridge.config.bridgeName
         bridgesByName.remove(name) ?: throw IllegalArgumentException("Unknown bridge: $name has shutdown, why wasn't it tracked?")
 
+        if (inErr) {
+            bridgesInErr.add(bridge.config.bridgeName)
+        }
+
         if (!shuttingDown && bridgesByName.size == 0) {
             logger.info("No bridges running - Exiting")
-            System.exit(0)
+
+            val anyErr = bridgesInErr.isNotEmpty()
+            val exitCode = if (anyErr) 1 else 0
+            if (anyErr) {
+                val errBridges: String = bridgesInErr.stream().collect(Collectors.joining(", "))
+                logger.warn("The following bridges exited in error: $errBridges")
+            }
+
+            System.exit(exitCode)
         }
     }
 
