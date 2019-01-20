@@ -61,6 +61,9 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircAntiPing = ircBaseNode.getNode("anti-ping")
     ircAntiPing.value = true
 
+    val announceForwards = ircBaseNode.getNode("announce-forwarded-messages-sender")
+    announceForwards.value = false
+
     val noPrefixString = ircBaseNode.getNode("no-prefix-regex")
     noPrefixString.value = null
     noPrefixString.setComment("Messages that match this regular expression will be passed to IRC without a user prefix")
@@ -116,6 +119,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
     val ircAntiPing = this.getNode("irc", "anti-ping").boolean
     val ircNoPrefix = this.getNode("irc", "no-prefix-regex").string // nullable
+    val ircAnnounceForwards = this.getNode("irc", "announce-forwarded-messages-sender").boolean
     val ircCommandsChildren = this.getNode("irc", "init-commands-list").childrenList
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.getNode("announce-joins-and-quits").boolean
@@ -189,6 +193,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircRealName,
         ircAntiPing,
         ircNoPrefixPattern,
+        ircAnnounceForwards,
         ircCommandsList,
         discordApiKey,
         announceJoinsQuits,

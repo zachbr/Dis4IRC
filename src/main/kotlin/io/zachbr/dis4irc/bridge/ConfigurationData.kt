@@ -27,6 +27,7 @@ data class BridgeConfiguration(
     val ircRealName: String,
     val ircAntiPing: Boolean,
     val ircNoPrefixRegex: Pattern?,
+    val ircAnnounceForwardedCommands: Boolean,
     val ircCommandsInit: List<String>,
     val discordApiKey: String,
     val announceJoinsQuits: Boolean,

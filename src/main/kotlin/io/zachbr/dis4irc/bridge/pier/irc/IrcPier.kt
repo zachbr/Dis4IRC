@@ -98,6 +98,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
             if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
                 ircMsgOut = "$senderPrefix$line"
+            } else if (bridge.config.ircAnnounceForwardedCommands) {
+                channel.sendMessage("Forwarded command from ${getDisplayName(msg.sender.displayName)}")
             }
 
             channel.sendMultiLineMessage(ircMsgOut)
