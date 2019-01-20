@@ -193,48 +193,46 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val byName = discordApi?.getTextChannelsByName(string, false) ?: return null
         return if (byName.isNotEmpty()) byName.first() else null
     }
+}
 
-    companion object {
-        private const val NICK_ENFORCEMENT_CHAR = "-"
+private const val NICK_ENFORCEMENT_CHAR = "-"
 
-        /**
-         * Ensures name is within Discord's requirements
-         */
-        fun enforceSenderName(name: String): String {
-            if (name.length < 2) {
-                return NICK_ENFORCEMENT_CHAR + name + NICK_ENFORCEMENT_CHAR
-            }
-
-            if (name.length > 32) {
-                return name.substring(0, 32)
-            }
-
-            return name
-        }
-
-        /**
-         * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
-         */
-        fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
-            var out = base
-
-            fun isWhiteSpace(i: Int): Boolean {
-                return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
-            }
-
-            var start = out.indexOf(target, 0)
-            while (start > -1) {
-                val end = start + target.length
-                val nextSearchStart = start + replacement.length
-
-                if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
-                    out = out.replaceFirst(target, replacement)
-                }
-
-                start = out.indexOf(target, nextSearchStart)
-            }
-
-            return out
-        }
+/**
+ * Ensures name is within Discord's requirements
+ */
+fun enforceSenderName(name: String): String {
+    if (name.length < 2) {
+        return NICK_ENFORCEMENT_CHAR + name + NICK_ENFORCEMENT_CHAR
     }
+
+    if (name.length > 32) {
+        return name.substring(0, 32)
+    }
+
+    return name
+}
+
+/**
+ * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
+ */
+fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
+    var out = base
+
+    fun isWhiteSpace(i: Int): Boolean {
+        return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
+    }
+
+    var start = out.indexOf(target, 0)
+    while (start > -1) {
+        val end = start + target.length
+        val nextSearchStart = start + replacement.length
+
+        if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
+            out = out.replaceFirst(target, replacement)
+        }
+
+        start = out.indexOf(target, nextSearchStart)
+    }
+
+    return out
 }

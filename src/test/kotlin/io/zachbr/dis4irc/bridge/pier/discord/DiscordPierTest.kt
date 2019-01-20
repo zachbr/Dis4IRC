@@ -21,8 +21,8 @@ class DiscordPierTest {
         val noSepTarget = ":potato:"
         val noSepReplace = ":taco:"
 
-        assertEquals(":taco::taco::taco:", DiscordPier.replaceTarget(noSepBase, noSepTarget, noSepReplace, requireSeparation = false))
-        assertEquals(":taco: :taco: :taco:", DiscordPier.replaceTarget(noSepReplaceSpaces, noSepTarget, noSepReplace, requireSeparation = false))
+        assertEquals(":taco::taco::taco:", replaceTarget(noSepBase, noSepTarget, noSepReplace, requireSeparation = false))
+        assertEquals(":taco: :taco: :taco:", replaceTarget(noSepReplaceSpaces, noSepTarget, noSepReplace, requireSeparation = false))
 
         // test require separation
         val noLeadingChars = "@Z750 some text"
@@ -34,11 +34,11 @@ class DiscordPierTest {
         val target = "@Z750"
         val replacement = "12345"
 
-        assertEquals(noLeadingChars.replace(target, replacement), DiscordPier.replaceTarget(noLeadingChars, target, replacement))
-        assertEquals(middleOfStr.replace(target, replacement), DiscordPier.replaceTarget(middleOfStr, target, replacement))
-        assertEquals(endOfStr.replace(target, replacement), DiscordPier.replaceTarget(endOfStr, target, replacement))
-        assertEquals(failNoSep, DiscordPier.replaceTarget(failNoSep, target, replacement))
-        assertEquals("12345 should replace but@Z750should not", DiscordPier.replaceTarget(mixedCase, target, replacement))
+        assertEquals(noLeadingChars.replace(target, replacement), replaceTarget(noLeadingChars, target, replacement))
+        assertEquals(middleOfStr.replace(target, replacement), replaceTarget(middleOfStr, target, replacement))
+        assertEquals(endOfStr.replace(target, replacement), replaceTarget(endOfStr, target, replacement))
+        assertEquals(failNoSep, replaceTarget(failNoSep, target, replacement))
+        assertEquals("12345 should replace but@Z750should not", replaceTarget(mixedCase, target, replacement))
     }
 
     @Test
@@ -53,11 +53,11 @@ class DiscordPierTest {
         val edgeCaseLower = "12" // length = 2
         val edgeCaseHigher = "12345678901234567890123456789012" // length = 32
 
-        assertEquals(edgeCaseLower, DiscordPier.enforceSenderName(edgeCaseLower))
-        assertEquals(edgeCaseHigher, DiscordPier.enforceSenderName(edgeCaseHigher))
-        assertEquals(okay, DiscordPier.enforceSenderName(okay))
+        assertEquals(edgeCaseLower, enforceSenderName(edgeCaseLower))
+        assertEquals(edgeCaseHigher, enforceSenderName(edgeCaseHigher))
+        assertEquals(okay, enforceSenderName(okay))
 
-        assertTrue(DiscordPier.enforceSenderName(tooShort).length >= minimumAcceptedLength)
-        assertTrue(DiscordPier.enforceSenderName(tooLong).length <= maximumAcceptedLength)
+        assertTrue(enforceSenderName(tooShort).length >= minimumAcceptedLength)
+        assertTrue(enforceSenderName(tooLong).length <= maximumAcceptedLength)
     }
 }

@@ -8,7 +8,7 @@
 
 package io.zachbr.dis4irc.config
 
-import io.zachbr.dis4irc.Dis4IRC.Companion.logger
+import io.zachbr.dis4irc.logger
 import ninja.leaping.configurate.ConfigurationOptions
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader

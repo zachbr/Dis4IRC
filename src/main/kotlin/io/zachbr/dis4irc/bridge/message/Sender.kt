@@ -16,7 +16,7 @@ data class Sender(
      */
     val displayName: String,
     /**
-     * User's discord snowflake id, or null if the message originated from IRC
+     * User's discord snowflake id, or null if the message originated from Discord
      */
     val discordId: Long?,
     /**

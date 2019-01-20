@@ -8,8 +8,8 @@
 
 package io.zachbr.dis4irc.config
 
-import io.zachbr.dis4irc.Dis4IRC.Companion.logger
 import io.zachbr.dis4irc.bridge.*
+import io.zachbr.dis4irc.logger
 import ninja.leaping.configurate.ConfigurationNode
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import java.util.regex.Pattern

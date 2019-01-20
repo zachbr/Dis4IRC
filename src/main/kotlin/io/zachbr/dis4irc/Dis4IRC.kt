@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory
 fun main(args: Array<String>) {
     Dis4IRC(args)
 }
+val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
 
 class Dis4IRC(args: Array<String>) {
     private var configPath: String = "config.hocon"
@@ -140,13 +141,6 @@ class Dis4IRC(args: Array<String>) {
         println("Built on ${Versioning.buildDate}")
         println("Source available at ${Versioning.sourceRepo}")
         println("Available under the MIT License")
-    }
-
-    companion object {
-        /**
-         * Static logger for use *only* during initialization, bridges have their own loggers
-         */
-        val logger: Logger = LoggerFactory.getLogger("init") ?: throw IllegalStateException("Unable to init logger!")
     }
 }
 

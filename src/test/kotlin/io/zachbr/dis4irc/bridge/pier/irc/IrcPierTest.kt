@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 class IrcPierTest {
     @Test
     fun testAntiPing() {
-        assertEquals("k\u200Bit\u200Bte\u200Bn", IrcPier.rebuildWithAntiPing("kitten"))
-        assertEquals("k\u200Bit\u200Bte\u200Bn \u200B\uD83C\uDF57\u200B", IrcPier.rebuildWithAntiPing("kitten \uD83C\uDF57"))
+        assertEquals("k\u200Bit\u200Bte\u200Bn", rebuildWithAntiPing("kitten"))
+        assertEquals("k\u200Bit\u200Bte\u200Bn \u200B\uD83C\uDF57\u200B", rebuildWithAntiPing("kitten \uD83C\uDF57"))
     }
 }
