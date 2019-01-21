@@ -19,7 +19,7 @@ import java.lang.StringBuilder
 import java.util.regex.Pattern
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
-private val NICK_COLORS = intArrayOf(10, 6, 3, 7, 12, 11, 13, 9, 2)
+private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -119,7 +119,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     private fun getDisplayName(nick: String): String {
         var index = 0
         nick.toCharArray().forEach { index += it.toByte() }
-        val color = NICK_COLORS[index % NICK_COLORS.size].toString()
+        val color = NICK_COLORS[index % NICK_COLORS.size]
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
         return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
