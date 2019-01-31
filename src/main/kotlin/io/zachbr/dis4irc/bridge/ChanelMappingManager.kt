@@ -20,7 +20,7 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
 
     init {
         for (mapping in conf.channelMappings) {
-            discord2Irc[mapping.discordChannel] = mapping.ircChannel
+            discord2Irc[mapping.discordChannel] = mapping.ircChannel.toLowerCase()
         }
 
         // reverse
@@ -40,14 +40,14 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
     /**
      * Gets the IRC channel to bridge to based on the given string
      */
-    private fun discordMappingByName(id: String): String? {
-        return discord2Irc[id]
+    private fun discordMappingByName(discordId: String): String? {
+        return discord2Irc[discordId]
     }
 
     /**
      * Gets the discord channel identifier to bridge to based on the IRC channel name
      */
-    private fun ircMappingByName(name: String): String? {
-        return irc2Discord[name]
+    private fun ircMappingByName(ircChannel: String): String? {
+        return irc2Discord[ircChannel.toLowerCase()]
     }
 }
