@@ -29,9 +29,8 @@ private const val ZERO_WIDTH_SPACE = 0x200B.toChar()
 class DiscordPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private val webhookMap = HashMap<String, WebhookClient>()
-
-    private var discordApi: JDA? = null
     private var botAvatarUrl: String? = null
+    private lateinit var discordApi: JDA
 
     override fun start() {
         logger.info("Connecting to Discord API...")
@@ -68,14 +67,14 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
         }
 
-        botAvatarUrl = discordApi?.selfUser?.avatarUrl
+        botAvatarUrl = discordApi.selfUser?.avatarUrl
 
-        logger.info("Discord Bot Invite URL: ${discordApi?.asBot()?.getInviteUrl()}")
+        logger.info("Discord Bot Invite URL: ${discordApi.asBot()?.getInviteUrl()}")
         logger.info("Connected to Discord!")
     }
 
     override fun shutdown() {
-        discordApi?.shutdownNow()
+        discordApi.shutdownNow()
 
         for (client in webhookMap.values) {
             client.close()
@@ -83,6 +82,11 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {
+        if (!this::discordApi.isInitialized) {
+            logger.error("Discord Connection has not been initialized yet!")
+            return
+        }
+
         val channel = getTextChannelBy(targetChan)
         if (channel == null) {
             logger.error("Unable to get a discord channel for: $targetChan | Is bot present?")
@@ -142,7 +146,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         var senderName = enforceSenderName(msg.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
         if (msg.sender == BOT_SENDER) {
-            senderName = guild.getMember(discordApi?.selfUser)?.effectiveName ?: senderName
+            senderName = guild.getMember(discordApi.selfUser)?.effectiveName ?: senderName
             avatarUrl = botAvatarUrl ?: avatarUrl
         }
 
@@ -160,7 +164,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      */
     fun isThisBot(source: Source, snowflake: Long): Boolean {
         // check against bot user directly
-        if (snowflake == discordApi?.selfUser?.idLong) {
+        if (snowflake == discordApi.selfUser.idLong) {
             return true
         }
 
@@ -185,12 +189,12 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      * Gets a text channel by snowflake ID or string
      */
     private fun getTextChannelBy(string: String): TextChannel? {
-        val byId = discordApi?.getTextChannelById(string)
+        val byId = discordApi.getTextChannelById(string)
         if (byId != null) {
             return byId
         }
 
-        val byName = discordApi?.getTextChannelsByName(string, false) ?: return null
+        val byName = discordApi.getTextChannelsByName(string, false) ?: return null
         return if (byName.isNotEmpty()) byName.first() else null
     }
 }

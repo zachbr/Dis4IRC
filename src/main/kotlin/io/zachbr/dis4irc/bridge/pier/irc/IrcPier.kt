@@ -23,8 +23,8 @@ private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09"
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
+    private lateinit var ircConn: Client
     private var antiPing: Boolean = false
-    private var ircConn: Client? = null
     private var noPrefix: Pattern? = null
 
     override fun start() {
@@ -50,20 +50,20 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         // join all mapped channels
         for (mapping in bridge.config.channelMappings) {
-            ircConn?.addChannel(mapping.ircChannel)
+            ircConn.addChannel(mapping.ircChannel)
             logger.debug("Joined ${mapping.ircChannel}")
         }
 
         // execute any commands
         for (command in bridge.config.irc.startupRawCommands) {
-            ircConn?.sendRawLine(command)
+            ircConn.sendRawLine(command)
         }
 
         // listeners
-        ircConn?.eventManager?.registerEventListener(IrcMessageListener(this))
+        ircConn.eventManager.registerEventListener(IrcMessageListener(this))
 
         if (bridge.config.announceJoinsQuits) {
-            ircConn?.eventManager?.registerEventListener(IrcJoinQuitListener(this))
+            ircConn.eventManager.registerEventListener(IrcJoinQuitListener(this))
         }
 
         noPrefix = bridge.config.irc.noPrefixRegex
@@ -73,10 +73,15 @@ class IrcPier(private val bridge: Bridge) : Pier {
     }
 
     override fun shutdown() {
-        ircConn?.shutdown("Exiting...")
+        ircConn.shutdown("Exiting...")
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {
+        if (!this::ircConn.isInitialized) {
+            logger.error("IRC Connection has not been initialized yet!")
+            return
+        }
+
         val channel = getChannelByName(targetChan)
         if (channel == null) {
             logger.error("Unable to get or join $targetChan to send message from ${msg.sender.displayName}")
@@ -130,21 +135,21 @@ class IrcPier(private val bridge: Bridge) : Pier {
      * Gets a channel by name, joining it if necessary
      */
     private fun getChannelByName(name: String): Channel? {
-        val chan = ircConn?.getChannel(name)?.toNullable()
+        val chan = ircConn.getChannel(name).toNullable()
         if (chan == null) {
             logger.warn("Bridge not in expected channel $name, was it kicked?")
             logger.debug("Attempting to rejoin $name")
-            ircConn?.addChannel(name)
+            ircConn.addChannel(name)
         }
 
-        return chan ?: ircConn?.getChannel(name)?.toNullable()
+        return chan ?: ircConn.getChannel(name).toNullable()
     }
 
     /**
      * Gets the IRC bot user's nickname
      */
     fun getBotNick(): String? {
-        return ircConn?.nick
+        return ircConn.nick
     }
 
     /**
