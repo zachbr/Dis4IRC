@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.20'
     id 'net.minecrell.licenser' version "0.4.1"
     id 'com.github.johnrengelman.shadow' version '4.0.3'
     id 'io.spring.dependency-management' version '1.0.1.RELEASE'
@@ -62,23 +62,23 @@ shadowJar {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.kitteh.irc:client-lib:4.0.3"
-    implementation("net.dv8tion:JDA:3.8.1_437") {
+    implementation "org.kitteh.irc:client-lib:5.1.2"
+    implementation("net.dv8tion:JDA:3.8.3_460") {
         exclude module: 'opus-java'
     }
 
-    implementation 'org.json:json:20160810'
+    implementation 'org.json:json:20180813'
     implementation "org.spongepowered:configurate-hocon:3.6"
-    implementation "com.atlassian.commonmark:commonmark:0.11.0"
-    implementation "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.11.0"
+    implementation "com.atlassian.commonmark:commonmark:0.12.1"
+    implementation "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.12.1"
 
-    implementation "org.slf4j:slf4j-api:1.7.25"
-    implementation "org.apache.logging.log4j:log4j-core:2.11.1"
-    runtime "org.apache.logging.log4j:log4j-slf4j-impl:2.11.1"
+    implementation "org.slf4j:slf4j-api:1.7.26"
+    implementation "org.apache.logging.log4j:log4j-core:2.11.2"
+    runtime "org.apache.logging.log4j:log4j-slf4j-impl:2.11.2"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.3.11"
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.3.20"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
 }
 
 dependencyManagement {

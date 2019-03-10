@@ -33,19 +33,20 @@ class IrcPier(private val bridge: Bridge) : Pier {
         // configure IRC
         val builder = Client.builder()
             .nick(bridge.config.irc.nickName)
-            .serverHost(bridge.config.irc.hostname)
-            .serverPort(bridge.config.irc.port)
-            .serverPassword(bridge.config.irc.password)
-            .secure(bridge.config.irc.sslEnabled)
             .user(bridge.config.irc.userName)
             .realName(bridge.config.irc.realName)
+            .server()
+                .host(bridge.config.irc.hostname)
+                .port(bridge.config.irc.port)
+                .password(bridge.config.irc.password)
+                .secure(bridge.config.irc.sslEnabled)
 
         if (bridge.config.irc.allowInvalidCerts) {
             builder.secureTrustManagerFactory(null)
         }
 
         // connect
-        ircConn = builder.buildAndConnect()
+        ircConn = builder.then().buildAndConnect()
 
         // join all mapped channels
         for (mapping in bridge.config.channelMappings) {
