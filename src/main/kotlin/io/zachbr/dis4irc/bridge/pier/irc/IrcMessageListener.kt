@@ -13,6 +13,8 @@ import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelCtcpEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 import org.kitteh.irc.client.library.event.client.ClientConnectionClosedEvent
+import org.kitteh.irc.client.library.event.user.PrivateMessageEvent
+import org.kitteh.irc.client.library.event.user.PrivateNoticeEvent
 import org.kitteh.irc.client.library.util.Format
 
 private const val CTCP_ACTION = "ACTION"
@@ -61,6 +63,16 @@ class IrcMessageListener(private val pier: IrcPier) {
         val source = event.channel.asBridgeSource()
         val message = Message(messageText, sender, source, receiveTimestamp)
         pier.sendToBridge(message)
+    }
+
+    @Handler
+    fun onPrivateMessage(event: PrivateMessageEvent) {
+        logger.debug("IRC PRIVMSG ${event.actor.nick}: ${event.message}")
+    }
+
+    @Handler
+    fun onPrivateNotice(event: PrivateNoticeEvent) {
+        logger.debug("IRC NOTICE ${event.actor.nick}: ${event.message}")
     }
 
     @Handler

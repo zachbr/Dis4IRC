@@ -48,6 +48,13 @@ class IrcPier(private val bridge: Bridge) : Pier {
         // connect
         ircConn = builder.then().buildAndConnect()
 
+        // listeners
+        ircConn.eventManager.registerEventListener(IrcMessageListener(this))
+
+        if (bridge.config.announceJoinsQuits) {
+            ircConn.eventManager.registerEventListener(IrcJoinQuitListener(this))
+        }
+
         // execute any startup commands
         for (command in bridge.config.irc.startupRawCommands) {
             logger.debug("Sending raw init command: $command")
@@ -58,13 +65,6 @@ class IrcPier(private val bridge: Bridge) : Pier {
         for (mapping in bridge.config.channelMappings) {
             logger.debug("Joining ${mapping.ircChannel}")
             ircConn.addChannel(mapping.ircChannel)
-        }
-
-        // listeners
-        ircConn.eventManager.registerEventListener(IrcMessageListener(this))
-
-        if (bridge.config.announceJoinsQuits) {
-            ircConn.eventManager.registerEventListener(IrcJoinQuitListener(this))
         }
 
         noPrefix = bridge.config.irc.noPrefixRegex
