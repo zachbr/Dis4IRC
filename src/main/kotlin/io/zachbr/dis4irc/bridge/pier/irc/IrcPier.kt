@@ -48,15 +48,16 @@ class IrcPier(private val bridge: Bridge) : Pier {
         // connect
         ircConn = builder.then().buildAndConnect()
 
-        // join all mapped channels
-        for (mapping in bridge.config.channelMappings) {
-            ircConn.addChannel(mapping.ircChannel)
-            logger.debug("Joined ${mapping.ircChannel}")
+        // execute any startup commands
+        for (command in bridge.config.irc.startupRawCommands) {
+            logger.debug("Sending raw init command: $command")
+            ircConn.sendRawLine(command)
         }
 
-        // execute any commands
-        for (command in bridge.config.irc.startupRawCommands) {
-            ircConn.sendRawLine(command)
+        // join all mapped channels
+        for (mapping in bridge.config.channelMappings) {
+            logger.debug("Joining ${mapping.ircChannel}")
+            ircConn.addChannel(mapping.ircChannel)
         }
 
         // listeners
