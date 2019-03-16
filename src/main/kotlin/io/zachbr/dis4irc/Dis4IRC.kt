@@ -14,6 +14,7 @@ import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
@@ -42,20 +43,32 @@ class Dis4IRC(args: Array<String>) {
         logger.info("Loading config from: $configPath")
         val config = Configuration(configPath)
 
-        val debugNode = config.getNode("debug-logging")
-        if (debugNode.isVirtual) {
-            debugNode.value = false
-            config.saveConfig()
+        //
+        // Logging
+        //
+
+        val logLevel = config.getNode("log-level")
+        if (logLevel.isVirtual) {
+            logLevel.setComment("Sets the minimum amount of detail sent to the log. Acceptable values are: " +
+                    "ERROR, WARN, INFO, DEBUG, TRACE") // I see no reason to mention OFF, FATAL, or ALL explicitly
+            logLevel.value = "INFO"
         }
 
-        if (debugNode.boolean) {
-            val logContext = LogManager.getContext(false) as LoggerContext
-            val logConfig = logContext.configuration
-            logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = org.apache.logging.log4j.Level.DEBUG
-            logContext.updateLoggers(logConfig)
+        val legacyLogDebugNode = config.getNode("debug-logging")
+        if (!legacyLogDebugNode.isVirtual) {
+            if (legacyLogDebugNode.boolean) {
+                logLevel.value = "DEBUG"
+            }
 
-            logger.debug("Debug logging enabled")
+            legacyLogDebugNode.value = null
         }
+
+        val l4j = Level.getLevel(logLevel.string) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
+        setLoggingLevel(l4j)
+
+        //
+        // Bridges
+        //
 
         val bridgesNode = config.getNode("bridges")
         if (bridgesNode.isVirtual) {
@@ -155,6 +168,15 @@ class Dis4IRC(args: Array<String>) {
         println("Source available at ${Versioning.sourceRepo}")
         println("Available under the MIT License")
     }
+}
+
+fun setLoggingLevel(level: Level) {
+    val logContext = LogManager.getContext(false) as LoggerContext
+    val logConfig = logContext.configuration
+    logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = level
+    logContext.updateLoggers(logConfig)
+
+    logger.debug("Log level set to $level")
 }
 
 
