@@ -17,6 +17,7 @@ import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
 import java.lang.StringBuilder
 import java.util.regex.Pattern
+import kotlin.math.abs
 
 private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
@@ -126,7 +127,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     private fun getDisplayName(nick: String): String {
         var index = 0
         nick.toCharArray().forEach { index += it.toByte() }
-        val color = NICK_COLORS[index % NICK_COLORS.size]
+        val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
         return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
