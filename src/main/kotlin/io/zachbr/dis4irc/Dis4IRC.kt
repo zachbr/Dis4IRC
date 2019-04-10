@@ -63,7 +63,7 @@ class Dis4IRC(args: Array<String>) {
             legacyLogDebugNode.value = null
         }
 
-        val l4j = Level.getLevel(logLevel.string) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
+        val l4j = Level.getLevel(logLevel.string?.toUpperCase()) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
         setLoggingLevel(l4j)
 
         //
