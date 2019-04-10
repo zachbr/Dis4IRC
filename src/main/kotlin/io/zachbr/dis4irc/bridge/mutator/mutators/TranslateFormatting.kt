@@ -11,6 +11,8 @@ package io.zachbr.dis4irc.bridge.mutator.mutators
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
+import io.zachbr.dis4irc.util.DiscordSpoiler
+import io.zachbr.dis4irc.util.DiscordSpoilerExtension
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.*
@@ -29,7 +31,7 @@ private val UNIQUE_KEY_STR = UUID.randomUUID().toString().replace("-", "")
  */
 class TranslateFormatting : Mutator {
     private val markdownParser = Parser.Builder()
-        .extensions(Collections.singletonList(StrikethroughExtension.create()))
+        .extensions(listOf(StrikethroughExtension.create(), DiscordSpoilerExtension.create()))
         .build()
 
     private val ircMarkdownRenderer = TextContentRenderer.builder()
@@ -82,6 +84,7 @@ class TranslateFormatting : Mutator {
  */
 class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), NodeRenderer {
     private val textContent = context.writer
+    private val spoilerFormatCodeSequence = "${IrcFormattingCodes.COLOR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}"
 
     override fun render(node: Node?) {
         node?.accept(this)
@@ -216,7 +219,13 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(customBlock: CustomBlock?) {
-        TODO("not implemented")
+        if (customBlock is DiscordSpoiler) {
+            textContent.write(spoilerFormatCodeSequence)
+            visitChildren(customBlock)
+            textContent.write(IrcFormattingCodes.COLOR.char)
+        } else {
+            throw IllegalArgumentException("Unknown custom block: $customBlock")
+        }
     }
 
     override fun visit(customNode: CustomNode?) {
@@ -225,7 +234,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
             visitChildren(customNode)
             textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
         } else {
-            TODO("not implemented")
+            throw IllegalArgumentException("Unknown custom node: $customNode")
         }
     }
 
@@ -246,7 +255,7 @@ enum class DiscordFormattingCodes(val code: String) {
 }
 
 /**
- * Based on info from https://modern.ircdocs.horse/formatting.html
+ * Based on info from https://modern.ircdocs.horse/formatting.html#characters
  */
 enum class IrcFormattingCodes(val char: Char) {
     COLOR(0x03.toChar()),
@@ -258,6 +267,17 @@ enum class IrcFormattingCodes(val char: Char) {
     RESET(0x0F.toChar());
 
     val code: String = char.toString()
+    override fun toString(): String = code
+}
+
+/**
+ * Based on info from https://modern.ircdocs.horse/formatting.html#colors
+ */
+enum class IrcColorCodes(val code: String) { // always use 2 digit codes
+    WHITE("00"),
+    BLACK("01"),
+    DEFAULT("99"); // this is not well supported by clients
+
     override fun toString(): String = code
 }
 

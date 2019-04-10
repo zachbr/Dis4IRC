@@ -13,6 +13,7 @@ import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
+import io.zachbr.dis4irc.util.replaceTarget
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.entities.Game
@@ -216,27 +217,3 @@ fun enforceSenderName(name: String): String {
     return name
 }
 
-/**
- * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
- */
-fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
-    var out = base
-
-    fun isWhiteSpace(i: Int): Boolean {
-        return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
-    }
-
-    var start = out.indexOf(target, 0)
-    while (start > -1) {
-        val end = start + target.length
-        val nextSearchStart = start + replacement.length
-
-        if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
-            out = out.replaceFirst(target, replacement)
-        }
-
-        start = out.indexOf(target, nextSearchStart)
-    }
-
-    return out
-}

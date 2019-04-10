@@ -100,7 +100,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             val maxLength = Math.min(100, cleaned.length)
             val shortened = cleaned.substring(0, maxLength) + "..."
 
-            message.contents = "$shortened ${it.pasteUrl}"
+            message.contents = "$shortened${IrcFormattingCodes.RESET} ${it.pasteUrl}"
             resubmitToBridge(message)
         }
 
