@@ -63,7 +63,7 @@ shadowJar {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.kitteh.irc:client-lib:5.1.2"
-    implementation("net.dv8tion:JDA:3.8.3_460") {
+    implementation("net.dv8tion:JDA:3.8.3_463") {
         exclude module: 'opus-java'
     }
 
