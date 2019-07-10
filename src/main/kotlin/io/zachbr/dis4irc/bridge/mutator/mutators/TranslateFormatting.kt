@@ -209,9 +209,14 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(strongEmphasis: StrongEmphasis?) {
-        textContent.write(IrcFormattingCodes.BOLD.char)
+        val wrapper: Char = when (strongEmphasis?.openingDelimiter) {
+            DiscordFormattingCodes.BOLD.code -> IrcFormattingCodes.BOLD.char
+            DiscordFormattingCodes.UNDERLINE.code -> IrcFormattingCodes.UNDERLINE.char
+            else -> throw IllegalArgumentException("Unknown strong emphasis delimiter: ${strongEmphasis?.openingDelimiter}")
+        }
+        textContent.write(wrapper)
         visitChildren(strongEmphasis)
-        textContent.write(IrcFormattingCodes.BOLD.char)
+        textContent.write(wrapper)
     }
 
     override fun visit(text: Text?) {

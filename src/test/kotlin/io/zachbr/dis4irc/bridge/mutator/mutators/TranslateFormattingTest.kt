@@ -18,7 +18,7 @@ import org.kitteh.irc.client.library.util.Format
 
 class TranslateFormattingTest {
     @Test
-    fun testIt() {
+    fun ircToDiscord() {
         this.testIrcToDiscord("[Test] test pushed **1** new commit to master: __https://example.com/example__", "[\u000313Test\u000F] \u000315test\u000F pushed \u00021\u000F new commit to \u000306master\u000F: \u000302\u001Fhttps://example.com/example\u000F")
         this.testIrcToDiscord("abc123", Format.RED.toString() + "abc123")
         this.testIrcToDiscord("***This is a*** test.", Format.BOLD.toString() + Format.ITALIC.toString() + "This is a" + Format.RESET.toString() + " test.")
@@ -30,8 +30,28 @@ class TranslateFormattingTest {
         this.testIrcToDiscord("**bold**__underline__`monospaced`__*~~striked~~*__", "\u0002bold\u0002\u001Funderline\u0011monospaced\u0011\u001D\u001Estriked\u001E")
     }
 
+    @Test
+    fun discordToIrc() {
+        this.testDiscordToIrc("${Format.BOLD}Test bold${Format.BOLD}", "**Test bold**")
+        this.testDiscordToIrc("${Format.ITALIC}Test italics${Format.ITALIC}", "*Test italics*")
+        this.testDiscordToIrc("${Format.UNDERLINE}Test underlines${Format.UNDERLINE}", "__Test underlines__")
+        this.testDiscordToIrc("${IrcFormattingCodes.STRIKETHROUGH}Test strikethrough${IrcFormattingCodes.STRIKETHROUGH}", "~~Test strikethrough~~")
+        this.testDiscordToIrc("${Format.COLOR_CHAR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}Test spoiler${Format.COLOR_CHAR}", "||Test spoiler||")
+        this.testDiscordToIrc("${IrcFormattingCodes.MONOSPACE}Test inline code${IrcFormattingCodes.MONOSPACE}", "`Test inline code`")
+
+        //this.testDiscordToIrc("Attached${Format.COLOR_CHAR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}together${Format.COLOR_CHAR}", "Attached||together||") // TODO - fix bug in case
+        this.testDiscordToIrc("¯\\_(ツ)_/¯", "¯\\_(ツ)_/¯")
+    }
+
     private fun testIrcToDiscord(expected: String, string: String) {
         val message = Message(string, Sender("Test", null, null), Source("#test", null, PlatformType.IRC), System.nanoTime())
+        val mutator = TranslateFormatting()
+        mutator.mutate(message)
+        assertEquals(expected, message.contents)
+    }
+
+    private fun testDiscordToIrc(expected: String, input: String) {
+        val message = Message(input, Sender("Test", null, null), Source("#test", null, PlatformType.DISCORD), System.nanoTime())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)

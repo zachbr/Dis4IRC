@@ -49,7 +49,7 @@ class DiscordSpoilerParser : AbstractBlockParser() {
         if (isClosing(line, state.nextNonSpaceIndex)) {
             return BlockContinue.finished()
         } else {
-            while (newIndex < line.length && line[newIndex] == ' ') {
+            while (newIndex < line.length && line[newIndex].isWhitespace()) {
                 newIndex++
             }
         }
@@ -95,8 +95,7 @@ class DiscordSpoilerParser : AbstractBlockParser() {
 
 private fun checkOpener(line: CharSequence, index: Int): DiscordSpoilerParser? {
     var pipes = 0
-    val length = line.length
-    loop@ for (i in index until length) {
+    loop@ for (i in line.indices) {
         when (line[i]) {
             FENCE_CHAR -> pipes++
             else -> break@loop
