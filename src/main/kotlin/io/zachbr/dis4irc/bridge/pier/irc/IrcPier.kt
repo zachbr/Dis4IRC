@@ -105,8 +105,11 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
             if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
                 ircMsgOut = "$senderPrefix$line"
-            } else if (bridge.config.irc.announceForwardedCommands) {
-                channel.sendMessage("Forwarded command from ${getDisplayName(msg.sender.displayName)}")
+            } else {
+                logger.debug("Message matches no-prefix-regex: $noPrefixPattern, sending without name")
+                if (bridge.config.irc.announceForwardedCommands) {
+                    channel.sendMessage("Forwarded command from ${getDisplayName(msg.sender.displayName)}")
+                }
             }
 
             channel.sendMultiLineMessage(ircMsgOut)
