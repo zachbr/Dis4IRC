@@ -20,6 +20,7 @@ import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.stream.Collectors
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     Dis4IRC(args)
@@ -133,7 +134,7 @@ class Dis4IRC(args: Array<String>) {
                 logger.warn("The following bridges exited in error: $errBridges")
             }
 
-            System.exit(exitCode)
+            exitProcess(exitCode)
         }
     }
 
@@ -142,11 +143,11 @@ class Dis4IRC(args: Array<String>) {
             when (arg.toLowerCase()) {
                 "-v","--version" -> {
                     printVersionInfo(minimal = true)
-                    System.exit(0)
+                    exitProcess(0)
                 }
                 "--about" -> {
                     printVersionInfo(minimal = false)
-                    System.exit(0)
+                    exitProcess(0)
                 }
                 "-c", "--config" -> {
                     if (args.size >= i + 2) {

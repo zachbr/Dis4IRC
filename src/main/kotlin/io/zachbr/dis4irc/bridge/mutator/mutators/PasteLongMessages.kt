@@ -23,6 +23,7 @@ import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
+import kotlin.math.min
 
 private const val FENCED_BLOCK = "```"
 
@@ -97,7 +98,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
                 .replace("```", "")
                 .replace("`", "")
 
-            val maxLength = Math.min(100, cleaned.length)
+            val maxLength = min(100, cleaned.length)
             val shortened = cleaned.substring(0, maxLength) + "..."
 
             message.contents = "$shortened${IrcFormattingCodes.RESET} ${it.pasteUrl}"

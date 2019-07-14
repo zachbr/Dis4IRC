@@ -182,7 +182,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(message: io.zachbr.dis4irc.bridge.message.Message) {
+    fun sendToBridge(message: Message) {
         bridge.submitMessage(message)
     }
 

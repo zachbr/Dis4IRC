@@ -92,7 +92,7 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
 
     override fun getNodeTypes(): HashSet<Class<out Node>> {
         return HashSet(
-            Arrays.asList(
+            listOf (
                 Document::class.java,
                 Heading::class.java,
                 Paragraph::class.java,
@@ -271,14 +271,14 @@ enum class IrcFormattingCodes(val char: Char) {
     MONOSPACE(0x11.toChar()),
     RESET(0x0F.toChar());
 
-    val code: String = char.toString()
+    private val code: String = char.toString()
     override fun toString(): String = code
 }
 
 /**
  * Based on info from https://modern.ircdocs.horse/formatting.html#colors
  */
-enum class IrcColorCodes(val code: String) { // always use 2 digit codes
+enum class IrcColorCodes(private val code: String) { // always use 2 digit codes
     WHITE("00"),
     BLACK("01"),
     DEFAULT("99"); // this is not well supported by clients

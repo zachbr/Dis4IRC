@@ -74,9 +74,8 @@ class DiscordSpoilerParser : AbstractBlockParser() {
 
         override fun tryStart(state: ParserState, matchedBlockParser: MatchedBlockParser): BlockStart? {
             val nextNonSpace = state.nextNonSpaceIndex
-            val blockParser = checkOpener(state.line, nextNonSpace)
-            return if (blockParser != null) {
-                BlockStart.of(blockParser).atIndex(nextNonSpace + FENCE_LENGTH)
+            return if (checkOpener(state.line, nextNonSpace)) {
+                BlockStart.of(DiscordSpoilerParser()).atIndex(nextNonSpace + FENCE_LENGTH)
             } else {
                 BlockStart.none()
             }
@@ -93,17 +92,20 @@ class DiscordSpoilerParser : AbstractBlockParser() {
     }
 }
 
-private fun checkOpener(line: CharSequence, index: Int): DiscordSpoilerParser? {
-    var pipes = 0
-    loop@ for (i in line.indices) {
-        when (line[i]) {
-            FENCE_CHAR -> pipes++
-            else -> break@loop
+fun checkOpener(line: CharSequence, startingIndex: Int): Boolean {
+    var matches = 0
+    var i = startingIndex
+    while (i < line.length) {
+        if (line[i] == FENCE_CHAR) {
+            matches++
+
+            if (matches >= FENCE_LENGTH) {
+                return true
+            }
         }
+
+        i++
     }
-    return if (pipes >= FENCE_LENGTH) {
-        DiscordSpoilerParser()
-    } else {
-        null
-    }
+
+    return false
 }
