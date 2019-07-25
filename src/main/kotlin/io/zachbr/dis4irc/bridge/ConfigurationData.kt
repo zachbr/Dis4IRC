@@ -18,6 +18,7 @@ val MATCH_ALL_INDIV = Regex(".")
 data class BridgeConfiguration(
     val bridgeName: String,
     val announceJoinsQuits: Boolean,
+    val announceExtras: Boolean,
     val channelMappings: List<ChannelMapping>,
     val irc: IrcConfiguration,
     val discord: DiscordConfiguration,
@@ -28,6 +29,7 @@ data class BridgeConfiguration(
         return "BridgeConfiguration(" +
                 "bridgeName='$bridgeName', " +
                 "announceJoinsQuits=$announceJoinsQuits, " +
+                "announceExtras=$announceExtras, " +
                 "channelMappings=$channelMappings, " +
                 irc.toLoggable() + " " +
                 discord.toLoggable() + " " +

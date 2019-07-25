@@ -29,7 +29,10 @@ bridges {
     # A bridge is a single bridged connection operating in its own space away from all the other bridges
     # Most people will only need this one default bridge
     default {
+        # Relay joins, quits, parts, and kicks
         announce-joins-and-quits=false
+        # Relay extra verbose information you don't really need like topics and mode changes.
+        announce-extras=false
         # Mappings are the channel <-> channel bridging configurations
         channel-mappings {
             "712345611123456811"="#bridgedChannel"

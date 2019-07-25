@@ -56,6 +56,10 @@ class IrcPier(private val bridge: Bridge) : Pier {
             ircConn.eventManager.registerEventListener(IrcJoinQuitListener(this))
         }
 
+        if (bridge.config.announceExtras) {
+            ircConn.eventManager.registerEventListener(IrcExtrasListener(this))
+        }
+
         // execute any startup commands
         for (command in bridge.config.irc.startupRawCommands) {
             logger.debug("Sending raw init command: $command")
