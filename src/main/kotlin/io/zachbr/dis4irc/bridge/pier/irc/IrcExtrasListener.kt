@@ -21,7 +21,7 @@ class IrcExtrasListener(private val pier: IrcPier) {
     fun onModeChange(event: ChannelModeEvent) {
         val receiveTimestamp = System.nanoTime()
         val sender = BOT_SENDER
-        val msgContent = "${event.actor.name} changed channel modes: ${event.statusList.statusString}"
+        val msgContent = "${event.actor.name} changed channel modes: ${event.statusList.asString}"
         logger.debug("IRC MODE CHANGE ${event.channel}")
 
         val source = event.channel.asBridgeSource()
@@ -34,10 +34,10 @@ class IrcExtrasListener(private val pier: IrcPier) {
         val receiveTimestamp = System.nanoTime()
         val sender = BOT_SENDER
         var topicSetter = ""
-        if (event.topic.setter.isPresent) {
-            topicSetter = " set by " + event.topic.setter.get().name
+        if (event.newTopic.setter.isPresent) {
+            topicSetter = " set by " + event.newTopic.setter.get().name
         }
-        val topicValue = event.topic.value.orElse("Unknown topic")
+        val topicValue = event.newTopic.value.orElse("Unknown topic")
         val msgContent = "Topic$topicSetter: $topicValue"
         logger.debug("IRC TOPIC$topicSetter: $topicValue")
 
