@@ -69,6 +69,12 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         // join all mapped channels
         for (mapping in bridge.config.channelMappings) {
+            if (mapping.ircChannel == "private-messages") {
+                ircConn.eventManager.registerEventListener(IrcPrivateListener(this))
+                logger.debug("Listening for private messages")
+                continue
+            }
+
             logger.debug("Joining ${mapping.ircChannel}")
             ircConn.addChannel(mapping.ircChannel)
         }
