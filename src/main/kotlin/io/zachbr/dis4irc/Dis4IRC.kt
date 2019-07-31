@@ -37,7 +37,6 @@ class Dis4IRC(args: Array<String>) {
         parseArguments(args)
 
         logger.info("Dis4IRC v${Versioning.version}-${Versioning.gitHash}")
-        logger.info("Built on ${Versioning.buildDate}")
         logger.info("Source available at ${Versioning.sourceRepo}")
         logger.info("Available under the MIT License")
 
@@ -165,7 +164,6 @@ class Dis4IRC(args: Array<String>) {
             return
         }
 
-        println("Built on ${Versioning.buildDate}")
         println("Source available at ${Versioning.sourceRepo}")
         println("Available under the MIT License")
     }

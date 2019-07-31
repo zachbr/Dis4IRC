@@ -43,7 +43,6 @@ processResources {
                 'project-name'       : rootProject.name,
                 'project-version'    : version,
                 'project-git-hash'   : getGitHash(),
-                'project-build-date' : new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC")), // use ISO8601
                 'project-source-repo': 'https://github.com/zachbr/Dis4IRC'
         ]
     }
@@ -56,6 +55,7 @@ artifacts {
 shadowJar {
     classifier = null
     preserveFileTimestamps = false
+    reproducibleFileOrder = true
 
     from "LICENSE.md"
 }
