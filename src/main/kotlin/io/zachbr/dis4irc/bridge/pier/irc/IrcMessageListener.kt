@@ -18,12 +18,16 @@ import org.kitteh.irc.client.library.event.user.PrivateNoticeEvent
 import org.kitteh.irc.client.library.util.Format
 
 private const val CTCP_ACTION = "ACTION"
+private const val LAST_DISCONNECT_DELTA = 30_000 // ms
+private const val NUM_DISCONNECT_THRESHOLD = 4
 
 /**
  * Responsible for listening to incoming IRC messages and filtering garbage
  */
 class IrcMessageListener(private val pier: IrcPier) {
     private val logger = pier.logger
+    private var lastDisconnect = System.currentTimeMillis()
+    private var numRecentDisconnects = -1
 
     @Handler
     fun onMessage(event: ChannelMessageEvent) {
@@ -77,10 +81,25 @@ class IrcMessageListener(private val pier: IrcPier) {
 
     @Handler
     fun onConnectionClosed(event: ClientConnectionClosedEvent) {
-        event.setAttemptReconnect(true)
-        event.reconnectionDelay = 3000
-
         logger.warn("IRC connection closed: ${event.cause.toNullable()?.localizedMessage ?: "null reason"}")
-        logger.info("Will attempt to reconnect")
+
+        val now = System.currentTimeMillis()
+        val shouldReconnect: Boolean
+        if (now - lastDisconnect < LAST_DISCONNECT_DELTA) {
+            numRecentDisconnects++
+
+            shouldReconnect = numRecentDisconnects <= NUM_DISCONNECT_THRESHOLD
+            logger.debug("Reconnect: $shouldReconnect, numRecentDisconnects: $numRecentDisconnects")
+        } else {
+            numRecentDisconnects = 0
+            shouldReconnect = true
+            logger.debug("RESET: Reconnect: $shouldReconnect, numRecentDisconnects: $numRecentDisconnects")
+        }
+
+        lastDisconnect = now
+        event.setAttemptReconnect(shouldReconnect)
+        if (!shouldReconnect) {
+            this.pier.signalShutdown(inErr = true) // a disconnected bridge is a worthless bridge
+        }
     }
 }

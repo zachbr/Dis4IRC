@@ -74,7 +74,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         logger.info("Connected to Discord!")
     }
 
-    override fun shutdown() {
+    override fun onShutdown() {
         discordApi.shutdownNow()
 
         for (client in webhookMap.values) {

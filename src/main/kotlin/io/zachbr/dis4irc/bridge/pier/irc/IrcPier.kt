@@ -79,7 +79,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         logger.info("Connected to IRC!")
     }
 
-    override fun shutdown() {
+    override fun onShutdown() {
         ircConn.shutdown("Exiting...")
     }
 
@@ -167,6 +167,13 @@ class IrcPier(private val bridge: Bridge) : Pier {
      */
     fun sendToBridge(message: Message) {
         bridge.submitMessage(message)
+    }
+
+    /**
+     * Signals the bridge that the pier needs to shutdown
+     */
+    fun signalShutdown(inErr: Boolean) {
+        this.bridge.shutdown(inErr)
     }
 }
 

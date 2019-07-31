@@ -18,9 +18,9 @@ interface Pier {
     fun start()
 
     /**
-     * Safely shuts down a pier
+     * Called when the bridge is to be safely shutdown
      */
-    fun shutdown()
+    fun onShutdown()
 
     /**
      * Sends a message through this pier

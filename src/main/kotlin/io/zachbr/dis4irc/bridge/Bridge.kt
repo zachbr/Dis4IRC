@@ -94,8 +94,8 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
     internal fun shutdown(inErr: Boolean = false) {
         logger.debug("Stopping bridge...")
 
-        discordConn.shutdown()
-        ircConn.shutdown()
+        discordConn.onShutdown()
+        ircConn.onShutdown()
 
         logger.info("Bridge stopped")
         main.notifyOfBridgeShutdown(this, inErr)
