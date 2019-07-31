@@ -83,15 +83,10 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
         logger.debug("IRC QUIT ${event.user.nick}")
 
         for (channel in event.user.channels) {
-            val chan = event.client.getChannel(channel)
+            val chan = event.client.getChannel(channel).toNullable() ?: continue
 
-            if (chan.isEmpty) {
-                continue
-            }
-
-            val source = chan.get().asBridgeSource()
+            val source = chan.asBridgeSource()
             val message = Message(msgContent, sender, source, receiveTimestamp)
-
             pier.sendToBridge(message)
         }
     }
