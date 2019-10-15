@@ -72,11 +72,6 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
 
     @Handler
     fun onUserQuit(event: UserQuitEvent) {
-        // don't log our own quitting
-        if (event.user.nick == pier.getBotNick()) {
-            return
-        }
-
         val receiveTimestamp = System.nanoTime()
         val sender = BOT_SENDER
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has quit"
