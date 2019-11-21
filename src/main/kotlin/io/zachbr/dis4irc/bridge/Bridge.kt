@@ -17,8 +17,8 @@ import io.zachbr.dis4irc.bridge.mutator.MutatorManager
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.bridge.pier.discord.DiscordPier
 import io.zachbr.dis4irc.bridge.pier.irc.IrcPier
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
-import java.lang.Exception
 
 /**
  * Responsible for the connection between Discord and IRC, including message processing hand offs
@@ -94,6 +94,17 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
 
         logger.info("Bridge stopped")
         main.notifyOfBridgeShutdown(this, inErr)
+    }
+
+    internal fun persistData(json: JSONObject): JSONObject {
+        json.put("statistics", statsManager.writeData(JSONObject()))
+        return json
+    }
+
+    internal fun readSavedData(json: JSONObject) {
+        if (json.has("statistics")) {
+            statsManager.readSavedData(json.getJSONObject("statistics"))
+        }
     }
 
     /**

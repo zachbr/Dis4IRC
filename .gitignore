@@ -2,6 +2,7 @@
 
 # Bridge configs
 *.hocon
+bridge-data.dat
 
 # End project specific files
 

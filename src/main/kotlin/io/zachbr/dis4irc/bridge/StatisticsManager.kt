@@ -11,6 +11,9 @@ package io.zachbr.dis4irc.bridge
 import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
+import org.json.JSONObject
+import java.lang.NumberFormatException
+import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 /**
@@ -18,8 +21,8 @@ import java.util.concurrent.TimeUnit
  */
 class StatisticsManager(private val bridge: Bridge) {
     private val messageTimings = EvictingQueue.create<Long>(1000)
-    private var totalFromIrc: Long = 0
-    private var totalFromDiscord: Long = 0
+    private var totalFromIrc = BigInteger.valueOf(0)
+    private var totalFromDiscord = BigInteger.valueOf(0)
 
     /**
      * Processes a message, adding it to whatever statistic counters it needs
@@ -44,14 +47,14 @@ class StatisticsManager(private val bridge: Bridge) {
     /**
      * Gets the total count of messages sent from IRC since the bridge was started
      */
-    fun getTotalFromIrc(): Long {
+    fun getTotalFromIrc(): BigInteger {
         return totalFromIrc
     }
 
     /**
      * Gets the total count of messages sent from Discord since the bridge was started
      */
-    fun getTotalFromDiscord(): Long {
+    fun getTotalFromDiscord(): BigInteger {
         return totalFromDiscord
     }
 
@@ -60,5 +63,18 @@ class StatisticsManager(private val bridge: Bridge) {
      */
     fun getMessageTimings(): LongArray {
         return messageTimings.toLongArray()
+    }
+
+    fun writeData(json: JSONObject): JSONObject {
+        json.put("irc", totalFromIrc)
+        json.put("discord", totalFromDiscord)
+        return json
+    }
+
+    fun readSavedData(json: JSONObject) {
+        val ircLoaded: BigInteger = json.optBigInteger("irc", BigInteger.ZERO)
+        val discordLoaded: BigInteger = json.optBigInteger("discord", BigInteger.ZERO)
+        totalFromIrc += ircLoaded
+        totalFromDiscord += discordLoaded
     }
 }
