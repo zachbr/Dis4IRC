@@ -10,8 +10,8 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Sender
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 /**
  * Responsible for listening to incoming discord messages and filtering garbage
@@ -19,12 +19,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter
 class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
     private val logger = pier.logger
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent?) {
-        if (event == null) {
-            logger.debug("Null Discord message event from JDA")
-            return
-        }
-
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         // dont bridge itself
         val source = event.channel.asBridgeSource()
         if (pier.isThisBot(source, event.author.idLong)) {
@@ -37,7 +32,7 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         val receiveTimestamp = System.nanoTime()
-        logger.debug("DISCORD MSG ${event.channel?.name} ${event.author.name}: ${event.message.contentStripped}")
+        logger.debug("DISCORD MSG ${event.channel.name} ${event.author.name}: ${event.message.contentStripped}")
 
         // We need to get the guild member in order to grab their display name
         val guildMember = event.guild.getMember(event.author)

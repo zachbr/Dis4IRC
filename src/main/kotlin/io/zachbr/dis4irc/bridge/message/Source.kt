@@ -22,3 +22,7 @@ data class Source(
      */
     val type: PlatformType
 )
+
+fun sourceFromUnknown(platform: PlatformType): Source { // TODO - better solutions elsewhere?
+    return Source("Unknown", 0, platform)
+}

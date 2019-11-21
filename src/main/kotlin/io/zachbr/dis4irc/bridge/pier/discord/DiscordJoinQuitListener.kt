@@ -10,21 +10,18 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.bridge.message.sourceFromUnknown
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
+import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter() {
     private val logger = pier.logger
 
-    override fun onGuildMemberJoin(event: GuildMemberJoinEvent?) {
-        if (event == null) {
-            logger.debug("Null Discord join event from JDA")
-            return
-        }
-
+    override fun onGuildMemberJoin(event: GuildMemberJoinEvent) {
         val channel = event.guild.systemChannel
-        val source = channel.asBridgeSource()
+        val source = channel?.asBridgeSource() ?: sourceFromUnknown(PlatformType.DISCORD)
 
         // don't bridge itself
         if (pier.isThisBot(source, event.user.idLong)) {
@@ -39,14 +36,9 @@ class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter()
         pier.sendToBridge(message)
     }
 
-    override fun onGuildMemberLeave(event: GuildMemberLeaveEvent?) {
-        if (event == null) {
-            logger.debug("Null Discord leave event from JDA")
-            return
-        }
-
+    override fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
         val channel = event.guild.systemChannel
-        val source = channel.asBridgeSource()
+        val source = channel?.asBridgeSource() ?: sourceFromUnknown(PlatformType.DISCORD)
 
         // don't bridge itself
         if (pier.isThisBot(source, event.user.idLong)) {

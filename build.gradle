@@ -14,6 +14,7 @@ repositories {
     maven { url 'https://dl.bintray.com/dv8fromtheworld/maven/' }
     maven { url 'https://repo.spongepowered.org/maven' }
     mavenCentral()
+    jcenter()
 }
 
 jar {
@@ -63,9 +64,10 @@ shadowJar {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.kitteh.irc:client-lib:7.2.2"
-    implementation("net.dv8tion:JDA:3.8.3_463") {
+    implementation("net.dv8tion:JDA:4.0.0_39") {
         exclude module: 'opus-java'
     }
+    implementation "club.minnced:discord-webhooks:0.1.8"
 
     implementation 'org.json:json:20180813'
     implementation "org.spongepowered:configurate-hocon:3.6"

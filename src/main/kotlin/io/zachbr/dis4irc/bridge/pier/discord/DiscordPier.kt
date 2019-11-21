@@ -8,20 +8,20 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
+import club.minnced.discord.webhook.WebhookClient
+import club.minnced.discord.webhook.WebhookClientBuilder
+import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.util.replaceTarget
-import net.dv8tion.jda.core.JDA
-import net.dv8tion.jda.core.JDABuilder
-import net.dv8tion.jda.core.entities.Game
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.webhook.WebhookClient
-import net.dv8tion.jda.webhook.WebhookClientBuilder
-import net.dv8tion.jda.webhook.WebhookMessageBuilder
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.TextChannel
 import org.slf4j.Logger
 import java.util.*
 
@@ -38,11 +38,11 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val discordApiBuilder = JDABuilder()
             .setToken(bridge.config.discord.apiKey)
-            .setGame(Game.of(Game.GameType.DEFAULT, "IRC"))
-            .addEventListener(DiscordMsgListener(this))
+            .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "IRC"))
+            .addEventListeners(DiscordMsgListener(this))
 
         if (bridge.config.announceJoinsQuits) {
-            discordApiBuilder.addEventListener(DiscordJoinQuitListener(this))
+            discordApiBuilder.addEventListeners(DiscordJoinQuitListener(this))
         }
 
         discordApi = discordApiBuilder
@@ -68,9 +68,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
         }
 
-        botAvatarUrl = discordApi.selfUser?.avatarUrl
+        botAvatarUrl = discordApi.selfUser.avatarUrl
 
-        logger.info("Discord Bot Invite URL: ${discordApi.asBot()?.getInviteUrl()}")
+        logger.info("Discord Bot Invite URL: ${discordApi.getInviteUrl()}")
         logger.info("Connected to Discord!")
     }
 
@@ -140,7 +140,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         // try and get avatar for matching user
         var avatarUrl: String? = null
         val matchingUsers = guild.getMembersByEffectiveName(msg.sender.displayName, true)
-        if (matchingUsers != null && matchingUsers.isNotEmpty()) {
+        if (matchingUsers.isNotEmpty()) {
             avatarUrl = matchingUsers.first().user.avatarUrl
         }
 
@@ -172,7 +172,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         // check against webclients
         val webhook = webhookMap[source.discordId.toString()] ?: webhookMap[source.channelName]
         if (webhook != null) {
-            return snowflake == webhook.idLong
+            return snowflake == webhook.id
         }
 
         // nope
@@ -195,7 +195,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             return byId
         }
 
-        val byName = discordApi.getTextChannelsByName(string, false) ?: return null
+        val byName = discordApi.getTextChannelsByName(string, false)
         return if (byName.isNotEmpty()) byName.first() else null
     }
 }
