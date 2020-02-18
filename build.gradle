@@ -64,10 +64,10 @@ shadowJar {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.kitteh.irc:client-lib:7.2.2"
-    implementation("net.dv8tion:JDA:4.0.0_39") {
+    implementation("net.dv8tion:JDA:4.1.1_101") {
         exclude module: 'opus-java'
     }
-    implementation "club.minnced:discord-webhooks:0.1.8"
+    implementation "club.minnced:discord-webhooks:0.2.0"
 
     implementation 'org.json:json:20180813'
     implementation "org.spongepowered:configurate-hocon:3.6"
