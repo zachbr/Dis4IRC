@@ -10,6 +10,7 @@ package io.zachbr.dis4irc.bridge.pier.discord
 
 import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.WebhookClientBuilder
+import club.minnced.discord.webhook.send.AllowedMentions
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
@@ -155,6 +156,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             .setContent(msg.contents)
             .setUsername(senderName)
             .setAvatarUrl(avatarUrl)
+            .setAllowedMentions(AllowedMentions().withParseUsers(true))
             .build()
 
         webhook.send(message)
