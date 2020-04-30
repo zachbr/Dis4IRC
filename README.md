@@ -43,6 +43,14 @@ bridges {
         discord-webhooks {
             "712345611123456811"="https://discordapp.com/api/webhooks/712345611123456811/blahblahurl"
         }
+        commands {
+            pinned {
+                enabled="true"
+            }
+            stats {
+                enabled="true"
+            }
+        }
         # Configuration for connecting to the IRC server
         irc {
             anti-ping=true

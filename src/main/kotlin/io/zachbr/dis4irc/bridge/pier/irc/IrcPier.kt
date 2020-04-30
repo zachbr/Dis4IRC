@@ -96,7 +96,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val senderPrefix = getSenderPrefix(msg)
+        val senderPrefix = getDisplayNamePrefix(msg)
         var msgContent = msg.contents
 
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {
@@ -109,7 +109,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
             var ircMsgOut = line
 
             if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
-                ircMsgOut = "$senderPrefix$line"
+                ircMsgOut = "$senderPrefix $line"
             } else {
                 logger.debug("Message matches no-prefix-regex: $noPrefixPattern, sending without name")
                 if (bridge.config.irc.announceForwardedCommands) {
@@ -124,7 +124,18 @@ class IrcPier(private val bridge: Bridge) : Pier {
         bridge.updateStatistics(msg, outTimestamp)
     }
 
-    private fun getSenderPrefix(msg: Message): String {
+    fun sendNotice(targetUser: String, message: String) {
+        if (!this::ircConn.isInitialized) {
+            logger.error("IRC Connection has not been initialized yet!")
+            return
+        }
+
+        for (line in message.split("\n")) {
+            ircConn.sendMultiLineNotice(targetUser, line)
+        }
+    }
+
+    fun getDisplayNamePrefix(msg: Message): String {
         if (msg.originatesFromBridgeItself()) {
             return ""
         }
@@ -138,7 +149,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
-        return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +"> "
+        return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +">"
     }
 
     /**

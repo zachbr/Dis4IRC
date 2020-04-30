@@ -17,7 +17,7 @@ import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 
 class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
-    private val mutators = ArrayList<Mutator>()
+    private val mutators = HashMap<Class<out Mutator>, Mutator>()
 
     init {
         registerMutator(BlockHereEveryone())
@@ -26,11 +26,11 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     }
 
     private fun registerMutator(mutator: Mutator) {
-        mutators.add(mutator)
+        mutators[mutator.javaClass] = mutator
     }
 
     internal fun applyMutators(message: Message): Message? {
-        val iterator = mutators.iterator()
+        val iterator = mutators.values.iterator()
 
         loop@ while (iterator.hasNext()) {
             val mutator = iterator.next()
@@ -49,5 +49,11 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
         }
 
         return message
+    }
+
+    internal fun applyMutator(clazz: Class<out Mutator>, message: Message) {
+        val mutator = mutators[clazz] ?: throw NoSuchElementException("No mutator with class type: ${clazz.simpleName}")
+        mutator.mutate(message)
+        message.markMutatorApplied(mutator.javaClass)
     }
 }

@@ -24,7 +24,9 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 import org.slf4j.Logger
+import java.lang.StringBuilder
 import java.util.*
+import kotlin.collections.ArrayList
 
 private const val ZERO_WIDTH_SPACE = 0x200B.toChar()
 
@@ -186,6 +188,16 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      */
     fun sendToBridge(message: Message) {
         bridge.submitMessage(message)
+    }
+
+    /**
+     * Gets the pinned messages from the specified discord channel or null if the channel cannot be found
+     */
+    fun getPinnedMessages(channelId: String): List<Message>? {
+        val channel = getTextChannelBy(channelId) ?: return null
+        val messages = channel.retrievePinnedMessages().complete()
+
+        return messages.map { it.toBridgeMsg(logger) }.toList()
     }
 
     /**
