@@ -8,6 +8,7 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
@@ -43,7 +44,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 .secure(bridge.config.irc.sslEnabled)
 
         if (bridge.config.irc.allowInvalidCerts) {
-            builder.secureTrustManagerFactory(null)
+            logger.warn("Allowing invalid TLS certificates for IRC. This is not recommended.")
+            builder.secureTrustManagerFactory(InsecureTrustManagerFactory.INSTANCE)
         }
 
         // connect
