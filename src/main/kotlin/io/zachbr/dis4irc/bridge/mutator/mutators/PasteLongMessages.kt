@@ -32,6 +32,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
 
     private var maxNewlines: Int = 4
     private var maxMsgLength: Int = 450
+    private var pasteExpiryDays: Long = 7
 
     init {
         val msgNewlineCount = config.getNode("max-new-lines")
@@ -44,8 +45,15 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             msgLengthNode.value = maxMsgLength
         }
 
+        val pasteExpiryNode = config.getNode("paste-expiration-in-days")
+        if (pasteExpiryNode.isVirtual) {
+            pasteExpiryNode.setComment("Number of days before paste expires. Use 0 to never expire.")
+            pasteExpiryNode.value = pasteExpiryDays
+        }
+
         maxNewlines = msgNewlineCount.int
         maxMsgLength = msgLengthNode.int
+        pasteExpiryDays = pasteExpiryNode.long
     }
 
     override fun mutate(message: Message): Mutator.LifeCycle {
@@ -134,7 +142,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
         }
 
         // call out to paste service for response at some unknown point in the future
-        pasteService.dispatchPaste(builder.toString(), highlightLang, onSuccess, onError)
+        pasteService.dispatchPaste(builder.toString(), highlightLang, onSuccess, onError, pasteExpiryDays)
 
         // message will be resubmitted in the future with mutated content string
         // we want this version to die here
@@ -163,12 +171,14 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
          * @param highlightLang language name to use for syntax highlighting
          * @param successConsumer consumer to run if the paste is submitted successfully
          * @param errorConsumer consumer to run if there is any problem submitting the paste
+         * @param expiryDays number of days before the paste expires, use 0 to never expire
          */
         internal fun dispatchPaste(
             message: String,
             highlightLang: String?,
             successConsumer: Consumer<Response>,
-            errorConsumer: Consumer<Response>
+            errorConsumer: Consumer<Response>,
+            expiryDays: Long
         ) {
             fun OffsetDateTime.toIso8601(): String = this.format(DateTimeFormatter.ISO_DATE_TIME)
             val rightNow = OffsetDateTime.now()
@@ -177,7 +187,6 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             val pasteName = rightNow.toIso8601()
             val visibility = PasteVisibility.UNLISTED.toString()
             val format = PasteFormat.TEXT.toString()
-            val expires = rightNow.plusDays(7).toIso8601()
 
             // the paste service will barf if you send it an unsupported highlight language
             // so we must validate it before we use it
@@ -190,7 +199,6 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             val jsonPayload = JSONObject()
                 .put("name", pasteName)
                 .put("visibility", visibility)
-                .put("expires", expires)
                 .put(
                     "files", JSONArray(
                         arrayOf(
@@ -205,6 +213,10 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
                         )
                     )
                 )
+
+            if (expiryDays > 0) {
+                jsonPayload.put("expires", rightNow.plusDays(expiryDays).toIso8601())
+            }
 
             logger.debug("JSON payload")
             logJson(jsonPayload)

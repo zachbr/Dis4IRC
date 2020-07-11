@@ -72,6 +72,8 @@ bridges {
             paste-service {
                 max-message-length=450
                 max-new-lines=4
+                # Number of days before paste expires. Use 0 to never expire.
+                paste-expiration-in-days=7
             }
         }
     }
