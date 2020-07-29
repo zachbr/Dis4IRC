@@ -13,6 +13,7 @@ import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
+import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
 import org.kitteh.irc.client.library.element.Channel
 import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
@@ -39,9 +40,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
             .realName(bridge.config.irc.realName)
             .server()
                 .host(bridge.config.irc.hostname)
-                .port(bridge.config.irc.port)
+                .port(bridge.config.irc.port, if (bridge.config.irc.sslEnabled) SecurityType.SECURE else SecurityType.INSECURE)
                 .password(bridge.config.irc.password)
-                .secure(bridge.config.irc.sslEnabled)
 
         if (bridge.config.irc.allowInvalidCerts) {
             logger.warn("Allowing invalid TLS certificates for IRC. This is not recommended.")
