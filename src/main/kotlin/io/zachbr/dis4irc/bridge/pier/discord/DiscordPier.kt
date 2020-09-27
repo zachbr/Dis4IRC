@@ -23,6 +23,9 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.MemberCachePolicy
+import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.slf4j.Logger
 import java.lang.StringBuilder
 import java.util.*
@@ -39,8 +42,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     override fun start() {
         logger.info("Connecting to Discord API...")
 
-        val discordApiBuilder = JDABuilder()
-            .setToken(bridge.config.discord.apiKey)
+        val discordApiBuilder = JDABuilder.createLight(bridge.config.discord.apiKey,
+            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS)
+            .setMemberCachePolicy(MemberCachePolicy.ALL) // so we can cache invisible members and ping people not online
+            .enableCache(CacheFlag.EMOTE)
             .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "IRC"))
             .addEventListeners(DiscordMsgListener(this))
 

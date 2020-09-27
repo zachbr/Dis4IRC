@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.70'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'net.minecrell.licenser' version "0.4.1"
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'io.spring.dependency-management' version '1.0.6.RELEASE'
@@ -63,22 +63,22 @@ shadowJar {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.kitteh.irc:client-lib:7.3.0"
-    implementation("net.dv8tion:JDA:4.1.1_101") {
+    implementation("net.dv8tion:JDA:4.2.0_168") {
         exclude module: 'opus-java'
     }
-    implementation "club.minnced:discord-webhooks:0.3.1"
+    implementation "club.minnced:discord-webhooks:0.5.0"
 
     implementation 'org.json:json:20180813'
-    implementation "org.spongepowered:configurate-hocon:3.6.1"
-    implementation "com.atlassian.commonmark:commonmark:0.13.1"
-    implementation "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.13.1"
+    implementation "org.spongepowered:configurate-hocon:3.7.1"
+    implementation "com.atlassian.commonmark:commonmark:0.15.2"
+    implementation "com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2"
 
     implementation "org.slf4j:slf4j-api:1.7.30"
     implementation "org.apache.logging.log4j:log4j-core:2.13.2"
     runtime "org.apache.logging.log4j:log4j-slf4j-impl:2.13.2"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.3.70"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.4.10"
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 

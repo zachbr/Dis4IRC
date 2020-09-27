@@ -10,7 +10,7 @@ Let's get started.
 
 -------
 
-Start by going to the [Discord Developer Portal](https://discordapp.com/developers)
+Start by going to the [Discord Developer Portal](https://discord.com/developers/)
 and logging in with your Discord account.
 
 Next, on the main portal page, select the large "Create an application" placeholder.
@@ -35,5 +35,12 @@ Now click the "Copy" button under the "Token" section. That is your bot's Discor
 you should paste into the config file.
 
 ![copy-token](https://i.imgur.com/vBsNirQ.png)
+
+You're almost done, just one more thing. Scroll down, under "Privileged Gateway Intents" and make sure that
+the "Server Members Intent" is set to On.
+
+Dis4IRC requires this intent to properly cache the member list for things like pings from IRC.
+
+![gateway-intents](https://i.imgur.com/QIohhXv.png)
 
 Back to the [Getting Started page](https://github.com/zachbr/Dis4IRC/blob/master/docs/Getting-Started.md)
