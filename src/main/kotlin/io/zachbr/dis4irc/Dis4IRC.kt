@@ -25,7 +25,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.stream.Collectors
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.collections.ArrayList
@@ -61,8 +60,7 @@ class Dis4IRC(args: Array<String>) {
         val logLevel = config.getNode("log-level")
         if (logLevel.isVirtual) {
             logLevel.setComment("Sets the minimum amount of detail sent to the log. Acceptable values are: " +
-                        "ERROR, WARN, INFO, DEBUG, TRACE"
-            ) // I see no reason to mention OFF, FATAL, or ALL explicitly
+                        "ERROR, WARN, INFO, DEBUG, TRACE") // I see no reason to mention OFF, FATAL, or ALL explicitly
             logLevel.value = "INFO"
         }
 
@@ -94,7 +92,7 @@ class Dis4IRC(args: Array<String>) {
             logger.debug("Default config written to $configPath")
         }
 
-        if (bridgesNode.hasMapChildren()) {
+        if (bridgesNode.isMap) {
             bridgesNode.childrenMap.forEach { startBridge(it.value) }
         } else {
             logger.error("No bridge configurations found!")
@@ -106,7 +104,7 @@ class Dis4IRC(args: Array<String>) {
         }
 
         // re-save config now that bridges have init'd to hopefully update the file with any defaults
-        //config.saveConfig() // Can throw NFE as a result of a HOCON lib issue, see https://github.com/zachbr/Dis4IRC/issues/19
+        config.saveConfig()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             shuttingDown = true

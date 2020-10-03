@@ -13,7 +13,7 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.sourceFromUnknown
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter() {
@@ -36,7 +36,7 @@ class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter()
         pier.sendToBridge(message)
     }
 
-    override fun onGuildMemberLeave(event: GuildMemberLeaveEvent) {
+    override fun onGuildMemberRemove(event: GuildMemberRemoveEvent) {
         val channel = event.guild.systemChannel
         val source = channel?.asBridgeSource() ?: sourceFromUnknown(PlatformType.DISCORD)
 

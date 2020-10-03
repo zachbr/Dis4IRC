@@ -13,7 +13,7 @@ import java.util.jar.Manifest
 private const val JAR_PATH_TO_VERSIONING_INFO = "dis4irc-versioning.txt"
 
 /**
- * Fetches and provides versioning information from the jar's manifest
+ * Fetches and provides versioning information from the manifest specified in [JAR_PATH_TO_VERSIONING_INFO]
  */
 object Versioning {
     /**

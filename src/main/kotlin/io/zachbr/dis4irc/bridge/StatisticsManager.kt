@@ -12,7 +12,6 @@ import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import org.json.JSONObject
-import java.lang.NumberFormatException
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
