@@ -1,6 +1,21 @@
 # Changelog
 User-relevant changes to the software, see the full commit log for all changes.
 
+## 1.2.0 - `7766b34`
+[Commits since 1.1.0](https://github.com/zachbr/Dis4IRC/compare/v1.1.0...v1.2.0)
+* Discord Library Updates - **IMPORTANT**: You will be required to update to this version before November 7th 2020. That
+  is when Discord will remove its old discordapp.com API endpoint.  
+  
+  As part of this update, Please note that Dis4IRC
+  **REQUIRES** the `GUILD_MEMBERS` privileged intent in order to properly cache members at runtime.  
+  **For instructions on adding the needed intent in the Discord Developer Console, please click [here](https://github.com/zachbr/Dis4IRC/blob/master/docs/Registering-A-Discord-Application.md#gateway-intents).**
+* The webhook system now takes advantage of Discord API's _Allowed Mentions_ system, making it harder to abuse mentions.
+* IRC users can now request all pinned messages from the bridged Discord channel using the `pinned` command.
+* All bridge statistics are now persisted to disk, allowing you to restart the bridge without losing message statistics.
+* Commands like `pinned` and `stats` can now be entirely disabled in the config file.
+* The expiration time on pastes submitted by the paste service can now be configured.
+* The IRC library was updated, fixing a reconnect issue with unstable connections.
+
 ## 1.1.0 - `5a3a45e`
 [Commits since 1.0.2](https://github.com/zachbr/Dis4IRC/compare/v1.0.2...v1.1.0)
 * The build date has been removed from the jar to support [reproducible builds](https://en.wikipedia.org/wiki/Reproducible_builds).
