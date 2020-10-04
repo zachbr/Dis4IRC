@@ -1,5 +1,6 @@
 # Changelog
-User-relevant changes to the software, see the full commit log for all changes.
+User-relevant changes to the software, see the full commit log for all changes.  
+[Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
 ## 1.2.0 - `7766b34`
 [Commits since 1.1.0](https://github.com/zachbr/Dis4IRC/compare/v1.1.0...v1.2.0)
