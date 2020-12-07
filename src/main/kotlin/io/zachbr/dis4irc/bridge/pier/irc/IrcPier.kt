@@ -108,7 +108,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         // discord reply handling
         if (msg.referencedMessage != null && referenceLengthLimit != 0) {
-            var context = msg.referencedMessage.contents
+            var context = msg.referencedMessage.contents.replace("\n", " ") // no newlines in context msgs
             if (context.length > referenceLengthLimit) {
                 context = context.substring(0, referenceLengthLimit - 1) + "..."
             }
@@ -133,7 +133,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
             } else {
                 logger.debug("Message matches no-prefix-regex: $noPrefixPattern, sending without name")
                 if (bridge.config.irc.announceForwardedCommands) {
-                    channel.sendMessage("Forwarded command from ${generatedColoredName(msg.sender.displayName)}")
+                    channel.sendMessage("Forwarded command from ${generateColoredName(msg.sender.displayName)}")
                 }
             }
 
@@ -160,12 +160,12 @@ class IrcPier(private val bridge: Bridge) : Pier {
             return ""
         }
 
-        val nameDisplay = generatedColoredName(msg.sender.displayName)
+        val nameDisplay = generateColoredName(msg.sender.displayName)
         return "<$nameDisplay>"
     }
 
     // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
-    private fun generatedColoredName(nick: String): String {
+    private fun generateColoredName(nick: String): String {
         var index = 0
         nick.toCharArray().forEach { index += it.toByte() }
         val color = NICK_COLORS[abs(index) % NICK_COLORS.size]

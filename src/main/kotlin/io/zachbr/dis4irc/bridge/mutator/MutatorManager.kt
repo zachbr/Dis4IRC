@@ -30,6 +30,12 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     }
 
     internal fun applyMutators(message: Message): Message? {
+        // Run mutators on the referenced message, if it exists
+        // Limiting recursion depth is handled at message creation in the discord listener
+        if (message.referencedMessage != null) {
+            applyMutators(message.referencedMessage)
+        }
+
         val iterator = mutators.values.iterator()
 
         loop@ while (iterator.hasNext()) {
