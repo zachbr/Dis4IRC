@@ -49,6 +49,7 @@ data class IrcConfiguration (
     val antiPing: Boolean,
     val noPrefixRegex: Pattern?,
     val announceForwardedCommands: Boolean,
+    val discordReplyContextLimit: Int,
     val startupRawCommands: List<String>
 ) {
     fun toLoggable(): String {
@@ -63,6 +64,8 @@ data class IrcConfiguration (
                 "realName='$realName', " +
                 "antiPing=$antiPing, " +
                 "noPrefixRegex=$noPrefixRegex, " +
+                "announceForwardedCommands=$announceForwardedCommands, " +
+                "discordReplyContextLimit=$discordReplyContextLimit, " +
                 "startupRawCommands=$startupRawCommands" +
                 ")"
     }

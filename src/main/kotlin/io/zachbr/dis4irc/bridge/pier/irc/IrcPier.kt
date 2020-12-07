@@ -29,6 +29,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     private lateinit var ircConn: Client
     private var antiPing: Boolean = false
     private var noPrefix: Pattern? = null
+    private var referenceLengthLimit: Int = 90
 
     override fun start() {
         logger.info("Connecting to IRC Server")
@@ -77,6 +78,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
+        referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
 
         logger.info("Connected to IRC!")
     }
@@ -98,24 +100,40 @@ class IrcPier(private val bridge: Bridge) : Pier {
             return
         }
 
-        val senderPrefix = getDisplayNamePrefix(msg)
         var msgContent = msg.contents
 
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {
             msg.attachments.forEach { msgContent += " $it"}
         }
 
+        // discord reply handling
+        if (msg.referencedMessage != null && referenceLengthLimit != 0) {
+            var context = msg.referencedMessage.contents
+            if (context.length > referenceLengthLimit) {
+                context = context.substring(0, referenceLengthLimit - 1) + "..."
+            }
+
+            var refSender = msg.referencedMessage.sender.displayName
+            // do not ping yourself if you reply to your own messages
+            if (refSender == msg.sender.displayName) {
+                refSender = rebuildWithAntiPing(refSender)
+            }
+
+            channel.sendMessage("Reply to \"$refSender: $context\"")
+        }
+
+        val messagePrefix = createMessagePrefix(msg)
         val noPrefixPattern = noPrefix
         val msgLines = msgContent.split("\n")
         for (line in msgLines) {
             var ircMsgOut = line
 
             if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
-                ircMsgOut = "$senderPrefix $line"
+                ircMsgOut = "$messagePrefix $line"
             } else {
                 logger.debug("Message matches no-prefix-regex: $noPrefixPattern, sending without name")
                 if (bridge.config.irc.announceForwardedCommands) {
-                    channel.sendMessage("Forwarded command from ${getDisplayName(msg.sender.displayName)}")
+                    channel.sendMessage("Forwarded command from ${generatedColoredName(msg.sender.displayName)}")
                 }
             }
 
@@ -137,21 +155,23 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
     }
 
-    fun getDisplayNamePrefix(msg: Message): String {
+    fun createMessagePrefix(msg: Message): String {
         if (msg.originatesFromBridgeItself()) {
             return ""
         }
-        return getDisplayName(msg.sender.displayName)
+
+        val nameDisplay = generatedColoredName(msg.sender.displayName)
+        return "<$nameDisplay>"
     }
 
     // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
-    private fun getDisplayName(nick: String): String {
+    private fun generatedColoredName(nick: String): String {
         var index = 0
         nick.toCharArray().forEach { index += it.toByte() }
         val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
-        return "<" + Format.COLOR_CHAR + color + newNick + Format.RESET +">"
+        return Format.COLOR_CHAR + color + newNick + Format.RESET
     }
 
     /**

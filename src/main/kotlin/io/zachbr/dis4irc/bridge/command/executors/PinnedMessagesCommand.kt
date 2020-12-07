@@ -26,7 +26,7 @@ class PinnedMessagesCommand(private val bridge: Bridge) : Executor {
 
         for (msg in pinnedMessages) {
             bridge.mutatorManager.applyMutator(TranslateFormatting::class.java, msg)
-            val senderInfo = bridge.ircConn.getDisplayNamePrefix(msg)
+            val senderInfo = bridge.ircConn.createMessagePrefix(msg)
             var msgContent = msg.contents
 
             if (msg.attachments != null && msg.attachments.isNotEmpty()) {

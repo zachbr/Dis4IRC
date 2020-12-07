@@ -32,6 +32,11 @@ data class Message(
      */
     val attachments: MutableList<String>? = null,
     /**
+     * The message that this message references. Will be null in most cases, only applicable to messages from Discord.
+     * This is _not_ expected to resolve down infinitely (ie, reference that references another reference that ...)
+     */
+    val referencedMessage: Message? = null,
+    /**
      * Destination to be bridged to
      */
     var destination: Destination = Destination.OPPOSITE,

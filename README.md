@@ -57,6 +57,8 @@ bridges {
             nickname=TestBridge2
             # Messages that match this regular expression will be passed to IRC without a user prefix
             no-prefix-regex="^\\.[A-Za-z0-9]"
+            # Sets the max context length to use for messages that are Discord replies. 0 to disable.
+            discord-reply-context-limit=90
             # A list of __raw__ irc messages to send
             init-commands-list=[
                 "PRIVMSG NICKSERV info",

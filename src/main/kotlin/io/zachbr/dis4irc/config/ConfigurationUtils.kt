@@ -66,6 +66,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     noPrefixString.value = null
     noPrefixString.setComment("Messages that match this regular expression will be passed to IRC without a user prefix")
 
+    val discordReplyContextLimit = ircBaseNode.getNode("discord-reply-context-limit")
+    discordReplyContextLimit.value = 90
+    discordReplyContextLimit.setComment("Sets the max context length to use for messages that are Discord replies. 0 to disable.")
+
     val ircCommandsList = ircBaseNode.getNode("init-commands-list")
     ircCommandsList.value = arrayListOf("PRIVMSG NICKSERV info", "PRIVMSG NICKSERV help")
     ircCommandsList.setComment("A list of __raw__ irc messages to send")
@@ -121,6 +125,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircAntiPing = this.getNode("irc", "anti-ping").boolean
     val ircNoPrefix = this.getNode("irc", "no-prefix-regex").string // nullable
     val ircAnnounceForwards = this.getNode("irc", "announce-forwarded-messages-sender").boolean
+    val ircDiscordReplyContextLimit = this.getNode("irc", "discord-reply-context-limit").int
     val ircCommandsChildren = this.getNode("irc", "init-commands-list").childrenList
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.getNode("announce-joins-and-quits").boolean
@@ -185,7 +190,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
 
     val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
-        ircRealName, ircAntiPing, ircNoPrefixPattern, ircAnnounceForwards, ircCommandsList)
+        ircRealName, ircAntiPing, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit, ircCommandsList)
 
     return BridgeConfiguration(
         bridgeName,
