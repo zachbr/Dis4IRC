@@ -21,7 +21,7 @@ import java.lang.StringBuilder
 import java.util.regex.Pattern
 import kotlin.math.abs
 
-private const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
+const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
 private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
 
 class IrcPier(private val bridge: Bridge) : Pier {
