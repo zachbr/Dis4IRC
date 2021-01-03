@@ -1,4 +1,4 @@
-Name: @project-name@
-Version: @project-version@
-Git-Hash: @project-git-hash@
-Source-Repo: @project-source-repo@
+Name: ${projectName}
+Version: ${projectVersion}
+Git-Hash: ${projectGitHash}
+Source-Repo: ${projectSourceRepo}
