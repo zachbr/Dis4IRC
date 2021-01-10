@@ -191,7 +191,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     /**
      * Gets the IRC bot user's nickname
      */
-    fun getBotNick(): String? {
+    fun getBotNick(): String {
         return ircConn.nick
     }
 

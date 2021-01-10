@@ -173,7 +173,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
          * @param errorConsumer consumer to run if there is any problem submitting the paste
          * @param expiryDays number of days before the paste expires, use 0 to never expire
          */
-        internal fun dispatchPaste(
+        fun dispatchPaste(
             message: String,
             highlightLang: String?,
             successConsumer: Consumer<Response>,
@@ -299,7 +299,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             }
         }
 
-        internal data class Response(
+        data class Response(
             val type: Type,
             val pasteUrl: String?,
             val body: JSONObject?,

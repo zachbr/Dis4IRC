@@ -66,7 +66,7 @@ class DiscordSpoilerParser : AbstractBlockParser() {
     }
 
 
-    override fun getBlock(): Block? {
+    override fun getBlock(): Block {
         return block
     }
 

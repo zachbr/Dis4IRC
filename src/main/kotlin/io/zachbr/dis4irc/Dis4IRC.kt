@@ -213,7 +213,7 @@ class Dis4IRC(args: Array<String>) {
         logger.debug("Saving bridge data to $path")
         val json = JSONObject()
 
-        val bridges = TreeSet<Bridge>(Comparator<Bridge> { b1: Bridge, b2: Bridge -> // maintain consistent order
+        val bridges = TreeSet(Comparator { b1: Bridge, b2: Bridge -> // maintain consistent order
             return@Comparator b1.config.bridgeName.compareTo(b2.config.bridgeName)
         })
         bridges.addAll(bridgesByName.values)
@@ -231,16 +231,15 @@ class Dis4IRC(args: Array<String>) {
             compressedOut.close()
         }
     }
+
+    private fun setLoggingLevel(level: Level) {
+        val logContext = LogManager.getContext(false) as LoggerContext
+        val logConfig = logContext.configuration
+        logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = level
+        logContext.updateLoggers(logConfig)
+
+        logger.debug("Log level set to $level")
+    }
 }
-
-fun setLoggingLevel(level: Level) {
-    val logContext = LogManager.getContext(false) as LoggerContext
-    val logConfig = logContext.configuration
-    logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = level
-    logContext.updateLoggers(logConfig)
-
-    logger.debug("Log level set to $level")
-}
-
 
 
