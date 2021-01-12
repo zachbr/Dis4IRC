@@ -107,7 +107,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         // discord reply handling
-        if (msg.referencedMessage != null && referenceLengthLimit != 0) {
+        if (msg.referencedMessage != null && referenceLengthLimit > 0) {
             var context = msg.referencedMessage.contents.replace("\n", " ") // no newlines in context msgs
             if (context.length > referenceLengthLimit) {
                 context = context.substring(0, referenceLengthLimit - 1) + "..."
