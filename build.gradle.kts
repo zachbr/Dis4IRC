@@ -39,7 +39,6 @@ dependencies {
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.13.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.4.21")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
 }
 

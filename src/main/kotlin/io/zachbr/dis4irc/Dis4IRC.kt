@@ -12,6 +12,7 @@ import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.config.Configuration
 import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
+import io.zachbr.dis4irc.util.AtomicFileUtil
 import io.zachbr.dis4irc.util.Versioning
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.apache.logging.log4j.Level
@@ -20,10 +21,12 @@ import org.apache.logging.log4j.core.LoggerContext
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -196,7 +199,7 @@ class Dis4IRC(args: Array<String>) {
         if (Files.notExists(path)) return
 
         logger.debug("Loading bridge data from $path")
-        val json: JSONObject = FileInputStream(path.toFile()).use {
+        val json: JSONObject = Files.newInputStream(path, StandardOpenOption.READ).use {
             val compressedIn = GZIPInputStream(it)
             val textIn = InputStreamReader(compressedIn)
             return@use JSONObject(textIn.readText())
@@ -222,7 +225,7 @@ class Dis4IRC(args: Array<String>) {
             json.put(bridge.config.bridgeName, bridge.persistData(JSONObject()))
         }
 
-        FileOutputStream(path.toFile(), false).use {
+        AtomicFileUtil.writeAtomic(path) {
             val compressedOut = GZIPOutputStream(it)
             val textOut = OutputStreamWriter(compressedOut, "UTF-8")
             textOut.write(json.toString())
