@@ -8,9 +8,9 @@
 
 package io.zachbr.dis4irc.bridge
 
-import com.google.common.collect.EvictingQueue
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.util.WrappingLongArray
 import org.json.JSONObject
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  * Responsible for keeping and providing various statistics for the bridge
  */
 class StatisticsManager(private val bridge: Bridge) {
-    private val messageTimings = EvictingQueue.create<Long>(1000)
+    private val messageTimings = WrappingLongArray(1000)
     private var totalFromIrc = BigInteger.valueOf(0)
     private var totalFromDiscord = BigInteger.valueOf(0)
 

@@ -15,7 +15,7 @@ import io.zachbr.dis4irc.bridge.command.executors.StatsCommand
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Destination
 import io.zachbr.dis4irc.bridge.message.Message
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import org.spongepowered.configurate.CommentedConfigurationNode
 
 const val COMMAND_PREFIX: String = "!"
 
@@ -27,17 +27,17 @@ class CommandManager(private val bridge: Bridge, config: CommentedConfigurationN
     private val logger = bridge.logger
 
     init {
-        val statsNode = config.getNode("stats", "enabled")
-        if (statsNode.isVirtual) {
-            statsNode.value = "true"
+        val statsNode = config.node("stats", "enabled")
+        if (statsNode.virtual()) {
+            statsNode.set("true")
         }
         if (statsNode.boolean) {
             registerExecutor("stats", StatsCommand(bridge))
         }
 
-        val pinnedNode = config.getNode("pinned", "enabled")
-        if (pinnedNode.isVirtual) {
-            pinnedNode.value = "true"
+        val pinnedNode = config.node("pinned", "enabled")
+        if (pinnedNode.virtual()) {
+            pinnedNode.set("true")
         }
         if (pinnedNode.boolean) {
             registerExecutor("pinned", PinnedMessagesCommand(bridge))

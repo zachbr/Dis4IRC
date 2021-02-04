@@ -15,7 +15,7 @@ import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
 import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.StripAntiPingCharacters
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import org.spongepowered.configurate.CommentedConfigurationNode
 
 class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     private val mutators = HashMap<Class<out Mutator>, Mutator>()
@@ -23,7 +23,7 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     init {
         registerMutator(StripAntiPingCharacters())
         registerMutator(BlockHereEveryone())
-        registerMutator(PasteLongMessages(bridge, config.getNode("paste-service")))
+        registerMutator(PasteLongMessages(bridge, config.node("paste-service")))
         registerMutator(TranslateFormatting())
     }
 

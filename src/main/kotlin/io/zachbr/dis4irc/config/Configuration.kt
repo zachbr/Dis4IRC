@@ -9,10 +9,10 @@
 package io.zachbr.dis4irc.config
 
 import io.zachbr.dis4irc.logger
-import ninja.leaping.configurate.ConfigurationOptions
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader
-import ninja.leaping.configurate.loader.HeaderMode
+import org.spongepowered.configurate.CommentedConfigurationNode
+import org.spongepowered.configurate.ConfigurationOptions
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader
+import org.spongepowered.configurate.loader.HeaderMode
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -33,9 +33,9 @@ class Configuration(pathIn: String) {
      * Our configuration loader
      */
     private val configurationLoader: HoconConfigurationLoader = HoconConfigurationLoader.builder()
-        .setPath(configPath)
-        .setDefaultOptions(ConfigurationOptions.defaults().setHeader(HEADER))
-        .setHeaderMode(HeaderMode.PRESET)
+        .path(configPath)
+        .defaultOptions(ConfigurationOptions.defaults().header(HEADER))
+        .headerMode(HeaderMode.PRESET)
         .build()
 
     /**
@@ -74,6 +74,6 @@ class Configuration(pathIn: String) {
      * Gets a child node from the root node
      */
     internal fun getNode(vararg keys: String): CommentedConfigurationNode {
-        return rootNode.getNode(*keys)
+        return rootNode.node(*keys)
     }
 }

@@ -40,7 +40,7 @@ class StatsCommand(private val bridge: Bridge) : Executor {
             return null
         }
 
-        val sortedTimings = bridge.statsManager.getMessageTimings().sortedArray()
+        val sortedTimings = bridge.statsManager.getMessageTimings().apply { sort() } // avoid copy
         val meanMillis = TimeUnit.NANOSECONDS.toMillis(mean(sortedTimings))
         val medianMillis = TimeUnit.NANOSECONDS.toMillis(median(sortedTimings))
 

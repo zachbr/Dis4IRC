@@ -15,7 +15,6 @@ import org.commonmark.node.CustomBlock
 import org.commonmark.parser.InlineParser
 import org.commonmark.parser.Parser
 import org.commonmark.parser.block.*
-import java.lang.StringBuilder
 
 const val FENCE_CHAR = '|'
 const val FENCE_LENGTH = 2

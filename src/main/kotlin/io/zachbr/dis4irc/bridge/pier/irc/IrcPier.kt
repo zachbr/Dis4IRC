@@ -17,7 +17,6 @@ import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
 import org.kitteh.irc.client.library.element.Channel
 import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
-import java.lang.StringBuilder
 import java.util.regex.Pattern
 import kotlin.math.abs
 

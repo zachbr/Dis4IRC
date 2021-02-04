@@ -14,13 +14,13 @@ import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.AtomicFileUtil
 import io.zachbr.dis4irc.util.Versioning
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.LoggerContext
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.spongepowered.configurate.CommentedConfigurationNode
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.nio.file.Files
@@ -61,19 +61,19 @@ class Dis4IRC(args: Array<String>) {
         //
 
         val logLevel = config.getNode("log-level")
-        if (logLevel.isVirtual) {
-            logLevel.setComment("Sets the minimum amount of detail sent to the log. Acceptable values are: " +
+        if (logLevel.virtual()) {
+            logLevel.comment("Sets the minimum amount of detail sent to the log. Acceptable values are: " +
                         "ERROR, WARN, INFO, DEBUG, TRACE") // I see no reason to mention OFF, FATAL, or ALL explicitly
-            logLevel.value = "INFO"
+            logLevel.set("INFO")
         }
 
         val legacyLogDebugNode = config.getNode("debug-logging")
-        if (!legacyLogDebugNode.isVirtual) {
+        if (!legacyLogDebugNode.virtual()) {
             if (legacyLogDebugNode.boolean) {
-                logLevel.value = "DEBUG"
+                logLevel.set("DEBUG")
             }
 
-            legacyLogDebugNode.value = null
+            legacyLogDebugNode.set(null)
         }
 
         val l4j = Level.getLevel(logLevel.string?.toUpperCase()) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
@@ -84,19 +84,19 @@ class Dis4IRC(args: Array<String>) {
         //
 
         val bridgesNode = config.getNode("bridges")
-        if (bridgesNode.isVirtual) {
-            bridgesNode.setComment(
+        if (bridgesNode.virtual()) {
+            bridgesNode.comment(
                 "A list of bridges that Dis4IRC should start up\n" +
                         "Each bridge can bridge multiple channels between a single IRC and Discord Server"
             )
 
-            bridgesNode.getNode("default").makeDefaultNode()
+            bridgesNode.node("default").makeDefaultNode()
             config.saveConfig()
             logger.debug("Default config written to $configPath")
         }
 
         if (bridgesNode.isMap) {
-            bridgesNode.childrenMap.forEach { startBridge(it.value) }
+            bridgesNode.childrenMap().forEach { startBridge(it.value) }
         } else {
             logger.error("No bridge configurations found!")
         }
@@ -123,7 +123,7 @@ class Dis4IRC(args: Array<String>) {
      * Initializes and starts a bridge instance
      */
     private fun startBridge(node: CommentedConfigurationNode) {
-        logger.info("Starting bridge: ${node.key}")
+        logger.info("Starting bridge: ${node.key()}")
 
         val bridgeConf = node.toBridgeConfiguration()
         val bridge = Bridge(this, bridgeConf)

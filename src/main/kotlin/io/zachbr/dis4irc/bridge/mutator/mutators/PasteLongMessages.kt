@@ -13,12 +13,12 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import org.spongepowered.configurate.CommentedConfigurationNode
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -35,20 +35,20 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
     private var pasteExpiryDays: Long = 7
 
     init {
-        val msgNewlineCount = config.getNode("max-new-lines")
-        if (msgNewlineCount.isVirtual) {
-            msgNewlineCount.value = maxNewlines
+        val msgNewlineCount = config.node("max-new-lines")
+        if (msgNewlineCount.virtual()) {
+            msgNewlineCount.set(maxNewlines)
         }
 
-        val msgLengthNode = config.getNode("max-message-length")
-        if (msgLengthNode.isVirtual) {
-            msgLengthNode.value = maxMsgLength
+        val msgLengthNode = config.node("max-message-length")
+        if (msgLengthNode.virtual()) {
+            msgLengthNode.set(maxMsgLength)
         }
 
-        val pasteExpiryNode = config.getNode("paste-expiration-in-days")
-        if (pasteExpiryNode.isVirtual) {
-            pasteExpiryNode.setComment("Number of days before paste expires. Use 0 to never expire.")
-            pasteExpiryNode.value = pasteExpiryDays
+        val pasteExpiryNode = config.node("paste-expiration-in-days")
+        if (pasteExpiryNode.virtual()) {
+            pasteExpiryNode.comment("Number of days before paste expires. Use 0 to never expire.")
+            pasteExpiryNode.set(pasteExpiryDays)
         }
 
         maxNewlines = msgNewlineCount.int

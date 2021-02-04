@@ -8,7 +8,7 @@
 
 package io.zachbr.dis4irc.bridge
 
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
+import org.spongepowered.configurate.CommentedConfigurationNode
 import java.util.regex.Pattern
 
 val MATCH_ALL_INDIV = Regex(".")

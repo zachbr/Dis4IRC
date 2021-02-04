@@ -30,7 +30,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.json:json:20180813")
-    implementation("org.spongepowered:configurate-hocon:3.7.1")
+    implementation("org.spongepowered:configurate-hocon:4.0.0")
     implementation("com.atlassian.commonmark:commonmark:0.15.2")
     implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
 

@@ -27,8 +27,8 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
 
     internal val channelMappings = ChannelMappingManager(config)
     internal val statsManager = StatisticsManager(this)
-    private val commandManager = CommandManager(this, config.rawNode.getNode("commands"))
-    internal val mutatorManager = MutatorManager(this, config.rawNode.getNode("mutators"))
+    private val commandManager = CommandManager(this, config.rawNode.node("commands"))
+    internal val mutatorManager = MutatorManager(this, config.rawNode.node("mutators"))
 
     internal val discordConn = DiscordPier(this)
     internal val ircConn = IrcPier(this)
