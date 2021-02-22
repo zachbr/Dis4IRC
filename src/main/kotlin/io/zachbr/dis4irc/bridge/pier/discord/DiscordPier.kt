@@ -104,13 +104,23 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val guild = channel.guild
 
         // convert name use to proper mentions
-        for (member in guild.members) {
+        for (member in guild.memberCache) {
             val mentionTrigger = "@${member.effectiveName}" // require @ prefix
             msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)
         }
 
+        // convert role use to proper mentions
+        for (role in guild.roleCache) {
+            if (!role.isMentionable) {
+                continue
+            }
+
+            val mentionTrigger = "@${role.name}" // require @ prefix
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, role.asMention)
+        }
+
         // convert emotes to show properly
-        for (emote in guild.emotes) {
+        for (emote in guild.emoteCache) {
             val mentionTrigger = ":${emote.name}:"
             msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention, requireSeparation = false)
         }
@@ -161,7 +171,11 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             .setContent(msg.contents)
             .setUsername(senderName)
             .setAvatarUrl(avatarUrl)
-            .setAllowedMentions(AllowedMentions().withParseUsers(true))
+            .setAllowedMentions(
+                AllowedMentions()
+                    .withParseUsers(true)
+                    .withParseRoles(true)
+            )
             .build()
 
         webhook.send(message)
