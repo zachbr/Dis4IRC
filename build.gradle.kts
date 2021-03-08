@@ -4,10 +4,10 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.4.31"
 
-    id("net.minecrell.licenser") version "0.4.1"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("org.cadixdev.licenser") version "0.5.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
     id("io.spring.dependency-management") version "1.0.6.RELEASE"
 }
 
@@ -22,9 +22,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.kitteh.irc:client-lib:7.3.0")
-    implementation("club.minnced:discord-webhooks:0.5.0")
-    implementation("net.dv8tion:JDA:4.2.0_222") {
+    implementation("org.kitteh.irc:client-lib:7.4.0")
+    implementation("club.minnced:discord-webhooks:0.5.4")
+    implementation("net.dv8tion:JDA:4.2.0_236") {
         exclude(module = "opus-java")
     }
 
