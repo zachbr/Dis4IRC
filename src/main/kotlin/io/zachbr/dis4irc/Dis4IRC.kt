@@ -201,7 +201,7 @@ class Dis4IRC(args: Array<String>) {
         logger.debug("Loading bridge data from $path")
         val json: JSONObject = Files.newInputStream(path, StandardOpenOption.READ).use {
             val compressedIn = GZIPInputStream(it)
-            val textIn = InputStreamReader(compressedIn)
+            val textIn = InputStreamReader(compressedIn, Charsets.UTF_8)
             return@use JSONObject(textIn.readText())
         }
 
@@ -227,7 +227,7 @@ class Dis4IRC(args: Array<String>) {
 
         AtomicFileUtil.writeAtomic(path) {
             val compressedOut = GZIPOutputStream(it)
-            val textOut = OutputStreamWriter(compressedOut, "UTF-8")
+            val textOut = OutputStreamWriter(compressedOut, Charsets.UTF_8)
             textOut.write(json.toString())
             // seeing some oddities with IJ's run config, these are probably not needed
             textOut.flush()
