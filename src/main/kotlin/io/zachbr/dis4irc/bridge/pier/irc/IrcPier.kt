@@ -63,18 +63,6 @@ class IrcPier(private val bridge: Bridge) : Pier {
             ircConn.eventManager.registerEventListener(IrcExtrasListener(this))
         }
 
-        // execute any startup commands
-        for (command in bridge.config.irc.startupRawCommands) {
-            logger.debug("Sending raw init command: $command")
-            ircConn.sendRawLine(command)
-        }
-
-        // join all mapped channels
-        for (mapping in bridge.config.channelMappings) {
-            logger.debug("Joining ${mapping.ircChannel}")
-            ircConn.addChannel(mapping.ircChannel)
-        }
-
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
         referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
@@ -206,6 +194,23 @@ class IrcPier(private val bridge: Bridge) : Pier {
      */
     fun signalShutdown(inErr: Boolean) {
         this.bridge.shutdown(inErr)
+    }
+
+    /**
+     * Handle tasks that need to be done after connection but before the bot can start being used
+     */
+    fun runPostConnectTasks() {
+        // execute any startup commands
+        for (command in bridge.config.irc.startupRawCommands) {
+            logger.debug("Sending raw init command: $command")
+            ircConn.sendRawLine(command)
+        }
+
+        // join all mapped channels
+        for (mapping in bridge.config.channelMappings) {
+            logger.debug("Joining ${mapping.ircChannel}")
+            ircConn.addChannel(mapping.ircChannel)
+        }
     }
 }
 

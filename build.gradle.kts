@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.kitteh.irc:client-lib:7.4.0")
+    implementation("org.kitteh.irc:client-lib:8.0.0")
     implementation("club.minnced:discord-webhooks:0.5.4")
     implementation("net.dv8tion:JDA:4.2.0_236") {
         exclude(module = "opus-java")

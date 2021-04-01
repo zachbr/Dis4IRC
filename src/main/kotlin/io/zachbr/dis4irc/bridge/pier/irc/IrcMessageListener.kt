@@ -13,6 +13,7 @@ import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelCtcpEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 import org.kitteh.irc.client.library.event.connection.ClientConnectionClosedEvent
+import org.kitteh.irc.client.library.event.connection.ClientConnectionEstablishedEvent
 import org.kitteh.irc.client.library.event.user.PrivateMessageEvent
 import org.kitteh.irc.client.library.event.user.PrivateNoticeEvent
 import org.kitteh.irc.client.library.util.Format
@@ -101,5 +102,11 @@ class IrcMessageListener(private val pier: IrcPier) {
         if (!shouldReconnect) {
             this.pier.signalShutdown(inErr = true) // a disconnected bridge is a worthless bridge
         }
+    }
+
+    @Handler
+    fun onConnectionEstablished(event: ClientConnectionEstablishedEvent) {
+        logger.debug("IRC Connection Established")
+        this.pier.runPostConnectTasks()
     }
 }
