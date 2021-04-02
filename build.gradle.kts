@@ -15,7 +15,7 @@ group = "io.zachbr"
 version = "1.3.0-SNAPSHOT"
 
 repositories {
-    maven("https://dl.bintray.com/dv8fromtheworld/maven/")
+    maven("https://m2.dv8tion.net/releases")
     maven("https://repo.spongepowered.org/maven")
     mavenCentral()
     jcenter()
@@ -23,8 +23,8 @@ repositories {
 
 dependencies {
     implementation("org.kitteh.irc:client-lib:8.0.0")
-    implementation("club.minnced:discord-webhooks:0.5.4")
-    implementation("net.dv8tion:JDA:4.2.0_236") {
+    implementation("club.minnced:discord-webhooks:0.5.6")
+    implementation("net.dv8tion:JDA:4.2.1_253") {
         exclude(module = "opus-java")
     }
 
