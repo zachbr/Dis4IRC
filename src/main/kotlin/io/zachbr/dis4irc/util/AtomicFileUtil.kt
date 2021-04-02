@@ -68,7 +68,7 @@ object AtomicFileUtil {
                 }
             }
         } catch (ex: AtomicMoveNotSupportedException) {
-            // cthulu help us, just move normally
+            // Cthulhu help us, just move normally
             Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING)
         }
 

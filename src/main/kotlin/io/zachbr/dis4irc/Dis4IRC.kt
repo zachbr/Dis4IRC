@@ -30,8 +30,6 @@ import java.nio.file.StandardOpenOption
 import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {

@@ -27,7 +27,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.slf4j.Logger
-import java.util.*
 
 private const val ZERO_WIDTH_SPACE = 0x200B.toChar()
 

@@ -1,9 +1,8 @@
 Dis4IRC
 =======
-
 A modern Discord <-> IRC Bridge
 
-Published under the [MIT License](https://github.com/zachbr/Dis4IRC/blob/master/LICENSE.md)
+Published under the [MIT License](https://github.com/zachbr/Dis4IRC/blob/master/LICENSE.md).
 
 Features
 --------
@@ -13,10 +12,18 @@ Features
 * Discord webhook support
 * Non-prefixed messages for other IRC bots to handle
 * IRC anti-ping zero width character in usernames
+* User, channel, role, and emote mentions
 
 Getting Started
 ---------------
-Please see the [Getting Started page](https://github.com/zachbr/Dis4IRC/blob/master/docs/Getting-Started.md)
+Please see the [Getting Started page](https://github.com/zachbr/Dis4IRC/blob/master/docs/Getting-Started.md).
+
+Downloads
+---------
+* Release versions can be found on [GitHub releases](https://github.com/zachbr/Dis4IRC/releases).  
+* The latest build from source can be found as a GitHub actions artifact.
+  * Users authenticated with GitHub can access builds [here](https://github.com/zachbr/Dis4IRC/actions?query=event%3Apush+is%3Asuccess+branch%3Amaster).
+  * Unauthenticated users can access the [latest version here](https://nightly.link/zachbr/Dis4IRC/workflows/gradle/master/dis4irc-jar).
 
 Example Config
 --------------

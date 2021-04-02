@@ -82,7 +82,7 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     discordWebhookParent.comment("Match a channel id to a webhook URL to enable webhooks for that channel")
 
     val discordWebhook = discordWebhookParent.node("discord-channel-id")
-    discordWebhook.set("http://webhook-url")
+    discordWebhook.set("https://webhook-url")
 
     val announceJoinsQuits = this.node("announce-joins-and-quits")
     announceJoinsQuits.set(false)
