@@ -16,7 +16,7 @@ fun countSubstring(baseStr: String, subStr: String): Int = baseStr.split(subStr)
 /**
  * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
  */
-fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = true): String {
+fun replaceTarget(base: String, target: String, replacement: String, requireSeparation: Boolean = false): String {
     var out = base
 
     fun isWhiteSpace(i: Int): Boolean {

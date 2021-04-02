@@ -122,7 +122,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         // convert emotes to show properly
         for (emote in guild.emoteCache) {
             val mentionTrigger = ":${emote.name}:"
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention, requireSeparation = false)
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention)
+        }
+
+        // convert text channels to mentions
+        for (guildChannel in guild.textChannelCache) {
+            val mentionTrigger = "#${guildChannel.name}"
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention)
         }
 
         // Discord won't broadcast messages that are just whitespace
