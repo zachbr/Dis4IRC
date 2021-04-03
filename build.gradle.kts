@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "io.zachbr"
-version = "1.3.0-SNAPSHOT"
+version = "1.3.0"
 
 repositories {
     maven("https://m2.dv8tion.net/releases")
