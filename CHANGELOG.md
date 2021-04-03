@@ -2,9 +2,18 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.3.0 - `0ac94b1`
+[Commits since 1.2.0](https://github.com/zachbr/Dis4IRC/compare/v1.2.0...v1.3.0)
+* IRC library updates - Should fix issues with reconnecting to IRC servers.
+* Discord replies will now bridge with context. The maximum length is controlled by a new settings option `discord-reply-context-limit`. Set it to 0 to disable it.
+* Messages from IRC will now strip the Anti-Ping characters before being posted to Discord. This can make it easier to copy paste names when pinging Discord users.
+* Bridge data is now saved atomically, making it more resilient to system issues.
+* Discord roles and channels can now be mentioned from IRC.
+* Updates to JDA to better support new discord features since 1.2.0.
+
 ## 1.2.0 - `7766b34`
 [Commits since 1.1.0](https://github.com/zachbr/Dis4IRC/compare/v1.1.0...v1.2.0)
-* Discord Library Updates - **IMPORTANT**: You will be required to update to this version before November 7th 2020. That
+* Discord library updates - **IMPORTANT**: You will be required to update to this version before November 7th 2020. That
   is when Discord will remove its old discordapp.com API endpoint.  
   
   As part of this update, Please note that Dis4IRC
