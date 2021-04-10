@@ -32,6 +32,10 @@ class IrcExtrasListener(private val pier: IrcPier) {
     @Handler
     fun onTopicChange(event: ChannelTopicEvent) {
         val receiveTimestamp = System.nanoTime()
+        if (!event.isNew) {
+            return // changes only - don't broadcast on channel join
+        }
+
         val sender = BOT_SENDER
         val topicSetter = event.newTopic.setter.toNullable()
         val setterPrefix = if (topicSetter != null) " set by ${topicSetter.name}" else ""
