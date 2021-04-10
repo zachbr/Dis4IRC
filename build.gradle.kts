@@ -18,7 +18,6 @@ repositories {
     maven("https://m2.dv8tion.net/releases")
     maven("https://repo.spongepowered.org/maven")
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
