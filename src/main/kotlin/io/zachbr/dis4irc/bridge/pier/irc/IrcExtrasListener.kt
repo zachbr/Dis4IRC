@@ -33,13 +33,11 @@ class IrcExtrasListener(private val pier: IrcPier) {
     fun onTopicChange(event: ChannelTopicEvent) {
         val receiveTimestamp = System.nanoTime()
         val sender = BOT_SENDER
-        var topicSetter = ""
-        if (event.newTopic.setter.isPresent) {
-            topicSetter = " set by " + event.newTopic.setter.get().name
-        }
+        val topicSetter = event.newTopic.setter.toNullable()
+        val setterPrefix = if (topicSetter != null) " set by ${topicSetter.name}" else ""
         val topicValue = event.newTopic.value.orElse("Unknown topic")
-        val msgContent = "Topic$topicSetter: $topicValue"
-        logger.debug("IRC TOPIC$topicSetter: $topicValue")
+        val msgContent = "Topic$setterPrefix: $topicValue"
+        logger.debug("IRC TOPIC$setterPrefix: $topicValue")
 
         val source = event.channel.asBridgeSource()
         val message = Message(msgContent, sender, source, receiveTimestamp)

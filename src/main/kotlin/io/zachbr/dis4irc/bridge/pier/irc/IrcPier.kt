@@ -53,6 +53,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         ircConn.client.exceptionListener.setConsumer { bridge.logger.error("Exception from IRC API: ${it.localizedMessage}")}
 
         // listeners
+        ircConn.eventManager.registerEventListener(IrcConnectionListener(this))
         ircConn.eventManager.registerEventListener(IrcMessageListener(this))
 
         if (bridge.config.announceJoinsQuits) {
@@ -66,8 +67,6 @@ class IrcPier(private val bridge: Bridge) : Pier {
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
         referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
-
-        logger.info("Connected to IRC!")
     }
 
     override fun onShutdown() {
