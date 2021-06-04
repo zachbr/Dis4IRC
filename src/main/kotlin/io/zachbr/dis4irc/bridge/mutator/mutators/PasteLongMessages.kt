@@ -22,6 +22,7 @@ import org.spongepowered.configurate.CommentedConfigurationNode
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.function.Consumer
 import kotlin.math.min
 
@@ -191,8 +192,8 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             // the paste service will barf if you send it an unsupported highlight language
             // so we must validate it before we use it
             var validatedLang: String? = null
-            if (highlightLang != null && SUPPORTED_HIGHLIGHT_LANGS.contains(highlightLang.toLowerCase())) {
-                validatedLang = highlightLang.toLowerCase()
+            if (highlightLang != null && SUPPORTED_HIGHLIGHT_LANGS.contains(highlightLang.lowercase(Locale.ENGLISH))) {
+                validatedLang = highlightLang.lowercase(Locale.ENGLISH)
             }
 
             // https://github.com/jkcclemens/paste/blob/b05ad0f468afa46170e46e2a73a2bd2ffec93db2/api.md#post-pastes

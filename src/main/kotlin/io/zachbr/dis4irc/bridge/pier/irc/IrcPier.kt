@@ -153,7 +153,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
     private fun generateColoredName(nick: String): String {
         var index = 0
-        nick.toCharArray().forEach { index += it.toByte() }
+        nick.toCharArray().forEach { index += it.code.toByte() }
         val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
         val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 

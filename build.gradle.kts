@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") version "1.5.10"
 
     id("org.cadixdev.licenser") version "0.5.0"
     id("com.github.johnrengelman.shadow") version "6.1.0"
@@ -23,13 +23,13 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:8.0.0")
     implementation("club.minnced:discord-webhooks:0.5.6")
-    implementation("net.dv8tion:JDA:4.2.1_253") {
+    implementation("net.dv8tion:JDA:4.2.1_266") {
         exclude(module = "opus-java")
     }
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.json:json:20180813")
-    implementation("org.spongepowered:configurate-hocon:4.0.0")
+    implementation("org.spongepowered:configurate-hocon:4.1.1")
     implementation("com.atlassian.commonmark:commonmark:0.15.2")
     implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
 

@@ -74,7 +74,7 @@ class Dis4IRC(args: Array<String>) {
             legacyLogDebugNode.set(null)
         }
 
-        val l4j = Level.getLevel(logLevel.string?.toUpperCase()) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
+        val l4j = Level.getLevel(logLevel.string?.uppercase(Locale.ENGLISH)) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
         setLoggingLevel(l4j)
 
         //
@@ -164,7 +164,7 @@ class Dis4IRC(args: Array<String>) {
 
     private fun parseArguments(args: Array<String>) {
         for ((i, arg) in args.withIndex()) {
-            when (arg.toLowerCase()) {
+            when (arg.lowercase(Locale.ENGLISH)) {
                 "-v","--version" -> {
                     printVersionInfo(minimal = true)
                     exitProcess(0)

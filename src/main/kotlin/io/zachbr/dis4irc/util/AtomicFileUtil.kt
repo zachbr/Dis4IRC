@@ -24,7 +24,7 @@ object AtomicFileUtil {
     private val osIsWindows: Boolean
 
     init {
-        val os = System.getProperty("os.name").toLowerCase(Locale.ROOT)
+        val os = System.getProperty("os.name").lowercase(Locale.ENGLISH)
         osIsWindows = os.contains("win")
     }
 

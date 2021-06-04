@@ -10,6 +10,7 @@ package io.zachbr.dis4irc.bridge
 
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Source
+import java.util.Locale
 
 /**
  * Responsible for maintaining the channel-to-channel mappings between IRC and Discord
@@ -20,7 +21,7 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
 
     init {
         for (mapping in conf.channelMappings) {
-            discord2Irc[mapping.discordChannel] = mapping.ircChannel.toLowerCase()
+            discord2Irc[mapping.discordChannel] = mapping.ircChannel.lowercase(Locale.ENGLISH)
         }
 
         // reverse
@@ -48,6 +49,6 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
      * Gets the discord channel identifier to bridge to based on the IRC channel name
      */
     private fun ircMappingByName(ircChannel: String): String? {
-        return irc2Discord[ircChannel.toLowerCase()]
+        return irc2Discord[ircChannel.lowercase(Locale.ENGLISH)]
     }
 }
