@@ -23,4 +23,4 @@ COPY --from=BUILD dis4irc.jar /srv/dis4irc.jar
 WORKDIR /srv
 
 # set the startup command
-CMD ["java", "-jar", "dis4irc.jar"]
+CMD ["java", "-jar", "dis4irc.jar", "-c", "config/config.hocon"]
