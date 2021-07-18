@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.21"
 
     id("org.cadixdev.licenser") version "0.5.0"
     id("com.github.johnrengelman.shadow") version "6.1.0"
@@ -22,8 +22,8 @@ repositories {
 
 dependencies {
     implementation("org.kitteh.irc:client-lib:8.0.0")
-    implementation("club.minnced:discord-webhooks:0.5.6")
-    implementation("net.dv8tion:JDA:4.2.1_266") {
+    implementation("club.minnced:discord-webhooks:0.5.7")
+    implementation("net.dv8tion:JDA:4.3.0_297") {
         exclude(module = "opus-java")
     }
 
