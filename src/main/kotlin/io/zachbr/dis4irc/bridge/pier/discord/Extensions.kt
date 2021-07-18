@@ -15,8 +15,11 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageSticker
 import org.slf4j.Logger
+import java.net.URLEncoder
 
 const val DISCORD_STICKER_MEDIA_URL = "https://media.discordapp.net/stickers/%%ID%%.%%FILETYPE%%?size=256"
+const val LOTTIE_PLAYER_BASE_URL = "https://lottie.zachbr.io"
+const val CDN_DISCORDAPP_STICKERS_URL_LENGTH = "https://cdn.discordapp.com/stickers/".length
 
 fun MessageChannel.asBridgeSource(): Source = Source(this.name, this.idLong, PlatformType.DISCORD)
 
@@ -51,13 +54,9 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         }
         messageText += sticker.name
 
-        // JDA always uses a cdn.discordapp.com URL for stickers, even though it only appears to be relevant for JSON
-        // lottie stickers, and not the image based ones. The image based ones appear to just use the normal
-        // media.discordapp.com URL. So we can just build that media URL ourselves based on the sticker type and ID.
-        val urlExt = when (sticker.formatType) {
-            MessageSticker.StickerFormat.LOTTIE -> null // this is technically "json" but we can't deal with this format
-            MessageSticker.StickerFormat.APNG -> "png"
-            MessageSticker.StickerFormat.PNG -> "png"
+        val url = when (sticker.formatType) {
+            MessageSticker.StickerFormat.LOTTIE -> makeLottieViewerUrl(sticker.iconUrl)
+            MessageSticker.StickerFormat.APNG, MessageSticker.StickerFormat.PNG -> DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", "png")
             MessageSticker.StickerFormat.UNKNOWN -> null
             else -> {
                 logger.debug("Unhandled sticker format type: ${sticker.formatType}")
@@ -65,8 +64,8 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
             }
         }
 
-        if (urlExt != null) {
-            attachmentUrls.add(DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", urlExt))
+        if (url != null) {
+            attachmentUrls.add(url)
         } else {
             messageText += " <sticker format not supported>"
         }
@@ -89,4 +88,16 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         attachmentUrls,
         bridgeMsgRef
     )
+}
+
+fun makeLottieViewerUrl(discordCdnUrl: String): String? {
+    if (discordCdnUrl.length <= CDN_DISCORDAPP_STICKERS_URL_LENGTH) {
+        return null
+    }
+
+    val resourcePath = discordCdnUrl.substring(CDN_DISCORDAPP_STICKERS_URL_LENGTH)
+    val proxyString = "/stickers/$resourcePath"
+    val encodedString = URLEncoder.encode(proxyString, "UTF-8") // has to use look up for Java 8 compat
+
+    return "$LOTTIE_PLAYER_BASE_URL?p=$encodedString";
 }
