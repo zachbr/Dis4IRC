@@ -41,7 +41,6 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     // handle custom emotes
     var messageText = this.contentDisplay
     for (emote in this.emotes) {
-        messageText = messageText.replace(":${emote.name}:", "")
         attachmentUrls.add(emote.imageUrl)
     }
 
