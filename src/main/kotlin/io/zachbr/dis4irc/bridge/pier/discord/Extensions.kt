@@ -13,7 +13,10 @@ import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.message.Source
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.MessageSticker
 import org.slf4j.Logger
+
+const val DISCORD_STICKER_MEDIA_URL = "https://media.discordapp.net/stickers/%%ID%%.%%FILETYPE%%?size=256"
 
 fun MessageChannel.asBridgeSource(): Source = Source(this.name, this.idLong, PlatformType.DISCORD)
 
@@ -40,6 +43,34 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     for (emote in this.emotes) {
         messageText = messageText.replace(":${emote.name}:", "")
         attachmentUrls.add(emote.imageUrl)
+    }
+
+    // handle stickers
+    for (sticker in this.stickers) {
+        if (messageText.isNotEmpty()) {
+            messageText += " "
+        }
+        messageText += sticker.name
+
+        // JDA always uses a cdn.discordapp.com URL for stickers, even though it only appears to be relevant for JSON
+        // lottie stickers, and not the image based ones. The image based ones appear to just use the normal
+        // media.discordapp.com URL. So we can just build that media URL ourselves based on the sticker type and ID.
+        val urlExt = when (sticker.formatType) {
+            MessageSticker.StickerFormat.LOTTIE -> null // this is technically "json" but we can't deal with this format
+            MessageSticker.StickerFormat.APNG -> "png"
+            MessageSticker.StickerFormat.PNG -> "png"
+            MessageSticker.StickerFormat.UNKNOWN -> null
+            else -> {
+                logger.debug("Unhandled sticker format type: ${sticker.formatType}")
+                null
+            }
+        }
+
+        if (urlExt != null) {
+            attachmentUrls.add(DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", urlExt))
+        } else {
+            messageText += " <sticker format not supported>"
+        }
     }
 
     // discord replies

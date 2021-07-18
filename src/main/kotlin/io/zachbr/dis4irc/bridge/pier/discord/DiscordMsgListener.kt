@@ -25,7 +25,7 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         // don't bridge empty messages (discord does this on join)
-        if (event.message.contentDisplay.isEmpty() && event.message.attachments.isEmpty()) {
+        if (event.message.contentDisplay.isEmpty() && event.message.attachments.isEmpty() && event.message.stickers.isEmpty()) {
             return
         }
 
