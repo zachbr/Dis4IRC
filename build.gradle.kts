@@ -6,8 +6,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.5.21"
 
-    id("org.cadixdev.licenser") version "0.5.0"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("org.cadixdev.licenser") version "0.6.1"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("io.spring.dependency-management") version "1.0.6.RELEASE"
 }
 
@@ -80,7 +80,7 @@ tasks {
 
 // updateLicenses | checkLicenses
 license {
-    header = project.file("HEADER.txt")
+    header(project.file("HEADER.txt"))
     ext {
         set("name", "Dis4IRC")
         set("year", "2018-2021")
