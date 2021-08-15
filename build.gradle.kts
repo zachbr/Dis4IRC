@@ -49,6 +49,7 @@ tasks {
     withType<ShadowJar> {
         manifest {
             attributes["Main-Class"] = "io.zachbr.dis4irc.Dis4IRCKt"
+            attributes["Multi-Release"] = "true"
         }
 
         from(file("LICENSE.md"))
