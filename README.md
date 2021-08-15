@@ -13,6 +13,8 @@ Features
 * Non-prefixed messages for other IRC bots to handle
 * IRC anti-ping zero width character in usernames
 * User, channel, role, and emote mentions
+* Sticker and emote support (as images or animated viewer)
+* Reply bridging with context
 
 Getting Started
 ---------------
