@@ -16,5 +16,5 @@ import org.kitteh.irc.client.library.element.User
 import java.util.Optional
 
 fun Channel.asBridgeSource(): Source = Source(this.name, null, PlatformType.IRC)
-fun User.asBridgeSender(): Sender = Sender(this.nick, null, this.account.toNullable())
+fun User.asBridgeSender(): Sender = Sender(this.nick, this.realName.orElse(this.nick), null, this.account.toNullable())
 fun <T : Any> Optional<T>.toNullable(): T? = this.orElse(null)

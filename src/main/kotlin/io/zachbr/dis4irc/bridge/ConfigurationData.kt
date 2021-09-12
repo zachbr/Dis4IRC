@@ -47,6 +47,7 @@ data class IrcConfiguration (
     val userName: String,
     val realName: String,
     val antiPing: Boolean,
+    val discriminator: Boolean,
     val noPrefixRegex: Pattern?,
     val announceForwardedCommands: Boolean,
     val discordReplyContextLimit: Int,
@@ -63,6 +64,7 @@ data class IrcConfiguration (
                 "userName='$userName', " +
                 "realName='$realName', " +
                 "antiPing=$antiPing, " +
+                "includeDiscriminator=$discriminator, " +
                 "noPrefixRegex=$noPrefixRegex, " +
                 "announceForwardedCommands=$announceForwardedCommands, " +
                 "discordReplyContextLimit=$discordReplyContextLimit, " +

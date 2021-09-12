@@ -44,14 +44,14 @@ class TranslateFormattingTest {
     }
 
     private fun testIrcToDiscord(expected: String, string: String) {
-        val message = Message(string, Sender("Test", null, null), Source("#test", null, PlatformType.IRC), System.nanoTime())
+        val message = Message(string, Sender("Test", "Test", null, null), Source("#test", null, PlatformType.IRC), System.nanoTime())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)
     }
 
     private fun testDiscordToIrc(expected: String, input: String) {
-        val message = Message(input, Sender("Test", null, null), Source("#test", null, PlatformType.DISCORD), System.nanoTime())
+        val message = Message(input, Sender("Test", "Test#1234", null, null), Source("#test", null, PlatformType.DISCORD), System.nanoTime())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)

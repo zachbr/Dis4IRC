@@ -11,6 +11,7 @@ package io.zachbr.dis4irc.bridge.pier.irc
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
@@ -27,6 +28,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private lateinit var ircConn: Client
     private var antiPing: Boolean = false
+    private var discriminator: Boolean = true
     private var noPrefix: Pattern? = null
     private var referenceLengthLimit: Int = 90
 
@@ -66,6 +68,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
+        discriminator = bridge.config.irc.discriminator
         referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
     }
 
@@ -99,9 +102,9 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 context = context.substring(0, referenceLengthLimit - 1) + "..."
             }
 
-            var refSender = msg.referencedMessage.sender.displayName
+            var refSender = generateName(msg.referencedMessage.sender)
             // do not ping yourself if you reply to your own messages
-            if (refSender == msg.sender.displayName) {
+            if (refSender.contains(msg.sender.displayName)) {
                 refSender = rebuildWithAntiPing(refSender)
             }
 
@@ -145,9 +148,20 @@ class IrcPier(private val bridge: Bridge) : Pier {
         if (msg.originatesFromBridgeItself()) {
             return ""
         }
+        return "<${generateName(msg.sender)}>"
+    }
 
-        val nameDisplay = generateColoredName(msg.sender.displayName)
-        return "<$nameDisplay>"
+    private fun generateName(sender: Sender): String {
+        var nameDisplay = generateColoredName(sender.displayName)
+        if (discriminator) {
+            if (sender.tagName.startsWith(sender.displayName + "#")) {
+                nameDisplay += "${Format.DARK_GRAY}${sender.tagName.substring(sender.displayName.length)}"
+            } else {
+                val tag = if (antiPing) rebuildWithAntiPing(sender.tagName) else sender.tagName
+                nameDisplay += "${Format.DARK_GRAY} ($tag)"
+            }
+        }
+        return nameDisplay + Format.RESET
     }
 
     // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php

@@ -102,7 +102,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val webhook = webhookMap[targetChan]
         val guild = channel.guild
 
-        // convert name use to proper mentions
+        // convert a user tag to proper mentions
+        for (member in guild.memberCache) {
+            val mentionTrigger = "@${member.user.asTag}" // require @ prefix
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)
+        }
+
+        // convert effective nick name to proper mentions
         for (member in guild.memberCache) {
             val mentionTrigger = "@${member.effectiveName}" // require @ prefix
             msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)

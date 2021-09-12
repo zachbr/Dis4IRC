@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 class MessageTest {
     @Test
     fun testShouldSendTo() {
-        val sender = Sender("SomeSender", null, null)
+        val sender = Sender("SomeSender", "SomeSender#1234", null, null)
 
         // test from IRC
         val ircSource = Source("#some-channel", null, PlatformType.IRC)

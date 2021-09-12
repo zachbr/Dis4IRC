@@ -8,13 +8,17 @@
 
 package io.zachbr.dis4irc.bridge.message
 
-internal val BOT_SENDER = Sender("Bridge", null, null)
+internal val BOT_SENDER = Sender("Bridge", "Bridge", null, null)
 
 data class Sender(
     /**
      * User's display name, this is *not* guaranteed to be unique or secure
      */
     val displayName: String,
+    /**
+     * User's tag name, this is guaranteed to be unique
+     */
+    val tagName: String,
     /**
      * User's discord snowflake id, or null if the message originated from Discord
      */
