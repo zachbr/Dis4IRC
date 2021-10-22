@@ -79,7 +79,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     }
 
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
-    val tagName = guildMember?.user?.asTag ?: this.author.name // webhooks won't hav a tag
+    val tagName = guildMember?.user?.asTag ?: this.author.name // webhooks won't have a tag
     val sender = Sender(displayName, tagName, this.author.idLong, null)
     return io.zachbr.dis4irc.bridge.message.Message(
         messageText,
