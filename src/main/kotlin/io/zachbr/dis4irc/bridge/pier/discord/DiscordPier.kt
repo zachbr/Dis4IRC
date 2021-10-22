@@ -102,32 +102,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val webhook = webhookMap[targetChan]
         val guild = channel.guild
 
-        // convert name use to proper mentions
-        for (member in guild.memberCache) {
-            val mentionTrigger = "@${member.effectiveName}" // require @ prefix
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)
-        }
-
-        // convert role use to proper mentions
-        for (role in guild.roleCache) {
-            if (!role.isMentionable) {
-                continue
-            }
-
-            val mentionTrigger = "@${role.name}" // require @ prefix
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, role.asMention)
-        }
+        replaceMentions(guild, msg, true)
+        replaceMentions(guild, msg, false)
 
         // convert emotes to show properly
         for (emote in guild.emoteCache) {
             val mentionTrigger = ":${emote.name}:"
             msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention)
-        }
-
-        // convert text channels to mentions
-        for (guildChannel in guild.textChannelCache) {
-            val mentionTrigger = "#${guildChannel.name}"
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention)
         }
 
         // Discord won't broadcast messages that are just whitespace
@@ -143,6 +124,30 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val outTimestamp = System.nanoTime()
         bridge.updateStatistics(msg, outTimestamp)
+    }
+
+    private fun replaceMentions(guild: Guild, msg: Message, requireSeparation: Boolean) {
+        // convert name use to proper mentions
+        for (member in guild.memberCache) {
+            val mentionTrigger = "@${member.effectiveName}" // require @ prefix
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention, requireSeparation)
+        }
+
+        // convert role use to proper mentions
+        for (role in guild.roleCache) {
+            if (!role.isMentionable) {
+                continue
+            }
+
+            val mentionTrigger = "@${role.name}" // require @ prefix
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, role.asMention, requireSeparation)
+        }
+
+        // convert text channels to mentions
+        for (guildChannel in guild.textChannelCache) {
+            val mentionTrigger = "#${guildChannel.name}"
+            msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention, requireSeparation)
+        }
     }
 
     private fun sendMessageOldStyle(discordChannel: TextChannel, msg: Message) {
