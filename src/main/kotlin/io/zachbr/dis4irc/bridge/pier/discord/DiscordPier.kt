@@ -102,7 +102,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         val webhook = webhookMap[targetChan]
         val guild = channel.guild
 
+        // make sure to replace clearly separated mentions first to not replace partial mentions
         replaceMentions(guild, msg, true)
+
+        // replace mentions but don't require separation to find some previously missed, non-separated ones
         replaceMentions(guild, msg, false)
 
         // convert emotes to show properly
