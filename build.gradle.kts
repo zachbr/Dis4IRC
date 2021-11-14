@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.5.31"
 
     id("org.cadixdev.licenser") version "0.6.1"
     id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -13,6 +13,8 @@ plugins {
 
 group = "io.zachbr"
 version = "1.3.1-SNAPSHOT"
+
+val targetJVM = JavaVersion.VERSION_1_8.toString()
 
 repositories {
     maven("https://m2.dv8tion.net/releases")
@@ -58,9 +60,14 @@ tasks {
         isReproducibleFileOrder = true
     }
 
+    // make compileKotlin task be quiet
+    withType<JavaCompile> {
+        targetCompatibility = targetJVM
+    }
+
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_1_8.toString()
+            jvmTarget = targetJVM
         }
     }
 
