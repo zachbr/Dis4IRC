@@ -2,6 +2,14 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.4.0 - `d3a4512`
+[Commits since 1.3.0](https://github.com/zachbr/Dis4IRC/compare/v1.3.0...v1.4.0)
+* Update Log4J logging library to resolve CVE-2021-44228.
+* Discord library updates to better support platform API changes.
+* Support for bridging Discord stickers
+* Dis4IRC now leaves mention triggers from Discord in bridged messages. This can offer additional context to IRC users.
+* Better support for newer versions of Java.
+
 ## 1.3.0 - `0ac94b1`
 [Commits since 1.2.0](https://github.com/zachbr/Dis4IRC/compare/v1.2.0...v1.3.0)
 * IRC library updates - Should fix issues with reconnecting to IRC servers.
