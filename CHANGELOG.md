@@ -2,6 +2,12 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.4.1 - `328d4e7`
+[Commits since 1.4.0](https://github.com/zachbr/Dis4IRC/compare/v1.4.0...v1.4.1)
+* Update Log4J library out of an abundance of caution.
+  * There are currently no known exploits affecting Dis4IRC's default logging configuration in 1.4.0. However, out of an
+    abundance of caution this update further expands upon protections added in the previous release.
+
 ## 1.4.0 - `d3a4512`
 [Commits since 1.3.0](https://github.com/zachbr/Dis4IRC/compare/v1.3.0...v1.4.0)
 * Update Log4J logging library to resolve CVE-2021-44228.

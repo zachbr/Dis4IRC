@@ -13,8 +13,8 @@ that it's missing some important information and exit.
 
 It should look like this:
 ```bash                                                               
-$ java -jar Dis4IRC-1.3.0.jar
-[15:51:51] [init] [INFO] - Dis4IRC v1.3.0-0ac94b1
+$ java -jar Dis4IRC-1.4.1.jar
+[15:51:51] [init] [INFO] - Dis4IRC v1.4.1-328d4e7
 [15:51:51] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
 [15:51:51] [init] [INFO] - Available under the MIT License
 [15:51:51] [init] [INFO] - Loading config from: config.hocon
