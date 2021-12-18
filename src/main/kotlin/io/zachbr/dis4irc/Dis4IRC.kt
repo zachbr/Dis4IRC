@@ -8,15 +8,14 @@
 
 package io.zachbr.dis4irc
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.config.Configuration
 import io.zachbr.dis4irc.config.makeDefaultNode
 import io.zachbr.dis4irc.config.toBridgeConfiguration
 import io.zachbr.dis4irc.util.AtomicFileUtil
 import io.zachbr.dis4irc.util.Versioning
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.core.LoggerContext
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -60,8 +59,7 @@ class Dis4IRC(args: Array<String>) {
 
         val logLevel = config.getNode("log-level")
         if (logLevel.virtual()) {
-            logLevel.comment("Sets the minimum amount of detail sent to the log. Acceptable values are: " +
-                        "ERROR, WARN, INFO, DEBUG, TRACE") // I see no reason to mention OFF, FATAL, or ALL explicitly
+            logLevel.comment("Sets the minimum amount of detail sent to the log. Acceptable values are: ERROR, WARN, INFO, DEBUG, TRACE")
             logLevel.set("INFO")
         }
 
@@ -74,8 +72,16 @@ class Dis4IRC(args: Array<String>) {
             legacyLogDebugNode.set(null)
         }
 
-        val l4j = Level.getLevel(logLevel.string?.uppercase(Locale.ENGLISH)) ?: throw IllegalArgumentException("Unknown log-level in config: ${logLevel.string}")
-        setLoggingLevel(l4j)
+        var requestedLogLevel = logLevel.string?.uppercase()
+        val validLogLevels = setOf("ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR")
+        if (requestedLogLevel == null || !validLogLevels.contains(requestedLogLevel)) {
+            logger.warn("Invalid log level specified: $requestedLogLevel - Resetting to INFO")
+            requestedLogLevel = "INFO"
+            logLevel.set(requestedLogLevel)
+        }
+
+        val desiredLevel = Level.toLevel(requestedLogLevel, Level.INFO)
+        updateLoggerToLevel(desiredLevel)
 
         //
         // Bridges
@@ -233,13 +239,15 @@ class Dis4IRC(args: Array<String>) {
         }
     }
 
-    private fun setLoggingLevel(level: Level) {
-        val logContext = LogManager.getContext(false) as LoggerContext
-        val logConfig = logContext.configuration
-        logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME).level = level
-        logContext.updateLoggers(logConfig)
+    private fun updateLoggerToLevel(level: Level) {
+        val logContext = LoggerFactory.getILoggerFactory() as LoggerContext
+        // each logger uses its closest ancestor to decide a log level, however some may have already been started
+        // just set it for all of them
+        for (logger in logContext.loggerList) {
+            logger.level = level
+        }
 
-        logger.debug("Log level set to $level")
+        logger.info("Log level set to $level")
     }
 }
 

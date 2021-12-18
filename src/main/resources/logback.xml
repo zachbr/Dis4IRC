@@ -1,0 +1,19 @@
+<!--
+    This file is part of Dis4IRC.
+
+    Copyright (c) 2018-2022 Dis4IRC contributors
+
+    MIT License
+-->
+
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{HH:mm:ss}] [%logger] [%level] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
