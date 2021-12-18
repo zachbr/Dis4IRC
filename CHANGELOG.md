@@ -7,6 +7,7 @@ User-relevant changes to the software, see the full commit log for all changes.
 * Update Log4J library (again) to 2.17.0 out of an abundance of caution.
   * There are currently no known exploits affecting Dis4IRC's default logging configuration in 1.4.0 or 1.4.1. However, 
     out of an abundance of caution this update further expands upon protections added in the previous release.
+
 ## 1.4.1 - `328d4e7`
 [Commits since 1.4.0](https://github.com/zachbr/Dis4IRC/compare/v1.4.0...v1.4.1)
 * Update Log4J library to 2.16.0 out of an abundance of caution.
