@@ -80,7 +80,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     override fun onShutdown() {
-        discordApi.shutdownNow()
+        // shutdown can be called when discord fails to init
+        if (this::discordApi.isInitialized) {
+            discordApi.shutdownNow()
+        }
 
         for (client in webhookMap.values) {
             client.close()
