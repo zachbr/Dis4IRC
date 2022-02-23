@@ -59,6 +59,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val ircAntiPing = ircBaseNode.node("anti-ping")
     ircAntiPing.set(true)
 
+    val ircUseNickNameColor = ircBaseNode.node("use-nickname-colors")
+    ircUseNickNameColor.set(true)
+    ircUseNickNameColor.comment("Controls whether bridged nicknames will use color")
+
     val announceForwards = ircBaseNode.node("announce-forwarded-messages-sender")
     announceForwards.set(false)
 
@@ -123,6 +127,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
     val ircAntiPing = this.node("irc", "anti-ping").boolean
+    val ircUseNickNameColor = this.node("irc", "use-nickname-colors").boolean
     val ircNoPrefix = this.node("irc", "no-prefix-regex").string // nullable
     val ircAnnounceForwards = this.node("irc", "announce-forwarded-messages-sender").boolean
     val ircDiscordReplyContextLimit = this.node("irc", "discord-reply-context-limit").int
@@ -190,7 +195,8 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
 
     val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
-        ircRealName, ircAntiPing, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit, ircCommandsList)
+        ircRealName, ircAntiPing, ircUseNickNameColor, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit,
+        ircCommandsList)
 
     return BridgeConfiguration(
         bridgeName,

@@ -146,7 +146,15 @@ class IrcPier(private val bridge: Bridge) : Pier {
             return ""
         }
 
-        val nameDisplay = generateColoredName(msg.sender.displayName)
+        var nameDisplay = if (bridge.config.irc.useNickNameColor) {
+            generateColoredName(msg.sender.displayName)
+        } else {
+            msg.sender.displayName
+        }
+
+        if (antiPing) {
+            nameDisplay = rebuildWithAntiPing(nameDisplay)
+        }
         return "<$nameDisplay>"
     }
 
@@ -155,9 +163,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
         var index = 0
         nick.toCharArray().forEach { index += it.code.toByte() }
         val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
-        val newNick = if (antiPing) rebuildWithAntiPing(nick) else nick
 
-        return Format.COLOR_CHAR + color + newNick + Format.RESET
+        return Format.COLOR_CHAR + color + nick + Format.RESET
     }
 
     /**

@@ -76,6 +76,8 @@ bridges {
             port="6697"
             realname=BridgeBot
             server="irc.esper.net"
+            # Controls whether bridged nicknames will use color
+            use-nickname-colors=true
             use-ssl=true
             username=BridgeBot
         }
