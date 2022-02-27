@@ -4,10 +4,10 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.6.10"
 
     id("org.cadixdev.licenser") version "0.6.1"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.spring.dependency-management") version "1.0.6.RELEASE"
 }
 
@@ -24,8 +24,8 @@ repositories {
 
 dependencies {
     implementation("org.kitteh.irc:client-lib:8.0.0")
-    implementation("club.minnced:discord-webhooks:0.7.4")
-    implementation("net.dv8tion:JDA:4.3.0_346") {
+    implementation("club.minnced:discord-webhooks:0.7.5")
+    implementation("net.dv8tion:JDA:4.4.0_352") {
         exclude(module = "opus-java")
     }
 
@@ -35,7 +35,7 @@ dependencies {
     implementation("com.atlassian.commonmark:commonmark:0.15.2")
     implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
 
-    implementation("org.slf4j:slf4j-api:1.7.32")
+    implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("org.apache.logging.log4j:log4j-core:2.17.1")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
 
