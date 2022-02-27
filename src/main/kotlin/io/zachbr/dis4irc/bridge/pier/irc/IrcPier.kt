@@ -146,15 +146,15 @@ class IrcPier(private val bridge: Bridge) : Pier {
             return ""
         }
 
-        var nameDisplay = if (bridge.config.irc.useNickNameColor) {
-            generateColoredName(msg.sender.displayName)
-        } else {
-            msg.sender.displayName
+        var nameDisplay = msg.sender.displayName
+        if (bridge.config.irc.useNickNameColor) {
+            nameDisplay = generateColoredName(msg.sender.displayName)
         }
 
         if (antiPing) {
             nameDisplay = rebuildWithAntiPing(nameDisplay)
         }
+
         return "<$nameDisplay>"
     }
 
