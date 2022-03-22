@@ -1,7 +1,7 @@
 /*
  * This file is part of Dis4IRC.
  *
- * Copyright (c) 2018-2021 Dis4IRC contributors
+ * Copyright (c) 2018-2022 Dis4IRC contributors
  *
  * MIT License
  */
