@@ -75,12 +75,20 @@ data class IrcConfiguration (
 
 data class DiscordConfiguration(
     val apiKey: String,
-    val webHooks: List<WebhookMapping>
+    val webHooks: List<WebhookMapping>,
+    val activityType: String,
+    val activityDesc: String,
+    val activityUrl: String,
+    val onlineStatus: String
 ) {
     fun toLoggable(): String {
         return "DiscordConfiguration(" +
                 "apiKey='${apiKey.replace(MATCH_ALL_INDIV, "*")}', " +
-                "webHooks=${webHooks.map { it.toLoggable() }}," +
+                "webHooks=${webHooks.map { it.toLoggable() }}, " +
+                "activityType=${activityType}, " +
+                "activityDesc=${activityDesc}, " +
+                "activityUrl=${activityUrl}, " +
+                "onlineStatus=${onlineStatus}" +
                 ")"
     }
 }

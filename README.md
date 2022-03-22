@@ -52,6 +52,17 @@ bridges {
         discord-webhooks {
             "712345611123456811"="https://discordapp.com/api/webhooks/712345611123456811/blahblahurl"
         }
+        # Discord-specific configuration options
+        discord-options {
+            # Descriptor text to show in the client. An empty string will show nothing. This may not update immediately.
+            activity-desc=IRC
+            # Activity type to report to Discord clients. Acceptable values are DEFAULT, LISTENING, STREAMING, WATCHING, COMPETING
+            activity-type=DEFAULT
+            # Additional URL field used by certain activity types. Restricted to certain URLs depending on the activity type.
+            activity-url=""
+            # Online status indicator. Acceptable values are ONLINE, IDLE, DO_NOT_DISTURB, INVISIBLE
+            online-status=ONLINE
+        }
         commands {
             pinned {
                 enabled="true"

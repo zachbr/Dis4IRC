@@ -70,7 +70,9 @@ class IrcPier(private val bridge: Bridge) : Pier {
     }
 
     override fun onShutdown() {
-        ircConn.shutdown("Exiting...")
+        if (this::ircConn.isInitialized) {
+            ircConn.shutdown("Exiting...")
+        }
     }
 
     override fun sendMessage(targetChan: String, msg: Message) {

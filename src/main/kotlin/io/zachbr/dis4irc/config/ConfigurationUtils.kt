@@ -99,6 +99,25 @@ fun CommentedConfigurationNode.makeDefaultNode() {
 
     val discordChannelNode = mappingsNode.node("discord-channel-id")
     discordChannelNode.set("irc-channel-name")
+
+    val discordOptionsNode = this.node("discord-options")
+    discordOptionsNode.comment("Discord-specific configuration options")
+
+    val discordActivityTypeNode = discordOptionsNode.node("activity-type")
+    discordActivityTypeNode.set("DEFAULT")
+    discordActivityTypeNode.comment("Activity type to report to Discord clients. Acceptable values are DEFAULT, LISTENING, STREAMING, WATCHING, COMPETING")
+
+    val discordActivityDescNode = discordOptionsNode.node("activity-desc")
+    discordActivityDescNode.set("IRC")
+    discordActivityDescNode.comment("Descriptor text to show in the client. An empty string will show nothing. This may not update immediately.")
+
+    val discordActivityUrlNode = discordOptionsNode.node("activity-url")
+    discordActivityUrlNode.set("")
+    discordActivityUrlNode.comment("Additional URL field used by certain activity types. Restricted to certain URLs depending on the activity type.")
+
+    val discordStatusNode = discordOptionsNode.node("online-status")
+    discordStatusNode.set("ONLINE")
+    discordStatusNode.comment("Online status indicator. Acceptable values are ONLINE, IDLE, DO_NOT_DISTURB, INVISIBLE")
 }
 
 /**
@@ -135,6 +154,10 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.node("announce-joins-and-quits").boolean
     val announceExtras = this.node("announce-extras").boolean
+    var discordActivityType = this.node("discord-options", "activity-type").string
+    var discordActivityDesc = this.node("discord-options", "activity-desc").string
+    var discordActivityUrl = this.node("discord-options", "activity-url").string
+    var discordOnlineStatus = this.node("discord-options", "online-status").string
 
     val webhookMappings = ArrayList<WebhookMapping>()
     for (webhookNode in this.node("discord-webhooks").childrenMap().values) {
@@ -155,6 +178,22 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         channelMappings.add(mappingNode.toChannelMapping())
     }
 
+    if (discordActivityType == null) {
+        discordActivityType = "DEFAULT"
+    }
+
+    if (discordActivityDesc == null) {
+        discordActivityDesc = "IRC"
+    }
+
+    if (discordActivityUrl == null) {
+        discordActivityUrl = ""
+    }
+
+    if (discordOnlineStatus == null) {
+        discordOnlineStatus = "ONLINE"
+    }
+
     var validated = true
     fun validateStringNotEmpty(string: String, errMsg: String) {
         if (string.trim().isEmpty()) {
@@ -168,6 +207,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     validateStringNotEmpty(ircUserName, "IRC username left empty")
     validateStringNotEmpty(ircRealName, "IRC realname left empty")
     validateStringNotEmpty(discordApiKey, "Discord API key left empty")
+    validateStringNotEmpty(discordOnlineStatus, "Discord online-status left empty")
 
     if (ircPass != null) {
         validateStringNotEmpty(ircPass, "IRC pass cannot be left empty")
@@ -193,7 +233,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         throw IllegalArgumentException("Cannot start $bridgeName bridge with above configuration errors!")
     }
 
-    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings)
+    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
         ircRealName, ircAntiPing, ircUseNickNameColor, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit,
         ircCommandsList)

@@ -21,6 +21,7 @@ import io.zachbr.dis4irc.util.replaceTarget
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Activity.ActivityType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -43,8 +44,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS)
             .setMemberCachePolicy(MemberCachePolicy.ALL) // so we can cache invisible members and ping people not online
             .enableCache(CacheFlag.EMOTE)
-            .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "IRC"))
             .addEventListeners(DiscordMsgListener(this))
+            .setStatus(getEnumFromString(bridge.config.discord.onlineStatus, "Unknown online-status specified"))
+
+        if (bridge.config.discord.activityDesc.isNotBlank()) {
+            val activityType: ActivityType = getEnumFromString(bridge.config.discord.activityType, "Unknown activity-type specified")
+            discordApiBuilder.setActivity(Activity.of(activityType, bridge.config.discord.activityDesc, bridge.config.discord.activityUrl))
+        }
 
         if (bridge.config.announceJoinsQuits) {
             discordApiBuilder.addEventListeners(DiscordJoinQuitListener(this))
@@ -236,6 +242,20 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val byName = discordApi.getTextChannelsByName(string, false)
         return if (byName.isNotEmpty()) byName.first() else null
+    }
+
+    /**
+     * Gets an enum from the given string or throw an IllegalArgumentException with the given error message
+     */
+    private inline fun <reified T: Enum<T>> getEnumFromString(userInput: String, errorMessage: String): T {
+        val inputUpper = userInput.uppercase()
+        for (poss in T::class.java.enumConstants) {
+            if (poss.name.uppercase() == inputUpper) {
+                return poss
+            }
+        }
+
+        throw IllegalArgumentException("$errorMessage: $userInput")
     }
 }
 
