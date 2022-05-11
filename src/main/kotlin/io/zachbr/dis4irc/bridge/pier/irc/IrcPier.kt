@@ -103,7 +103,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
             var refSender = msg.referencedMessage.sender.displayName
             // do not ping yourself if you reply to your own messages
-            if (refSender == msg.sender.displayName) {
+            if (antiPing && refSender == msg.sender.displayName) {
                 refSender = rebuildWithAntiPing(refSender)
             }
 
