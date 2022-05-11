@@ -12,6 +12,7 @@ import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.WebhookClientBuilder
 import club.minnced.discord.webhook.send.AllowedMentions
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
+import club.minnced.discord.webhook.util.WebhookErrorHandler
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
@@ -63,6 +64,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         // init webhooks
         if (bridge.config.discord.webHooks.isNotEmpty()) {
             logger.info("Initializing Discord webhooks")
+            val webhookErrorHandler = WebhookErrorHandler { client, message, throwable ->
+                logger.error("Webhook ${client.id}: $message")
+                throwable?.printStackTrace()
+            }
 
             for (hook in bridge.config.discord.webHooks) {
                 val webhook: WebhookClient
@@ -74,6 +79,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
                     continue
                 }
 
+                webhook.setErrorHandler(webhookErrorHandler)
                 webhookMap[hook.discordChannel] = webhook
                 logger.info("Webhook for ${hook.discordChannel} registered")
             }

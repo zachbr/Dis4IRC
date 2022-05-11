@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.21"
 
     id("org.cadixdev.licenser") version "0.6.1"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -24,20 +24,20 @@ repositories {
 
 dependencies {
     implementation("org.kitteh.irc:client-lib:8.0.0")
-    implementation("club.minnced:discord-webhooks:0.7.5")
+    implementation("club.minnced:discord-webhooks:0.8.0")
     implementation("net.dv8tion:JDA:4.4.0_352") {
         exclude(module = "opus-java")
     }
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.json:json:20180813")
+    implementation("org.json:json:20220320")
     implementation("org.spongepowered:configurate-hocon:4.1.2")
     implementation("com.atlassian.commonmark:commonmark:0.15.2")
     implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
 
     implementation("org.slf4j:slf4j-api:1.7.36")
-    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.17.2")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
@@ -106,6 +106,6 @@ fun getGitHash(): String {
 
 dependencyManagement {
     imports {
-        mavenBom("org.apache.logging.log4j:log4j-bom:2.17.1")
+        mavenBom("org.apache.logging.log4j:log4j-bom:2.17.2")
     }
 }
