@@ -101,12 +101,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 context = context.substring(0, referenceLengthLimit - 1) + "..."
             }
 
-            var refSender = msg.referencedMessage.sender.displayName
-            // do not ping yourself if you reply to your own messages
-            if (antiPing && refSender == msg.sender.displayName) {
-                refSender = rebuildWithAntiPing(refSender)
-            }
-
+            val refSender = createMessagePrefix(msg.referencedMessage, withAsciiAngleBracket = false)
             channel.sendMessage("Reply to \"$refSender: $context\"")
         }
 
@@ -121,7 +116,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
             } else {
                 logger.debug("Message matches no-prefix-regex: $noPrefixPattern, sending without name")
                 if (bridge.config.irc.announceForwardedCommands) {
-                    channel.sendMessage("Forwarded command from ${generateColoredName(msg.sender.displayName)}")
+                    channel.sendMessage("Forwarded command from ${createMessagePrefix(msg, withAsciiAngleBracket = false)}")
                 }
             }
 
@@ -143,30 +138,33 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
     }
 
-    fun createMessagePrefix(msg: Message): String {
+    fun createMessagePrefix(msg: Message, withAsciiAngleBracket: Boolean = true): String {
         if (msg.originatesFromBridgeItself()) {
             return ""
         }
 
-        var nameDisplay = msg.sender.displayName
-        if (bridge.config.irc.useNickNameColor) {
-            nameDisplay = generateColoredName(msg.sender.displayName)
-        }
-
+        var nameOut = msg.sender.displayName
         if (antiPing) {
-            nameDisplay = rebuildWithAntiPing(nameDisplay)
+            nameOut = rebuildWithAntiPing(nameOut)
         }
 
-        return "<$nameDisplay>"
+        if (bridge.config.irc.useNickNameColor) {
+            val color = getColorCodeForName(msg.sender.displayName)
+            nameOut = Format.COLOR_CHAR + color + nameOut + Format.RESET
+        }
+
+        return if (withAsciiAngleBracket) {
+            "<$nameOut>"
+        } else {
+            nameOut
+        }
     }
 
     // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
-    private fun generateColoredName(nick: String): String {
+    private fun getColorCodeForName(nick: String): String {
         var index = 0
         nick.toCharArray().forEach { index += it.code.toByte() }
-        val color = NICK_COLORS[abs(index) % NICK_COLORS.size]
-
-        return Format.COLOR_CHAR + color + nick + Format.RESET
+        return NICK_COLORS[abs(index) % NICK_COLORS.size]
     }
 
     /**
