@@ -146,7 +146,11 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircUserName = getStringNonNull("IRC username cannot be null in $bridgeName!", "irc", "username")
     val ircRealName = getStringNonNull("IRC realname cannot be null in $bridgeName!", "irc", "realname")
     val ircAntiPing = this.node("irc", "anti-ping").boolean
-    val ircUseNickNameColor = this.node("irc", "use-nickname-colors").boolean
+    val ircUseNickNameColorNode = this.node("irc", "use-nickname-colors")
+    if (ircUseNickNameColorNode.virtual()) {
+        ircUseNickNameColorNode.set(true)
+    }
+    val ircUseNickNameColor = ircUseNickNameColorNode.boolean
     val ircNoPrefix = this.node("irc", "no-prefix-regex").string // nullable
     val ircAnnounceForwards = this.node("irc", "announce-forwarded-messages-sender").boolean
     val ircDiscordReplyContextLimit = this.node("irc", "discord-reply-context-limit").int
