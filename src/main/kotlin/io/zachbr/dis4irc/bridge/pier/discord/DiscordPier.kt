@@ -18,7 +18,6 @@ import io.zachbr.dis4irc.bridge.message.BOT_SENDER
 import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.Source
 import io.zachbr.dis4irc.bridge.pier.Pier
-import io.zachbr.dis4irc.util.replaceTarget
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -120,7 +119,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         // convert name use to proper mentions
         for (member in guild.memberCache) {
             val mentionTrigger = "@${member.effectiveName}" // require @ prefix
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, member.asMention)
+            msg.contents = msg.contents.replace(mentionTrigger, member.asMention)
         }
 
         // convert role use to proper mentions
@@ -130,19 +129,19 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             }
 
             val mentionTrigger = "@${role.name}" // require @ prefix
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, role.asMention)
+            msg.contents = msg.contents.replace(mentionTrigger, role.asMention)
         }
 
         // convert emotes to show properly
         for (emote in guild.emoteCache) {
             val mentionTrigger = ":${emote.name}:"
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, emote.asMention)
+            msg.contents = msg.contents.replace(mentionTrigger, emote.asMention)
         }
 
         // convert text channels to mentions
         for (guildChannel in guild.textChannelCache) {
             val mentionTrigger = "#${guildChannel.name}"
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention)
+            msg.contents = msg.contents.replace(mentionTrigger, guildChannel.asMention)
         }
 
         // Discord won't broadcast messages that are just whitespace

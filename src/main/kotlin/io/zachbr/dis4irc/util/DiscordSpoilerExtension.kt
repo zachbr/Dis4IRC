@@ -56,7 +56,7 @@ class DiscordSpoilerParser : AbstractBlockParser() {
     }
 
     override fun addLine(line: CharSequence) {
-        val l = replaceTarget(line.toString(), "||", "")
+        val l = line.toString().replace("||", "")
         lines.append("$l\n")
     }
 
