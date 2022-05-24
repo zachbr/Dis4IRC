@@ -99,5 +99,5 @@ fun makeLottieViewerUrl(discordCdnUrl: String): String? {
     val proxyString = "/stickers/$resourcePath"
     val encodedString = URLEncoder.encode(proxyString, "UTF-8") // has to use look up for Java 8 compat
 
-    return "$LOTTIE_PLAYER_BASE_URL?p=$encodedString";
+    return "$LOTTIE_PLAYER_BASE_URL?p=$encodedString"
 }
