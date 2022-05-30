@@ -2,6 +2,15 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.5.0 - `630d6ae`
+[Commits since 1.4.2](https://github.com/zachbr/Dis4IRC/compare/v1.4.2...v1.5.0)
+* Update various libraries, including the one used for Discord.
+* Add the ability to set the activity and online status of the bot.
+  * For more information, see [the commit notes](https://github.com/zachbr/Dis4IRC/commit/7530afc662dd9ab671dc35b4db1d035ef11193de).
+* Add the ability to disable nickname coloring in IRC.
+* Use color in more places when enabled in IRC.
+* Fixes a few miscellaneous bugs.
+
 ## 1.4.2 - `9cbba83`
 [Commits since 1.4.1](https://github.com/zachbr/Dis4IRC/compare/v1.4.1...v1.4.2)
 * Update Log4J library (again) to 2.17.0 out of an abundance of caution.
