@@ -8,7 +8,8 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 /**
@@ -17,9 +18,14 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
     private val logger = pier.logger
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-        // dont bridge itself
-        val source = event.channel.asBridgeSource()
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+        // don't bridge DMs on this handler (later?)
+        if (event.message.channelType != ChannelType.TEXT) {
+            return
+        }
+
+        // don't bridge itself
+        val source = event.channel.asTextChannel().asBridgeSource() // if we bridge DMs in the future, this needs to change
         if (pier.isThisBot(source, event.author.idLong)) {
             return
         }

@@ -13,7 +13,12 @@ import io.zachbr.dis4irc.bridge.message.Message
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -225,12 +230,12 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
             val request = Request.Builder()
                 .header("Content-Type", "application/json")
                 .url(PASTE_SERVICE_POST_URL)
-                .post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonPayload.toString(2)))
+                .post(jsonPayload.toString(2).toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull()))
                 .build()
 
             httpClient.newCall(request).enqueue(object : Callback {
-                override fun onResponse(call: Call, httpResponse: okhttp3.Response) {
-                    val rawResp = httpResponse.body()?.string()
+                override fun onResponse(call: Call, response: okhttp3.Response) {
+                    val rawResp = response.body?.string()
                     val respJson: JSONObject? = try {
                         JSONObject(rawResp)
                     } catch (ignored: JSONException) {
@@ -246,7 +251,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
                         logger.debug("Raw: $rawResp")
                     }
 
-                    if (!httpResponse.isSuccessful || respJson == null) {
+                    if (!response.isSuccessful || respJson == null) {
                         logger.debug("Received HTTP response FAILURE")
 
                         val failureResponse = Response(Response.Type.FAILURE, null, respJson, rawResp)

@@ -23,7 +23,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Activity.ActivityType
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
@@ -40,10 +40,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     override fun start() {
         logger.info("Connecting to Discord API...")
 
-        val discordApiBuilder = JDABuilder.createLight(bridge.config.discord.apiKey,
-            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS)
+        val intents = listOf(GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.MESSAGE_CONTENT)
+        val discordApiBuilder = JDABuilder.createLight(bridge.config.discord.apiKey, intents)
             .setMemberCachePolicy(MemberCachePolicy.ALL) // so we can cache invisible members and ping people not online
-            .enableCache(CacheFlag.EMOTE)
+            .enableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
             .addEventListeners(DiscordMsgListener(this))
             .setStatus(getEnumFromString(bridge.config.discord.onlineStatus, "Unknown online-status specified"))
 
@@ -133,9 +133,9 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
 
         // convert emotes to show properly
-        for (emote in guild.emoteCache) {
-            val mentionTrigger = ":${emote.name}:"
-            msg.contents = msg.contents.replace(mentionTrigger, emote.asMention)
+        for (emoji in guild.emojiCache) {
+            val mentionTrigger = ":${emoji.name}:"
+            msg.contents = msg.contents.replace(mentionTrigger, emoji.asMention)
         }
 
         // convert text channels to mentions

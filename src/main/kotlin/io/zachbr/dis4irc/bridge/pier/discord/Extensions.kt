@@ -12,8 +12,9 @@ import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.message.Source
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
-import net.dv8tion.jda.api.entities.MessageSticker
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.sticker.Sticker
 import org.slf4j.Logger
 import java.net.URLEncoder
 
@@ -21,7 +22,7 @@ const val DISCORD_STICKER_MEDIA_URL = "https://media.discordapp.net/stickers/%%I
 const val LOTTIE_PLAYER_BASE_URL = "https://lottie.zachbr.io"
 const val CDN_DISCORDAPP_STICKERS_URL_LENGTH = "https://cdn.discordapp.com/stickers/".length
 
-fun MessageChannel.asBridgeSource(): Source = Source(this.name, this.idLong, PlatformType.DISCORD)
+fun TextChannel.asBridgeSource(): Source = Source(this.name, this.idLong, PlatformType.DISCORD)
 
 fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime(), shouldResolveReference: Boolean = true) : io.zachbr.dis4irc.bridge.message.Message {
     // We need to get the guild member in order to grab their display name
@@ -41,10 +42,10 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         attachmentUrls.add(url)
     }
 
-    // handle custom emotes
+    // handle custom emojis
     var messageText = this.contentDisplay
-    for (emote in this.emotes) {
-        attachmentUrls.add(emote.imageUrl)
+    for (customEmoji in this.mentions.customEmojis) {
+        attachmentUrls.add(customEmoji.imageUrl)
     }
 
     // handle stickers
@@ -55,9 +56,9 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         messageText += sticker.name
 
         val url = when (sticker.formatType) {
-            MessageSticker.StickerFormat.LOTTIE -> makeLottieViewerUrl(sticker.iconUrl)
-            MessageSticker.StickerFormat.APNG, MessageSticker.StickerFormat.PNG -> DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", "png")
-            MessageSticker.StickerFormat.UNKNOWN -> null
+            Sticker.StickerFormat.LOTTIE -> makeLottieViewerUrl(sticker.iconUrl)
+            Sticker.StickerFormat.APNG, Sticker.StickerFormat.PNG -> DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", "png")
+            Sticker.StickerFormat.UNKNOWN -> null
             else -> {
                 logger.debug("Unhandled sticker format type: ${sticker.formatType}")
                 null
@@ -80,10 +81,14 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
 
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
     val sender = Sender(displayName, this.author.idLong, null)
+    if (this.channelType != ChannelType.TEXT) {
+        logger.debug("Encountered unsupported channel type: $channelType") // TODO: probably a nicer way to handle this (FIXME: Support other types?)
+    }
+    val channel = this.channel.asTextChannel().asBridgeSource()
     return io.zachbr.dis4irc.bridge.message.Message(
         messageText,
         sender,
-        this.channel.asBridgeSource(),
+        channel,
         receiveTimestamp,
         attachmentUrls,
         bridgeMsgRef
