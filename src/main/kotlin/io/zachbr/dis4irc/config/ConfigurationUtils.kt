@@ -104,8 +104,8 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     discordOptionsNode.comment("Discord-specific configuration options")
 
     val discordActivityTypeNode = discordOptionsNode.node("activity-type")
-    discordActivityTypeNode.set("DEFAULT")
-    discordActivityTypeNode.comment("Activity type to report to Discord clients. Acceptable values are DEFAULT, LISTENING, STREAMING, WATCHING, COMPETING")
+    discordActivityTypeNode.set("PLAYING")
+    discordActivityTypeNode.comment("Activity type to report to Discord clients. Acceptable values are PLAYING, LISTENING, STREAMING, WATCHING, COMPETING")
 
     val discordActivityDescNode = discordOptionsNode.node("activity-desc")
     discordActivityDescNode.set("IRC")
@@ -182,8 +182,9 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         channelMappings.add(mappingNode.toChannelMapping())
     }
 
-    if (discordActivityType == null) {
-        discordActivityType = "DEFAULT"
+    if (discordActivityType == null || discordActivityType == "DEFAULT") {
+        discordActivityType = "PLAYING"
+        this.node("discord-options", "activity-type").set("PLAYING") // Migrate JDA v4 "DEFAULT" to JDA v5 "PLAYING"
     }
 
     if (discordActivityDesc == null) {
