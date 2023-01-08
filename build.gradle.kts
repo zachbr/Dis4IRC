@@ -8,7 +8,6 @@ plugins {
 
     id("org.cadixdev.licenser") version "0.6.1"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("io.spring.dependency-management") version "1.0.6.RELEASE"
 }
 
 group = "io.zachbr"
@@ -102,10 +101,4 @@ fun getGitHash(): String {
         standardOutput = stdout
     }
     return stdout.toString().trim()
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.apache.logging.log4j:log4j-bom:2.17.2")
-    }
 }
