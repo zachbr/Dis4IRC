@@ -28,3 +28,29 @@ fun countSubstring(baseStr: String, subStr: String): Int {
 
     return count
 }
+
+/**
+ * Given a string, find the target and replace it, optionally requiring whitespace separation to replace
+ */
+fun replaceTarget(base: CharSequence, target: String, replacement: CharSequence, requireSeparation: Boolean = false): String {
+    var out = base
+
+    fun isWhiteSpace(i: Int): Boolean {
+        return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
+    }
+
+    var start = out.indexOf(target, 0)
+    while (start > -1) {
+        val end = start + target.length
+        val nextSearchStart = start + replacement.length
+
+        if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
+            out = out.replaceRange(start, start + target.length, replacement)
+        }
+
+        start = out.indexOf(target, nextSearchStart)
+    }
+
+    return out.toString()
+}
+
