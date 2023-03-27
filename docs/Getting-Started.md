@@ -13,18 +13,19 @@ that it's missing some important information and exit.
 
 It should look like this:
 ```bash                                                               
-$ java -jar Dis4IRC-1.4.2.jar
-[15:51:51] [init] [INFO] - Dis4IRC v1.4.2-9cbba83
-[15:51:51] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
-[15:51:51] [init] [INFO] - Available under the MIT License
-[15:51:51] [init] [INFO] - Loading config from: config.hocon
-[19:17:10] [init] [INFO] - Starting bridge: default
-[19:17:10] [init] [ERROR] - Discord API key left empty for bridge: default
+$ java -jar Dis4IRC-1.6.0.jar 
+[18:23:19] [init] [INFO] - Dis4IRC v1.6.0-c71aaca
+[18:23:19] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
+[18:23:19] [init] [INFO] - Available under the MIT License
+[18:23:19] [init] [INFO] - Loading config from: config.hocon
+[18:23:19] [init] [INFO] - Log level set to INFO
+[18:23:19] [init] [INFO] - Starting bridge: default
+[18:23:19] [init] [ERROR] - Discord API key left empty for bridge: default
 Exception in thread "main" java.lang.IllegalArgumentException: Cannot start default bridge with above configuration errors!
-	at io.zachbr.dis4irc.config.ConfigurationUtilsKt.toBridgeConfiguration(ConfigurationUtils.kt:186)
-	at io.zachbr.dis4irc.Dis4IRC.startBridge(Dis4IRC.kt:102)
-	at io.zachbr.dis4irc.Dis4IRC.<init>(Dis4IRC.kt:79)
-	at io.zachbr.dis4irc.Dis4IRCKt.main(Dis4IRC.kt:33)
+	at io.zachbr.dis4irc.config.ConfigurationUtilsKt.toBridgeConfiguration(ConfigurationUtils.kt:238)
+	at io.zachbr.dis4irc.Dis4IRC.startBridge(Dis4IRC.kt:132)
+	at io.zachbr.dis4irc.Dis4IRC.<init>(Dis4IRC.kt:103)
+	at io.zachbr.dis4irc.Dis4IRCKt.main(Dis4IRC.kt:35)
 ```
 
 As you can see, there was an error reading the Discord API key from the config file,

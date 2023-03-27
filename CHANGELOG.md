@@ -2,6 +2,12 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.0 - `c71aaca`
+[Commits since 1.5.0](https://github.com/zachbr/Dis4IRC/compare/v1.5.0...v1.6.0)
+* Better handling of mentions, emoji, and other string replacements.
+* Updates to the Discord library to better support the latest Discord changes.
+* The logging system has been switched to Logback from Log4j.
+
 ## 1.5.0 - `630d6ae`
 [Commits since 1.4.2](https://github.com/zachbr/Dis4IRC/compare/v1.4.2...v1.5.0)
 * Update various libraries, including the one used for Discord.

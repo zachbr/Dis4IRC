@@ -42,13 +42,14 @@ you should paste into the config file.
 ## Gateway Intents
 
 You're almost done, just one more thing. Scroll down, under "Privileged Gateway Intents" and make sure that
-the "Server Members Intent" is set to **On**.
+the both the "Server Members Intent" and the "Message Content Intent" is set to **On**.
 
-Dis4IRC requires this intent to properly cache the member list for things like pings from IRC.
+Dis4IRC requires the "Server Members Intent" to properly cache the member list for things like pings from IRC. Dis4IRC
+requires the "Message Content Intent" to access message content now that Discord has added the command system.
 
-![gateway-intents](https://i.imgur.com/QIohhXv.png)
+![gateway-intents](https://i.imgur.com/cBZfGRm.png)
 
-If you do not set this, you will receive an error message like this on start up:
+If you do not enable these intents, you will receive an error message like this on start up:
 ```
 CloseCode(4014 / Disallowed intents. Your bot might not be eligible to request a privileged intent such as GUILD_PRESENCES or GUILD_MEMBERS.)
 ```
