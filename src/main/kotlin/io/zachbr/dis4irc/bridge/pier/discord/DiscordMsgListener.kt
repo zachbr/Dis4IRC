@@ -31,14 +31,14 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
         }
 
         // don't bridge empty messages (discord does this on join)
-        if (event.message.contentDisplay.isEmpty() && event.message.attachments.isEmpty() && event.message.stickers.isEmpty()) {
+        val message = event.message
+        if (message.contentDisplay.isEmpty() && message.attachments.isEmpty() && message.stickers.isEmpty() && message.embeds.isEmpty()) {
             return
         }
 
         val receiveTimestamp = System.nanoTime()
         logger.debug("DISCORD MSG ${event.channel.name} ${event.author.name}: ${event.message.contentStripped}")
 
-        val message = event.message.toBridgeMsg(logger, receiveTimestamp)
-        pier.sendToBridge(message)
+        pier.sendToBridge(message.toBridgeMsg(logger, receiveTimestamp))
     }
 }

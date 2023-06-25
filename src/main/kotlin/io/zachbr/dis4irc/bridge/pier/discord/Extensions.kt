@@ -12,6 +12,7 @@ import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.message.Source
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.sticker.Sticker
@@ -72,6 +73,17 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         }
     }
 
+    // embeds - this only works with channel embeds, not for listening to slash commands and interaction hooks
+    if (embeds.isNotEmpty()) {
+        val parsed = ParsedEmbeds(embeds)
+        if (parsed.embedString.isNotBlank()) {
+            messageText += parsed.embedString
+        }
+        if (parsed.embedImageUrls.isNotEmpty()) {
+            attachmentUrls += parsed.embedImageUrls
+        }
+    }
+
     // discord replies
     var bridgeMsgRef: io.zachbr.dis4irc.bridge.message.Message? = null
     val discordMsgRef = this.referencedMessage
@@ -105,4 +117,82 @@ fun makeLottieViewerUrl(discordCdnUrl: String): String? {
     val encodedString = URLEncoder.encode(proxyString, "UTF-8") // has to use look up for Java 8 compat
 
     return "$LOTTIE_PLAYER_BASE_URL?p=$encodedString"
+}
+
+class ParsedEmbeds(embeds: List<MessageEmbed>) {
+    val embedString: String
+    val embedImageUrls: List<String>
+
+    init {
+        val strBuilder = StringBuilder()
+        val imageUrls = ArrayList<String>()
+        val embedCount = embeds.count()
+        for ((i, embed) in embeds.withIndex()) {
+            val imageUrl = embed.image?.url
+            if (imageUrl != null) {
+                imageUrls.add(imageUrl)
+            }
+
+            if (embed.title != null) {
+                strBuilder.append(embed.title)
+            }
+
+            if (embed.title != null && embed.description != null) {
+                strBuilder.append(": ")
+            }
+
+            if (embed.description != null) {
+                strBuilder.append(embed.description)
+            }
+
+            if (embed.title != null || embed.description != null) {
+                strBuilder.append('\n')
+            }
+
+            val fieldsCount = embed.fields.count()
+            for ((fi, field) in embed.fields.withIndex()) {
+                if (field.name != null) {
+                    strBuilder.append(field.name)
+                }
+
+                if (field.name != null && field.value != null) {
+                    strBuilder.append(": ")
+                }
+
+                if (field.value != null) {
+                    strBuilder.append(field.value)
+                }
+
+                if (fi < fieldsCount - 1) {
+                    strBuilder.append('\n')
+                }
+            }
+
+            if (i < embedCount - 1) {
+                strBuilder.append('\n')
+            }
+        }
+
+        this.embedString = strBuilder.toString()
+        this.embedImageUrls = imageUrls
+    }
+
+    override fun toString(): String {
+        return "ParsedEmbeds{${embedString}; ${embedImageUrls.joinToString { it }}}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ParsedEmbeds
+        if (embedString != other.embedString) return false
+        return embedImageUrls == other.embedImageUrls
+    }
+
+    override fun hashCode(): Int {
+        var result = embedString.hashCode()
+        result = 31 * result + embedImageUrls.hashCode()
+        return result
+    }
 }
