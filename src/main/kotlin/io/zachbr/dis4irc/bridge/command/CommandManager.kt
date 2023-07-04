@@ -66,7 +66,7 @@ class CommandManager(private val bridge: Bridge, config: CommentedConfigurationN
         val trigger = split[0].substring(COMMAND_PREFIX.length, split[0].length) // strip off command prefix
         val executor = getExecutorFor(trigger) ?: return
 
-        logger.debug("Passing command to executor: $executor")
+        logger.debug("Passing command to executor: {}", executor)
 
         command.destination = Destination.BOTH // we want results to go to both sides by default
         val result = executor.onCommand(command)

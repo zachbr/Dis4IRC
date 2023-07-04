@@ -159,7 +159,7 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
      * Marks that this message has gone through the paste system
      */
     private fun resubmitToBridge(message: Message) {
-        bridge.logger.debug("Resubmitting to bridge: $message")
+        bridge.logger.debug("Resubmitting to bridge: {}", message)
         bridge.submitMessage(message)
     }
 

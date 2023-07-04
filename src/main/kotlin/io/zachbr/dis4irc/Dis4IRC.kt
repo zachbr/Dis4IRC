@@ -202,7 +202,7 @@ class Dis4IRC(args: Array<String>) {
     private fun loadBridgeData(path: Path) {
         if (Files.notExists(path)) return
 
-        logger.debug("Loading bridge data from $path")
+        logger.debug("Loading bridge data from {}", path)
         val json: JSONObject = Files.newInputStream(path, StandardOpenOption.READ).use {
             val compressedIn = GZIPInputStream(it)
             val textIn = InputStreamReader(compressedIn, Charsets.UTF_8)
@@ -217,7 +217,7 @@ class Dis4IRC(args: Array<String>) {
     }
 
     private fun saveBridgeData(path: Path) {
-        logger.debug("Saving bridge data to $path")
+        logger.debug("Saving bridge data to {}", path)
         val json = JSONObject()
 
         val bridges = TreeSet(Comparator { b1: Bridge, b2: Bridge -> // maintain consistent order

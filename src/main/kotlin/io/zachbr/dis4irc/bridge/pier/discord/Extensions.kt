@@ -29,7 +29,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     // We need to get the guild member in order to grab their display name
     val guildMember = this.guild.getMember(this.author)
     if (guildMember == null && !this.author.isBot) {
-        logger.debug("Cannot get Discord guild member from user information: ${this.author}!")
+        logger.debug("Cannot get Discord guild member from user information: {}!", this.author)
     }
 
     // handle attachments
@@ -61,7 +61,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
             Sticker.StickerFormat.APNG, Sticker.StickerFormat.PNG -> DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", "png")
             Sticker.StickerFormat.UNKNOWN -> null
             else -> {
-                logger.debug("Unhandled sticker format type: ${sticker.formatType}")
+                logger.debug("Unhandled sticker format type: {}", sticker.formatType)
                 null
             }
         }
@@ -94,7 +94,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
     val sender = Sender(displayName, this.author.idLong, null)
     if (this.channelType != ChannelType.TEXT) {
-        logger.debug("Encountered unsupported channel type: $channelType") // TODO: probably a nicer way to handle this (FIXME: Support other types?)
+        logger.debug("Encountered unsupported channel type: {}", channelType) // TODO: probably a nicer way to handle this (FIXME: Support other types?)
     }
     val channel = this.channel.asTextChannel().asBridgeSource()
     return io.zachbr.dis4irc.bridge.message.Message(

@@ -22,7 +22,7 @@ class IrcExtrasListener(private val pier: IrcPier) {
         val receiveTimestamp = System.nanoTime()
         val sender = BOT_SENDER
         val msgContent = "${event.actor.name} changed channel modes: ${event.statusList.asString}"
-        logger.debug("IRC MODE CHANGE ${event.channel}")
+        logger.debug("IRC MODE CHANGE {}", event.channel)
 
         val source = event.channel.asBridgeSource()
         val message = Message(msgContent, sender, source, receiveTimestamp)

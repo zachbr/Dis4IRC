@@ -59,7 +59,7 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
         val bridgeTarget: String? = channelMappings.getMappingFor(messageIn.source)
 
         if (bridgeTarget == null) {
-            logger.debug("Discarding message with no bridge target from: ${messageIn.source}")
+            logger.debug("Discarding message with no bridge target from: {}", messageIn.source)
             return
         }
 
