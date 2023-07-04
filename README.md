@@ -106,6 +106,10 @@ debug-logging=true
 
 ```
 
+Obligatory
+----------
+![xkcd #1782](https://imgs.xkcd.com/comics/team_chat.png)
+
 The Name
 --------
 The name is a typo of a typo of a bad idea of a misspoken phrase.

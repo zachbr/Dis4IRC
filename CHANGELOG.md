@@ -2,6 +2,12 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.1 - `3cfdf07`
+[Commits since 1.6.0](https://github.com/zachbr/Dis4IRC/compare/v1.6.0...v1.6.1)
+* Updates to the Discord library to better handle the username changes.
+* Adds support for bridging *channel* embeds.
+* Updates the IRC message splitter to better handle certain unicode.
+
 ## 1.6.0 - `c71aaca`
 [Commits since 1.5.0](https://github.com/zachbr/Dis4IRC/compare/v1.5.0...v1.6.0)
 * Better handling of mentions, emoji, and other string replacements.
