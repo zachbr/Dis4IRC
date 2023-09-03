@@ -2,6 +2,11 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.2 - `65965e8`
+[Commits since 1.6.1](https://github.com/zachbr/Dis4IRC/compare/v1.6.1...v1.6.2)
+* Updates to the Discord library and the other underlying libraries.
+* Adds a configuration option for whether to bridge channel embeds from Discord.
+
 ## 1.6.1 - `3cfdf07`
 [Commits since 1.6.0](https://github.com/zachbr/Dis4IRC/compare/v1.6.0...v1.6.1)
 * Updates to the Discord library to better handle the username changes.

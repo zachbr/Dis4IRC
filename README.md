@@ -86,6 +86,7 @@ bridges {
             ]
             port="6697"
             realname=BridgeBot
+            send-discord-embeds=true
             server="irc.esper.net"
             # Controls whether bridged nicknames will use color
             use-nickname-colors=true
