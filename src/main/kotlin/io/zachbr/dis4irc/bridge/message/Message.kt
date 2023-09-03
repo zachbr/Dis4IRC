@@ -30,12 +30,16 @@ data class Message(
     /**
      * A list of attachment URLs on the message
      */
-    val attachments: MutableList<String>? = null,
+    val attachments: MutableList<String> = ArrayList(),
     /**
      * The message that this message references. Will be null in most cases, only applicable to messages from Discord.
      * This is _not_ expected to resolve down infinitely (ie, reference that references another reference that ...)
      */
     val referencedMessage: Message? = null,
+    /**
+     * Embeds associated with the message. Only applicable to messages from Discord.
+     */
+    val embeds: List<Embed> = ArrayList(),
     /**
      * Destination to be bridged to
      */
@@ -74,3 +78,8 @@ data class Message(
      */
     fun originatesFromBridgeItself() = sender == BOT_SENDER
 }
+
+data class Embed(
+    var string: String?,
+    val imageUrl: String?
+)

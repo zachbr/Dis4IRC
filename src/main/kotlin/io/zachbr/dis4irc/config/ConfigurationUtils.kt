@@ -78,6 +78,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     ircCommandsList.set(arrayListOf("PRIVMSG NICKSERV info", "PRIVMSG NICKSERV help"))
     ircCommandsList.comment("A list of __raw__ irc messages to send")
 
+    val ircSendDiscordEmbeds = ircBaseNode.node("send-discord-embeds")
+    ircSendDiscordEmbeds.set(true)
+    ircSendDiscordEmbeds.comment("Whether to send Discord channel embeds to IRC.")
+
     val discordApiKey = this.node("discord-api-key")
     discordApiKey.comment("Your discord API key you registered your bot with")
     discordApiKey.set("")
@@ -155,6 +159,11 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val ircAnnounceForwards = this.node("irc", "announce-forwarded-messages-sender").boolean
     val ircDiscordReplyContextLimit = this.node("irc", "discord-reply-context-limit").int
     val ircCommandsChildren = this.node("irc", "init-commands-list").childrenList()
+    val ircSendDiscordEmbedsNode = this.node("irc", "send-discord-embeds")
+    if (ircSendDiscordEmbedsNode.virtual()) {
+        ircSendDiscordEmbedsNode.set(true)
+    }
+    val ircSendDiscordEmbeds = ircSendDiscordEmbedsNode.boolean
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.node("announce-joins-and-quits").boolean
     val announceExtras = this.node("announce-extras").boolean
@@ -241,7 +250,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
         ircRealName, ircAntiPing, ircUseNickNameColor, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit,
-        ircCommandsList)
+        ircCommandsList, ircSendDiscordEmbeds)
 
     return BridgeConfiguration(
         bridgeName,

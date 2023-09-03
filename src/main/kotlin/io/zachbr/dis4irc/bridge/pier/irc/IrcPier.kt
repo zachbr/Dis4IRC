@@ -91,6 +91,21 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         var msgContent = msg.contents
 
+        // discord embed bridging
+        if (bridge.config.irc.sendDiscordEmbeds) {
+            for (embed in msg.embeds) {
+                if (!embed.string.isNullOrBlank()) {
+                    if (msgContent.isNotEmpty()) {
+                        msgContent += ' '
+                    }
+                    msgContent += embed.string
+                }
+                if (!embed.imageUrl.isNullOrBlank()) {
+                    msg.attachments.add(embed.imageUrl)
+                }
+            }
+        }
+
         if (msg.attachments != null && msg.attachments.isNotEmpty()) {
             msg.attachments.forEach { msgContent += " $it"}
         }

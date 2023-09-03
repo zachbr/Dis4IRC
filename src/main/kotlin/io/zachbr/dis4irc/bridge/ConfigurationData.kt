@@ -51,7 +51,8 @@ data class IrcConfiguration (
     val noPrefixRegex: Pattern?,
     val announceForwardedCommands: Boolean,
     val discordReplyContextLimit: Int,
-    val startupRawCommands: List<String>
+    val startupRawCommands: List<String>,
+    val sendDiscordEmbeds: Boolean
 ) {
     fun toLoggable(): String {
         return "IrcConfiguration(" +
@@ -69,6 +70,7 @@ data class IrcConfiguration (
                 "announceForwardedCommands=$announceForwardedCommands, " +
                 "discordReplyContextLimit=$discordReplyContextLimit, " +
                 "startupRawCommands=$startupRawCommands" +
+                "sendDiscordEmbeds=$sendDiscordEmbeds" +
                 ")"
     }
 }

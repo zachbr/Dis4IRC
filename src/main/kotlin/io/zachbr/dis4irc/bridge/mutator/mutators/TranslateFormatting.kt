@@ -44,6 +44,10 @@ class TranslateFormatting : Mutator {
             PlatformType.DISCORD -> formatForIrc(message.contents)
         }
 
+        for (embed in message.embeds) {
+            embed.string = embed.string?.let { formatForIrc(it) }
+        }
+
         return Mutator.LifeCycle.CONTINUE
     }
 
