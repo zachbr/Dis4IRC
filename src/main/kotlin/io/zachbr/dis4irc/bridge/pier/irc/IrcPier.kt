@@ -51,7 +51,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         // connect
         ircConn = builder.then().buildAndConnect()
-        ircConn.client.exceptionListener.setConsumer { bridge.logger.error("Exception from IRC API: ${it.localizedMessage}")}
+        ircConn.client.exceptionListener.setConsumer { bridge.logger.warn("Exception from IRC API:", it)}
 
         // listeners
         ircConn.eventManager.registerEventListener(IrcConnectionListener(this))
