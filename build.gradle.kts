@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
 
     id("org.cadixdev.licenser") version "0.6.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -22,9 +22,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.kitteh.irc:client-lib:8.0.0")
+    implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:5.0.0-beta.18") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.20") {
         exclude(module = "opus-java")
     }
 
@@ -35,8 +35,8 @@ dependencies {
     implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
 
     implementation("org.slf4j:slf4j-api:2.0.9")
-    implementation("ch.qos.logback:logback-core:1.4.11")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation("ch.qos.logback:logback-core:1.4.14")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")

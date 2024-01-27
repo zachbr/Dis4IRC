@@ -10,11 +10,13 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.kitteh.irc.client.library.util.Cutter
 
 const val ZERO_WIDTH_SPACE = 0x200B.toChar()
 
+// Test for GH-64. Originally for our own implementation, now just verify the underlying IRC library fix.
 class IrcEncodedCutterTest {
-    private val cutter = EncodedMessageCutter(Charsets.UTF_8)
+    private val cutter = Cutter.DefaultWordCutter()
 
     @Test
     fun testCutterFastPath() {

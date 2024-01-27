@@ -25,7 +25,6 @@ private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09"
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
-    private val messageCutter = EncodedMessageCutter(Charsets.UTF_8)
     private lateinit var ircConn: Client
     private var antiPing: Boolean = false
     private var noPrefix: Pattern? = null
@@ -136,7 +135,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 }
             }
 
-            channel.sendMultiLineMessage(ircMsgOut, messageCutter)
+            channel.sendMultiLineMessage(ircMsgOut)
         }
 
         val outTimestamp = System.nanoTime()
@@ -150,7 +149,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         for (line in message.split("\n")) {
-            ircConn.sendMultiLineNotice(targetUser, line, messageCutter)
+            ircConn.sendMultiLineNotice(targetUser, line)
         }
     }
 
