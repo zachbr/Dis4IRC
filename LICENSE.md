@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright (c) 2018-2023 Dis4IRC Contributors
+Copyright (c) 2018-2024 Dis4IRC Contributors
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

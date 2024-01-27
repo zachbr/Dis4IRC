@@ -90,7 +90,7 @@ license {
     header(project.file("HEADER.txt"))
     ext {
         set("name", "Dis4IRC")
-        set("year", "2018-2023")
+        set("year", "2018-2024")
     }
 }
 
