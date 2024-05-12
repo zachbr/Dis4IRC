@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-Dis4IRC requires **Java 8** or newer to run, so make sure you have that
+Dis4IRC requires **Java 11** or newer to run, so make sure you have that
 installed before proceeding.
 
 Startup

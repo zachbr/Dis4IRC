@@ -13,7 +13,7 @@ plugins {
 group = "io.zachbr"
 version = "1.6.3-SNAPSHOT"
 
-val targetJVM = JavaVersion.VERSION_1_8.toString()
+val targetJVM = JavaVersion.VERSION_11.toString()
 
 repositories {
     maven("https://m2.dv8tion.net/releases")
