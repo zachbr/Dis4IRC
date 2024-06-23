@@ -24,6 +24,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Activity.ActivityType
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
@@ -157,12 +158,8 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     }
 
     private fun sendMessageWebhook(guild: Guild, webhook: WebhookClient, msg: Message) {
-        // try and get avatar for matching user
-        var avatarUrl: String? = null
-        val matchingUsers = guild.getMembersByEffectiveName(msg.sender.displayName, true)
-        if (matchingUsers.isNotEmpty()) {
-            avatarUrl = matchingUsers.first().user.avatarUrl
-        }
+        val guildUser = getMemberByUserNameOrDisplayName(msg.sender.displayName, guild)
+        var avatarUrl = guildUser?.effectiveAvatarUrl
 
         var senderName = enforceSenderName(msg.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
@@ -256,6 +253,24 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             val mentionTrigger = "#${guildChannel.name}"
             msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention, requireSeparation)
         }
+    }
+
+    private fun getMemberByUserNameOrDisplayName(name: String, guild: Guild, ignoreCase: Boolean = true): Member? {
+        // check by username first
+        var matchingUsers = guild.getMembersByName(name, ignoreCase)
+        // if no results, check by their nickname instead
+        if (matchingUsers.isEmpty()) {
+            matchingUsers = guild.getMembersByNickname(name, ignoreCase)
+        }
+        // if we still don't have any results, fire off a findMembers call to look it up (and cache it for later)
+        // this won't help us with this specific call (we don't really want to wait around for this task to come back),
+        // but it will help us with future calls to this and other functions, so the next time they talk, we'll have it.
+        if (matchingUsers.isEmpty()) {
+            guild.findMembers { it.user.name.equals(name, ignoreCase) || it.nickname.equals(name, ignoreCase) }
+                .onSuccess { logger.debug("Cached ${it.size} results for user lookup: $name") }
+        }
+
+        return matchingUsers.firstOrNull()
     }
 
     /**
