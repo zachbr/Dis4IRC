@@ -2,6 +2,11 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.3 - `28d68cb`
+[Commits since 1.6.2](https://github.com/zachbr/Dis4IRC/compare/v1.6.2...v1.6.3)
+* Updates to the Discord library and the other underlying libraries.
+* Improved avatar lookup for IRC users when messages are bridged to Discord.
+
 ## 1.6.2 - `65965e8`
 [Commits since 1.6.1](https://github.com/zachbr/Dis4IRC/compare/v1.6.1...v1.6.2)
 * Updates to the Discord library and the other underlying libraries.
