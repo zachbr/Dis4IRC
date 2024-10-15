@@ -39,12 +39,16 @@ fun replaceTarget(base: CharSequence, target: String, replacement: CharSequence,
         return i == -1 || i == out.length || !requireSeparation || out[i].isWhitespace()
     }
 
+    fun isTarget(i: Int): Boolean {
+        return i > 0 && out[i - 1] == '<'
+    }
+
     var start = out.indexOf(target, 0)
     while (start > -1) {
         val end = start + target.length
         val nextSearchStart = start + replacement.length
 
-        if (isWhiteSpace(start - 1) && isWhiteSpace(end)) {
+        if (isWhiteSpace(start - 1) && isWhiteSpace(end) && !isTarget(start)) {
             out = out.replaceRange(start, start + target.length, replacement)
         }
 
