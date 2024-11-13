@@ -24,7 +24,7 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:5.1.1") {
+    implementation("net.dv8tion:JDA:5.2.1") {
         exclude(module = "opus-java")
     }
 
