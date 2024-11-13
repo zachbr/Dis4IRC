@@ -22,9 +22,9 @@ object Versioning {
     val version: String
 
     /**
-     * Gets the top of tree git hash this version was built against
+     * Gets the build suffix, this may be the git hash or a value specified at build time
      */
-    val gitHash: String
+    val suffix: String
 
     /**
      * Gets the source repo of this project
@@ -34,7 +34,7 @@ object Versioning {
     init {
         val resources = this.javaClass.classLoader.getResources(JAR_PATH_TO_VERSIONING_INFO)
         var verOut = "Unknown version"
-        var gitHashOut = "Unknown Git Commit"
+        var suffixOut = "Unknown suffix"
         var repoOut = "Unknown source repo"
 
         if (resources.hasMoreElements()) {
@@ -45,14 +45,14 @@ object Versioning {
                     }
 
                     verOut = getValue("Version")
-                    gitHashOut = getValue("Git-Hash")
+                    suffixOut = getValue("Suffix")
                     repoOut = getValue("Source-Repo")
                 }
             }
         }
 
         version = verOut
-        gitHash = gitHashOut
+        suffix = suffixOut
         sourceRepo = repoOut
     }
 }

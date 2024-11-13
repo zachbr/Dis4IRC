@@ -46,7 +46,7 @@ class Dis4IRC(args: Array<String>) {
     init {
         parseArguments(args)
 
-        logger.info("Dis4IRC v${Versioning.version}-${Versioning.gitHash}")
+        logger.info("Dis4IRC v${Versioning.version}-${Versioning.suffix}")
         logger.info("Source available at ${Versioning.sourceRepo}")
         logger.info("Available under the MIT License")
 
@@ -190,7 +190,7 @@ class Dis4IRC(args: Array<String>) {
 
     private fun printVersionInfo(minimal: Boolean = false) {
         // can't use logger, this has to be bare bones without prefixes or timestamps
-        println("Dis4IRC v${Versioning.version}-${Versioning.gitHash}")
+        println("Dis4IRC v${Versioning.version}-${Versioning.suffix}")
         if (minimal) {
             return
         }

@@ -71,10 +71,11 @@ tasks {
     }
 
     processResources {
+        inputs.property("suffix", project.findProperty("suffix") ?: "") // track suffix value as input
         expand(
             "projectName" to rootProject.name,
             "projectVersion" to version,
-            "projectGitHash" to getGitHash(),
+            "projectSuffix" to getSuffix(),
             "projectSourceRepo" to "https://github.com/zachbr/Dis4IRC"
         )
     }
@@ -94,11 +95,21 @@ license {
     }
 }
 
-fun getGitHash(): String {
-    val stdout = ByteArrayOutputStream() // cannot be fully qualified, ¯\_(ツ)_/¯
-    exec {
-        commandLine = listOf("git", "rev-parse", "--short", "HEAD")
-        standardOutput = stdout
+fun getSuffix(): String {
+    // If suffix was specified at build-time, use that.
+    // ./gradlew build -P suffix="suffixValue15"
+    project.findProperty("suffix")?.toString()?.let { return it }
+
+    // Fall back to git hash if suffix not set
+    return ByteArrayOutputStream().let { stdout ->
+        runCatching {
+            exec {
+                commandLine("git", "rev-parse", "--short", "HEAD")
+                standardOutput = stdout
+                errorOutput = ByteArrayOutputStream()
+                isIgnoreExitValue = true
+            }
+            stdout.toString().trim().takeIf { it.isNotEmpty() }
+        }.getOrNull() ?: "0"  // fall back to 0 if git falls through
     }
-    return stdout.toString().trim()
 }

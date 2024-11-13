@@ -1,4 +1,4 @@
 Name: ${projectName}
 Version: ${projectVersion}
-Git-Hash: ${projectGitHash}
+Suffix: ${projectSuffix}
 Source-Repo: ${projectSourceRepo}
