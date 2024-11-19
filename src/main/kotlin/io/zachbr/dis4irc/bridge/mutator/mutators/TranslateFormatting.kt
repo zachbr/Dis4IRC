@@ -131,9 +131,11 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(code: Code?) {
+        textContent.write("`")
         textContent.write(IrcFormattingCodes.MONOSPACE.char)
         textContent.write(code?.literal)
         textContent.write(IrcFormattingCodes.MONOSPACE.char)
+        textContent.write("`")
     }
 
     override fun visit(document: Document?) {
@@ -141,9 +143,11 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(emphasis: Emphasis?) {
+        textContent.write("*")
         textContent.write(IrcFormattingCodes.ITALICS.char)
         visitChildren(emphasis)
         textContent.write(IrcFormattingCodes.ITALICS.char)
+        textContent.write("*")
     }
 
     override fun visit(fencedCodeBlock: FencedCodeBlock?) {
@@ -213,14 +217,16 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
     }
 
     override fun visit(strongEmphasis: StrongEmphasis?) {
-        val wrapper: Char = when (strongEmphasis?.openingDelimiter) {
-            DiscordFormattingCodes.BOLD.code -> IrcFormattingCodes.BOLD.char
-            DiscordFormattingCodes.UNDERLINE.code -> IrcFormattingCodes.UNDERLINE.char
+        val (wrapper, marker) = when (strongEmphasis?.openingDelimiter) {
+            DiscordFormattingCodes.BOLD.code -> Pair(IrcFormattingCodes.BOLD.char, "**")
+            DiscordFormattingCodes.UNDERLINE.code -> Pair(IrcFormattingCodes.UNDERLINE.char, "__")
             else -> throw IllegalArgumentException("Unknown strong emphasis delimiter: ${strongEmphasis?.openingDelimiter}")
         }
+        textContent.write(marker)
         textContent.write(wrapper)
         visitChildren(strongEmphasis)
         textContent.write(wrapper)
+        textContent.write(marker)
     }
 
     override fun visit(text: Text?) {
@@ -229,9 +235,11 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
 
     override fun visit(customBlock: CustomBlock?) {
         if (customBlock is DiscordSpoiler) {
+            textContent.write("||")
             textContent.write(spoilerFormatCodeSequence)
             visitChildren(customBlock)
             textContent.write(IrcFormattingCodes.COLOR.char)
+            textContent.write("||")
         } else {
             throw IllegalArgumentException("Unknown custom block: $customBlock")
         }
@@ -239,9 +247,11 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
 
     override fun visit(customNode: CustomNode?) {
         if (customNode is Strikethrough) {
+            textContent.write("~~")
             textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
             visitChildren(customNode)
             textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
+            textContent.write("~~")
         } else {
             throw IllegalArgumentException("Unknown custom node: $customNode")
         }
