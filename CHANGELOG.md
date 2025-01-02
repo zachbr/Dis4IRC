@@ -2,6 +2,12 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.4 - `df1e4ff`
+[Commits since 1.6.3](https://github.com/zachbr/Dis4IRC/compare/v1.6.3...v1.6.4)
+* Fixes an issue with mentions being bridged incorrectly. Thank you sqyyy-jar!
+* A fix for compiling the project when git is not available or the repo is not included.
+* An update to the underlying Discord library.
+
 ## 1.6.3 - `28d68cb`
 [Commits since 1.6.2](https://github.com/zachbr/Dis4IRC/compare/v1.6.2...v1.6.3)
 * Updates to the Discord library and the other underlying libraries.
