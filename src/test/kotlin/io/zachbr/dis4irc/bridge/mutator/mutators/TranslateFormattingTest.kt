@@ -32,12 +32,12 @@ class TranslateFormattingTest {
 
     @Test
     fun discordToIrc() {
-        this.testDiscordToIrc("${Format.BOLD}Test bold${Format.BOLD}", "**Test bold**")
-        this.testDiscordToIrc("${Format.ITALIC}Test italics${Format.ITALIC}", "*Test italics*")
-        this.testDiscordToIrc("${Format.UNDERLINE}Test underlines${Format.UNDERLINE}", "__Test underlines__")
-        this.testDiscordToIrc("${IrcFormattingCodes.STRIKETHROUGH}Test strikethrough${IrcFormattingCodes.STRIKETHROUGH}", "~~Test strikethrough~~")
-        this.testDiscordToIrc("${Format.COLOR_CHAR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}Test spoiler${Format.COLOR_CHAR}", "||Test spoiler||")
-        this.testDiscordToIrc("${IrcFormattingCodes.MONOSPACE}Test inline code${IrcFormattingCodes.MONOSPACE}", "`Test inline code`")
+        this.testDiscordToIrc("**${Format.BOLD}Test bold${Format.BOLD}**", "**Test bold**")
+        this.testDiscordToIrc("*${Format.ITALIC}Test italics${Format.ITALIC}*", "*Test italics*")
+        this.testDiscordToIrc("__${Format.UNDERLINE}Test underlines${Format.UNDERLINE}__", "__Test underlines__")
+        this.testDiscordToIrc("~~${IrcFormattingCodes.STRIKETHROUGH}Test strikethrough${IrcFormattingCodes.STRIKETHROUGH}~~", "~~Test strikethrough~~")
+        this.testDiscordToIrc("||${Format.COLOR_CHAR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}Test spoiler${Format.COLOR_CHAR}||", "||Test spoiler||")
+        this.testDiscordToIrc("`${IrcFormattingCodes.MONOSPACE}Test inline code${IrcFormattingCodes.MONOSPACE}`", "`Test inline code`")
 
         //this.testDiscordToIrc("Attached${Format.COLOR_CHAR}${IrcColorCodes.BLACK},${IrcColorCodes.BLACK}together${Format.COLOR_CHAR}", "Attached||together||") // TODO - fix bug in case
         this.testDiscordToIrc("¯\\_(ツ)_/¯", "¯\\_(ツ)_/¯")
