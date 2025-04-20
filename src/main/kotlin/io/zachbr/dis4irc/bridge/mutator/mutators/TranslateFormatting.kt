@@ -227,23 +227,21 @@ class IrcRenderer(context: TextContentNodeRendererContext) : AbstractVisitor(), 
         textContent.write(text?.literal)
     }
 
-    override fun visit(customBlock: CustomBlock?) {
-        if (customBlock is DiscordSpoiler) {
-            textContent.write(spoilerFormatCodeSequence)
-            visitChildren(customBlock)
-            textContent.write(IrcFormattingCodes.COLOR.char)
-        } else {
-            throw IllegalArgumentException("Unknown custom block: $customBlock")
-        }
-    }
-
     override fun visit(customNode: CustomNode?) {
-        if (customNode is Strikethrough) {
-            textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
-            visitChildren(customNode)
-            textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
-        } else {
-            throw IllegalArgumentException("Unknown custom node: $customNode")
+        when (customNode) {
+            is Strikethrough -> {
+                textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
+                visitChildren(customNode)
+                textContent.write(IrcFormattingCodes.STRIKETHROUGH.char)
+            }
+            is DiscordSpoiler -> {
+                textContent.write(spoilerFormatCodeSequence)
+                visitChildren(customNode)
+                textContent.write(IrcFormattingCodes.COLOR.char)
+            }
+            else -> {
+                throw IllegalArgumentException("Unknown custom node: $customNode")
+            }
         }
     }
 

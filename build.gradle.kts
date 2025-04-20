@@ -31,8 +31,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.json:json:20230227")
     implementation("org.spongepowered:configurate-hocon:4.1.2")
-    implementation("com.atlassian.commonmark:commonmark:0.15.2")
-    implementation("com.atlassian.commonmark:commonmark-ext-gfm-strikethrough:0.15.2")
+    implementation("org.commonmark:commonmark:0.24.0")
+    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.24.0")
 
     implementation("org.slf4j:slf4j-api:2.0.13")
     implementation("ch.qos.logback:logback-core:1.5.6")
