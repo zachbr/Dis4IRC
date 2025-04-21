@@ -14,15 +14,13 @@ import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 import org.commonmark.parser.delimiter.DelimiterProcessor
 import org.commonmark.parser.delimiter.DelimiterRun
-import org.commonmark.renderer.html.HtmlRenderer
 
 private const val DELIMITER = '|'
 private const val DELIMITER_LENGTH = 2
 
 class DiscordSpoiler : CustomNode()
 
-class DiscordSpoilerExtension private constructor() : Parser.ParserExtension,
-    HtmlRenderer.HtmlRendererExtension {
+class DiscordSpoilerExtension private constructor() : Parser.ParserExtension {
 
     companion object {
         @JvmStatic fun create(): Extension = DiscordSpoilerExtension()
@@ -30,10 +28,6 @@ class DiscordSpoilerExtension private constructor() : Parser.ParserExtension,
 
     override fun extend(parserBuilder: Parser.Builder) {
         parserBuilder.customDelimiterProcessor(SpoilerDelimiterProcessor())
-    }
-
-    override fun extend(builder: HtmlRenderer.Builder) {
-        throw UnsupportedOperationException() // no interest in HTML output for this currently
     }
 }
 
