@@ -9,6 +9,7 @@
 package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.message.Embed
+import io.zachbr.dis4irc.bridge.message.MessageSnapshot
 import io.zachbr.dis4irc.bridge.message.PlatformType
 import io.zachbr.dis4irc.bridge.message.Sender
 import io.zachbr.dis4irc.bridge.message.Source
@@ -34,15 +35,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     }
 
     // handle attachments
-    val attachmentUrls = ArrayList<String>()
-    for (attachment in this.attachments) {
-        var url = attachment.url
-        if (attachment.isImage) {
-            url = attachment.proxyUrl
-        }
-
-        attachmentUrls.add(url)
-    }
+    val attachmentUrls = parseAttachments(this.attachments)
 
     // handle custom emojis
     var messageText = this.contentDisplay
@@ -51,6 +44,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     }
 
     // handle stickers
+    // todo refactor
     for (sticker in this.stickers) {
         if (messageText.isNotEmpty()) {
             messageText += " "
@@ -84,6 +78,47 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         bridgeMsgRef = discordMsgRef.toBridgeMsg(logger, receiveTimestamp, shouldResolveReference = false) // do not endlessly resolve references
     }
 
+    // forwards
+    val snapshots = ArrayList<MessageSnapshot>()
+    for (snapshot in this.messageSnapshots) {
+        val snapshotAttachmentUrls = parseAttachments(snapshot.attachments)
+        for (customEmoji in this.mentions.customEmojis) {
+            snapshotAttachmentUrls.add(customEmoji.imageUrl)
+        }
+
+        var snapshotText = snapshot.contentRaw
+        val snapshotEmbeds = parseEmbeds(snapshot.embeds)
+        // todo refactor
+        for (sticker in snapshot.stickers) {
+            if (snapshotText.isNotEmpty()) {
+                snapshotText += " "
+            }
+            snapshotText += sticker.name
+
+            val url = when (sticker.formatType) {
+                Sticker.StickerFormat.LOTTIE -> makeLottieViewerUrl(sticker.iconUrl)
+                Sticker.StickerFormat.APNG, Sticker.StickerFormat.PNG -> DISCORD_STICKER_MEDIA_URL.replace("%%ID%%", sticker.id).replace("%%FILETYPE%%", "png")
+                Sticker.StickerFormat.UNKNOWN -> null
+                else -> {
+                    logger.debug("Unhandled sticker format type: {}", sticker.formatType)
+                    null
+                }
+            }
+
+            if (url != null) {
+                snapshotAttachmentUrls.add(url)
+            } else {
+                snapshotText += " <sticker format not supported>"
+            }
+        }
+
+        snapshots.add(MessageSnapshot(
+            snapshotText,
+            snapshotAttachmentUrls,
+            snapshotEmbeds
+        ))
+    }
+
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
     val sender = Sender(displayName, this.author.idLong, null)
     if (this.channelType != ChannelType.TEXT) {
@@ -97,7 +132,8 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
         receiveTimestamp,
         attachmentUrls,
         bridgeMsgRef,
-        parsedEmbeds
+        parsedEmbeds,
+        snapshots
     )
 }
 
@@ -158,4 +194,17 @@ fun parseEmbeds(embeds: List<MessageEmbed>): List<Embed> {
     }
 
     return parsed
+}
+
+fun parseAttachments(attachments: List<Message.Attachment>) : MutableList<String> {
+    val attachmentUrls = ArrayList<String>()
+    for (attachment in attachments) {
+        var url = attachment.url
+        if (attachment.isImage) {
+            url = attachment.proxyUrl
+        }
+
+        attachmentUrls.add(url)
+    }
+    return attachmentUrls
 }

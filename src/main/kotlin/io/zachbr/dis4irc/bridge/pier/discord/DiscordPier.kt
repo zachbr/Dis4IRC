@@ -205,6 +205,15 @@ class DiscordPier(private val bridge: Bridge) : Pier {
      * Sends a message to the bridge for processing
      */
     fun sendToBridge(message: Message) {
+        // try and resolve local snapshot mentions before they go across the bridge
+        if (message.snapshots.isNotEmpty()) { // todo refactor
+            for (snapshot in message.snapshots) {
+                val textChannel = getTextChannelBy(message.source.discordId.toString()) ?: continue
+                snapshot.content = parseMentionableToNames(textChannel.guild, snapshot.content, requireSeparation = true)
+                snapshot.content = parseMentionableToNames(textChannel.guild, snapshot.content, requireSeparation = false)
+            }
+        }
+
         bridge.submitMessage(message)
     }
 
@@ -253,6 +262,31 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             val mentionTrigger = "#${guildChannel.name}"
             msg.contents = replaceTarget(msg.contents, mentionTrigger, guildChannel.asMention, requireSeparation)
         }
+    }
+
+    private fun parseMentionableToNames(guild: Guild, contents: String, requireSeparation: Boolean): String {
+        var newContents = contents
+
+        // convert name use to proper mentions
+        for (member in guild.memberCache) {
+            newContents = replaceTarget(newContents, member.asMention, member.effectiveName, requireSeparation)
+        }
+
+        // convert role use to proper mentions
+        for (role in guild.roleCache) {
+            if (!role.isMentionable) {
+                continue
+            }
+
+            newContents = replaceTarget(newContents, role.asMention, role.name, requireSeparation)
+        }
+
+        // convert text channels to mentions
+        for (guildChannel in guild.textChannelCache) {
+            newContents = replaceTarget(newContents, guildChannel.asMention, guildChannel.name, requireSeparation)
+        }
+
+        return newContents;
     }
 
     private fun getMemberByUserNameOrDisplayName(name: String, guild: Guild, ignoreCase: Boolean = true): Member? {

@@ -120,6 +120,49 @@ class IrcPier(private val bridge: Bridge) : Pier {
             channel.sendMessage("Reply to \"$refSender: $context\"")
         }
 
+        // discord forward handling // todo refactor
+        if (msg.snapshots.isNotEmpty()) {
+            // currently just support one forward, that's all discord seems to support
+            val snapshot = msg.snapshots[0]
+            val forwarderName = createMessagePrefix(msg, withAsciiAngleBracket = false)
+            channel.sendMessage("$forwarderName forwarded a message:")
+
+            var forwardContents = snapshot.content
+
+            // embed bridging
+            if (bridge.config.irc.sendDiscordEmbeds) {
+                for (embed in snapshot.embeds) {
+                    if (!embed.string.isNullOrBlank()) {
+                        if (forwardContents.isNotEmpty()) {
+                            forwardContents += ' '
+                        }
+                        forwardContents += embed.string
+                    }
+                    if (!embed.imageUrl.isNullOrBlank()) {
+                        snapshot.attachments.add(embed.imageUrl)
+                    }
+                }
+            }
+
+            if (snapshot.attachments != null && snapshot.attachments.isNotEmpty()) {
+                snapshot.attachments.forEach { forwardContents += " $it"}
+            }
+
+            val forwardLines = forwardContents.trim().split("\n")
+            for (line in forwardLines) {
+                channel.sendMultiLineMessage(line)
+            }
+
+            // forwards come through as their own message with no direct content. If this was a forward, and there is no
+            // direct text content, stop here to avoid an empty message
+            if (msg.contents.trim().isEmpty()) {
+                // todo refactor
+                val outTimestamp = System.nanoTime()
+                bridge.updateStatistics(msg, outTimestamp)
+                return
+            }
+        }
+
         val messagePrefix = createMessagePrefix(msg)
         val noPrefixPattern = noPrefix
         val msgLines = msgContent.split("\n")

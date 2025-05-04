@@ -41,6 +41,10 @@ data class Message(
      */
     val embeds: List<Embed> = ArrayList(),
     /**
+     * Snapshots (forwards) attached to this message. Only applicable to messages from Discord.
+     */
+    val snapshots: List<MessageSnapshot> = ArrayList(),
+    /**
      * Destination to be bridged to
      */
     var destination: Destination = Destination.OPPOSITE,
