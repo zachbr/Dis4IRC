@@ -27,6 +27,12 @@ Downloads
   * Users authenticated with GitHub can access builds [here](https://github.com/zachbr/Dis4IRC/actions?query=event%3Apush+is%3Asuccess+branch%3Amaster).
   * Unauthenticated users can access the [latest version here](https://nightly.link/zachbr/Dis4IRC/workflows/gradle/master/dis4irc-jar).
 
+Docker/Container
+----------------
+Releases are also available as container images. Each release version gets a tag as well as:
+- `latest`: always tracks the current release version.
+- `edge`: tracks the primary development branch.
+
 Example Config
 --------------
 ```hocon

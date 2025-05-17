@@ -41,11 +41,25 @@ jobs:
         shell: bash
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
-      - name: Build & push Docker image
+      # releases
+      - name: Build & push release images
+        if: github.event_name == 'release'
         uses: docker/build-push-action@v3
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ github.event_name == 'release' && github.event.release.tag_name || 'latest' }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
+
+      # edge
+      - name: Build & push edge image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}:edge
