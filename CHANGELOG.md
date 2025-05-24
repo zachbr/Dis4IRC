@@ -2,6 +2,15 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.6.5 - `96b6acc`
+[Commits since 1.6.4](https://github.com/zachbr/Dis4IRC/compare/v1.6.4...v1.6.5)
+* Adds basic support for Discord Message Forwards.
+* Updates to the underlying Discord library and other libraries.
+* Container images are now published at `ghcr.io/zachbr/dis4irc`
+  * A tagged version for the specific release version.
+  * A `latest` tag updated to the current release version.
+  * An `edge` tag that tracks development on the primary branch.
+
 ## 1.6.4 - `df1e4ff`
 [Commits since 1.6.3](https://github.com/zachbr/Dis4IRC/compare/v1.6.3...v1.6.4)
 * Fixes an issue with mentions being bridged incorrectly. Thank you sqyyy-jar!
