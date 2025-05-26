@@ -4,7 +4,9 @@ import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.1.20"
+    // Kotlin 2.1.20 causes build failures on riscv64 and other archs
+    // see GH-86.
+    kotlin("jvm") version "2.1.10"
 
     id("org.cadixdev.licenser") version "0.6.1"
     id("com.gradleup.shadow") version "8.3.5"
