@@ -9,10 +9,9 @@
 package io.zachbr.dis4irc.bridge.pier.discord
 
 import io.zachbr.dis4irc.bridge.message.Embed
-import io.zachbr.dis4irc.bridge.message.MessageSnapshot
-import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Sender
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.DiscordMessageSnapshot
+import io.zachbr.dis4irc.bridge.message.DiscordSender
+import io.zachbr.dis4irc.bridge.message.DiscordSource
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.ChannelType
@@ -20,14 +19,15 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.sticker.Sticker
 import org.slf4j.Logger
 import java.net.URLEncoder
+import java.time.Instant
 
 const val DISCORD_STICKER_MEDIA_URL = "https://media.discordapp.net/stickers/%%ID%%.%%FILETYPE%%?size=256"
 const val LOTTIE_PLAYER_BASE_URL = "https://lottie.zachbr.io"
 const val CDN_DISCORDAPP_STICKERS_URL_LENGTH = "https://cdn.discordapp.com/stickers/".length
 
-fun TextChannel.asBridgeSource(): Source = Source(this.name, this.idLong, PlatformType.DISCORD)
+fun TextChannel.asPlatformSource(): DiscordSource = DiscordSource(this.name, this.idLong)
 
-fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime(), shouldResolveReference: Boolean = true) : io.zachbr.dis4irc.bridge.message.Message {
+fun Message.toPlatformMessage(logger: Logger, receiveTimestamp: Long = System.nanoTime(), shouldResolveReference: Boolean = true) : io.zachbr.dis4irc.bridge.message.DiscordMessage {
     // We need to get the guild member in order to grab their display name
     val guildMember = this.guild.getMember(this.author)
     if (guildMember == null && !this.author.isBot) {
@@ -72,14 +72,14 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     val parsedEmbeds = parseEmbeds(embeds)
 
     // discord replies
-    var bridgeMsgRef: io.zachbr.dis4irc.bridge.message.Message? = null
+    var platformMsgRef: io.zachbr.dis4irc.bridge.message.DiscordMessage? = null
     val discordMsgRef = this.referencedMessage
     if (shouldResolveReference && discordMsgRef != null) {
-        bridgeMsgRef = discordMsgRef.toBridgeMsg(logger, receiveTimestamp, shouldResolveReference = false) // do not endlessly resolve references
+        platformMsgRef = discordMsgRef.toPlatformMessage(logger, receiveTimestamp, shouldResolveReference = false) // do not endlessly resolve references
     }
 
     // forwards
-    val snapshots = ArrayList<MessageSnapshot>()
+    val snapshots = ArrayList<DiscordMessageSnapshot>()
     for (snapshot in this.messageSnapshots) {
         val snapshotAttachmentUrls = parseAttachments(snapshot.attachments)
         for (customEmoji in this.mentions.customEmojis) {
@@ -112,7 +112,7 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
             }
         }
 
-        snapshots.add(MessageSnapshot(
+        snapshots.add(DiscordMessageSnapshot(
             snapshotText,
             snapshotAttachmentUrls,
             snapshotEmbeds
@@ -120,20 +120,20 @@ fun Message.toBridgeMsg(logger: Logger, receiveTimestamp: Long = System.nanoTime
     }
 
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
-    val sender = Sender(displayName, this.author.idLong, null)
+    val sender = DiscordSender(displayName, this.author.idLong)
     if (this.channelType != ChannelType.TEXT) {
         logger.debug("Encountered unsupported channel type: {}", channelType) // TODO: probably a nicer way to handle this (FIXME: Support other types?)
     }
-    val channel = this.channel.asTextChannel().asBridgeSource()
-    return io.zachbr.dis4irc.bridge.message.Message(
+    val channel = this.channel.asTextChannel().asPlatformSource()
+    return io.zachbr.dis4irc.bridge.message.DiscordMessage(
         messageText,
         sender,
         channel,
-        receiveTimestamp,
+        Instant.now(),
         attachmentUrls,
-        bridgeMsgRef,
         parsedEmbeds,
-        snapshots
+        snapshots,
+        platformMsgRef
     )
 }
 

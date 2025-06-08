@@ -8,11 +8,15 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.bridge.message.BridgeMessage
+import io.zachbr.dis4irc.bridge.message.CommandMessage
+import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.IrcMessage
 import io.zachbr.dis4irc.util.WrappingLongArray
 import org.json.JSONObject
 import java.math.BigInteger
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 /**
@@ -26,20 +30,21 @@ class StatisticsManager(private val bridge: Bridge) {
     /**
      * Processes a message, adding it to whatever statistic counters it needs
      */
-    fun processMessage(message: Message, nanoTimestamp: Long) {
+    fun processMessage(bMessage: BridgeMessage, sentInstant: Instant) {
         // don't count bot, command, etc messages
-        if (message.originatesFromBridgeItself()) {
+        if (bMessage.originatesFromBridgeItself()) {
             return
         }
 
-        when (message.source.type) {
-            PlatformType.DISCORD -> totalFromDiscord++
-            PlatformType.IRC -> totalFromIrc++
+        val message = bMessage.message
+        when (message) {
+            is DiscordMessage -> totalFromDiscord++
+            is IrcMessage -> totalFromIrc++
+            is CommandMessage -> return // command messages originate on bridge, don't need to count
         }
 
-        val difference = nanoTimestamp - message.timestamp
+        val difference = Duration.between(message.timestamp, sentInstant).toNanos()
         messageTimings.add(difference)
-
         bridge.logger.debug("Message from ${message.source.channelName} ${message.sender.displayName} took ${TimeUnit.NANOSECONDS.toMillis(difference)}ms to handle")
     }
 

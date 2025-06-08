@@ -8,8 +8,12 @@
 
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.bridge.message.CommandMessage
+import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.DiscordSource
+import io.zachbr.dis4irc.bridge.message.IrcMessage
+import io.zachbr.dis4irc.bridge.message.IrcSource
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.DiscordSpoiler
 import io.zachbr.dis4irc.util.DiscordSpoilerExtension
@@ -38,14 +42,17 @@ class TranslateFormatting : Mutator {
         .nodeRendererFactory { context -> IrcRenderer(context) }
         .build()
 
-    override fun mutate(message: Message): Mutator.LifeCycle {
-        message.contents = when (message.source.type) {
-            PlatformType.IRC -> formatForDiscord(message.contents)
-            PlatformType.DISCORD -> formatForIrc(message.contents)
-        }
+    override fun mutate(message: PlatformMessage): Mutator.LifeCycle {
+        when (message) {
+            is CommandMessage -> {} // nothing to do here
+            is IrcMessage -> message.contents = formatForDiscord(message.contents)
+            is DiscordMessage -> {
+                message.contents = formatForIrc(message.contents)
 
-        for (embed in message.embeds) {
-            embed.string = embed.string?.let { formatForIrc(it) }
+                for (embed in message.embeds) {
+                    embed.string = embed.string?.let { formatForIrc(it) }
+                }
+            }
         }
 
         return Mutator.LifeCycle.CONTINUE

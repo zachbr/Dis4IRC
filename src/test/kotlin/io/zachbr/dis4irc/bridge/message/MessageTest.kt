@@ -11,58 +11,61 @@ package io.zachbr.dis4irc.bridge.message
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 class MessageTest {
     @Test
     fun testShouldSendTo() {
-        val sender = Sender("SomeSender", null, null)
-
         // test from IRC
-        val ircSource = Source("#some-channel", null, PlatformType.IRC)
-        val ircMessage = Message("Test", sender, ircSource, System.currentTimeMillis())
+        val ircSender = IrcSender("SomeSender", null)
+        val ircSource = IrcSource("#some-channel")
+        val ircMessage = IrcMessage("Test", ircSender, ircSource, Instant.now())
+        val ircBridgeMsg = BridgeMessage(ircMessage)
 
-        ircMessage.destination = Destination.DISCORD
-        assertFalse(ircMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(ircMessage.shouldSendTo(PlatformType.DISCORD))
+        ircBridgeMsg.destination = Destination.DISCORD
+        assertFalse(ircBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        ircMessage.destination = Destination.IRC
-        assertTrue(ircMessage.shouldSendTo(PlatformType.IRC))
-        assertFalse(ircMessage.shouldSendTo(PlatformType.DISCORD))
+        ircBridgeMsg.destination = Destination.IRC
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertFalse(ircBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        ircMessage.destination = Destination.ORIGIN
-        assertTrue(ircMessage.shouldSendTo(PlatformType.IRC))
-        assertFalse(ircMessage.shouldSendTo(PlatformType.DISCORD))
+        ircBridgeMsg.destination = Destination.ORIGIN
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertFalse(ircBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        ircMessage.destination = Destination.OPPOSITE
-        assertFalse(ircMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(ircMessage.shouldSendTo(PlatformType.DISCORD))
+        ircBridgeMsg.destination = Destination.OPPOSITE
+        assertFalse(ircBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        ircMessage.destination = Destination.BOTH
-        assertTrue(ircMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(ircMessage.shouldSendTo(PlatformType.DISCORD))
+        ircBridgeMsg.destination = Destination.BOTH
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(ircBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
         // test from Discord
-        val discordSource = Source("some-channel", 1L, PlatformType.DISCORD)
-        val discordMessage = Message("Test", sender, discordSource, System.currentTimeMillis())
+        val discordSource = DiscordSource("some-channel", 1L)
+        val discordSender = DiscordSender("SomeSender", 0L)
+        val discordMessage = DiscordMessage("Test", discordSender, discordSource, Instant.now())
+        val discordBridgeMsg = BridgeMessage(discordMessage)
 
-        discordMessage.destination = Destination.DISCORD
-        assertFalse(discordMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(discordMessage.shouldSendTo(PlatformType.DISCORD))
+        discordBridgeMsg.destination = Destination.DISCORD
+        assertFalse(discordBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        discordMessage.destination = Destination.IRC
-        assertTrue(discordMessage.shouldSendTo(PlatformType.IRC))
-        assertFalse(discordMessage.shouldSendTo(PlatformType.DISCORD))
+        discordBridgeMsg.destination = Destination.IRC
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertFalse(discordBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        discordMessage.destination = Destination.ORIGIN
-        assertFalse(discordMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(discordMessage.shouldSendTo(PlatformType.DISCORD))
+        discordBridgeMsg.destination = Destination.ORIGIN
+        assertFalse(discordBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        discordMessage.destination = Destination.OPPOSITE
-        assertTrue(discordMessage.shouldSendTo(PlatformType.IRC))
-        assertFalse(discordMessage.shouldSendTo(PlatformType.DISCORD))
+        discordBridgeMsg.destination = Destination.OPPOSITE
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertFalse(discordBridgeMsg.shouldSendTo(PlatformType.DISCORD))
 
-        discordMessage.destination = Destination.BOTH
-        assertTrue(discordMessage.shouldSendTo(PlatformType.IRC))
-        assertTrue(discordMessage.shouldSendTo(PlatformType.DISCORD))
+        discordBridgeMsg.destination = Destination.BOTH
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.IRC))
+        assertTrue(discordBridgeMsg.shouldSendTo(PlatformType.DISCORD))
     }
 }

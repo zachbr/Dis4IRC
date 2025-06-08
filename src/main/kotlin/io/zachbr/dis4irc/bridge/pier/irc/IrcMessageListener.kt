@@ -8,13 +8,14 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.IrcMessage
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelCtcpEvent
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent
 import org.kitteh.irc.client.library.event.user.PrivateMessageEvent
 import org.kitteh.irc.client.library.event.user.PrivateNoticeEvent
 import org.kitteh.irc.client.library.util.Format
+import java.time.Instant
 
 private const val CTCP_ACTION = "ACTION"
 
@@ -31,12 +32,12 @@ class IrcMessageListener(private val pier: IrcPier) {
             return
         }
 
-        val receiveTimestamp = System.nanoTime()
+        val receiveInstant = Instant.now()
         logger.debug("IRC MSG ${event.channel.name} ${event.actor.nick}: ${event.message}")
 
         val sender = event.actor.asBridgeSender()
         val source = event.channel.asBridgeSource()
-        val message = Message(event.message, sender, source, receiveTimestamp)
+        val message = IrcMessage(event.message, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 
@@ -47,7 +48,7 @@ class IrcMessageListener(private val pier: IrcPier) {
             return
         }
 
-        val receiveTimestamp = System.nanoTime()
+        val receveInstant = Instant.now()
         logger.debug("IRC CTCP ${event.channel.name} ${event.actor.nick}: ${event.message}")
 
         // if it's not an action we probably don't care
@@ -60,7 +61,7 @@ class IrcMessageListener(private val pier: IrcPier) {
 
         val sender = event.actor.asBridgeSender()
         val source = event.channel.asBridgeSource()
-        val message = Message(messageText, sender, source, receiveTimestamp)
+        val message = IrcMessage(messageText, sender, source, receveInstant)
         pier.sendToBridge(message)
     }
 

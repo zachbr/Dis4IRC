@@ -8,35 +8,36 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.message.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.IrcMessage
+import io.zachbr.dis4irc.bridge.message.IrcSender
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelModeEvent
 import org.kitteh.irc.client.library.event.channel.ChannelTopicEvent
+import java.time.Instant
 
 class IrcExtrasListener(private val pier: IrcPier) {
     private val logger = pier.logger
 
     @Handler
     fun onModeChange(event: ChannelModeEvent) {
-        val receiveTimestamp = System.nanoTime()
-        val sender = BOT_SENDER
+        val receiveInstant = Instant.now()
+        val sender = IrcSender("IRC", null)
         val msgContent = "${event.actor.name} changed channel modes: ${event.statusList.asString}"
         logger.debug("IRC MODE CHANGE {}", event.channel)
 
         val source = event.channel.asBridgeSource()
-        val message = Message(msgContent, sender, source, receiveTimestamp)
+        val message = IrcMessage(msgContent, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 
     @Handler
     fun onTopicChange(event: ChannelTopicEvent) {
-        val receiveTimestamp = System.nanoTime()
+        val receiveInstant = Instant.now()
         if (!event.isNew) {
             return // changes only - don't broadcast on channel join
         }
 
-        val sender = BOT_SENDER
+        val sender = IrcSender("IRC", null)
         val topicSetter = event.newTopic.setter.toNullable()
         val setterPrefix = if (topicSetter != null) " set by ${topicSetter.name}" else ""
         val topicValue = event.newTopic.value.orElse("Unknown topic")
@@ -44,7 +45,7 @@ class IrcExtrasListener(private val pier: IrcPier) {
         logger.debug("IRC TOPIC$setterPrefix: $topicValue")
 
         val source = event.channel.asBridgeSource()
-        val message = Message(msgContent, sender, source, receiveTimestamp)
+        val message = IrcMessage(msgContent, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 }

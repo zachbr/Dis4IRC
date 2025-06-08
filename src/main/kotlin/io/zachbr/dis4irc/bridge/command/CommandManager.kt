@@ -12,10 +12,12 @@ import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.command.api.Executor
 import io.zachbr.dis4irc.bridge.command.executors.PinnedMessagesCommand
 import io.zachbr.dis4irc.bridge.command.executors.StatsCommand
-import io.zachbr.dis4irc.bridge.message.BOT_SENDER
+import io.zachbr.dis4irc.bridge.message.BridgeMessage
+import io.zachbr.dis4irc.bridge.message.BridgeSender
+import io.zachbr.dis4irc.bridge.message.CommandMessage
 import io.zachbr.dis4irc.bridge.message.Destination
-import io.zachbr.dis4irc.bridge.message.Message
 import org.spongepowered.configurate.CommentedConfigurationNode
+import java.time.Instant
 
 const val COMMAND_PREFIX: String = "!"
 
@@ -61,22 +63,19 @@ class CommandManager(private val bridge: Bridge, config: CommentedConfigurationN
     /**
      * Process a command message, passing it off to the registered executor
      */
-    fun processCommandMessage(command: Message) {
-        val split = command.contents.split(" ")
+    fun processCommandMessage(command: BridgeMessage) {
+        val platMessage = command.message
+        val split = platMessage.contents.split(" ")
         val trigger = split[0].substring(COMMAND_PREFIX.length, split[0].length) // strip off command prefix
         val executor = getExecutorFor(trigger) ?: return
 
         logger.debug("Passing command to executor: {}", executor)
-
-        command.destination = Destination.BOTH // we want results to go to both sides by default
-        val result = executor.onCommand(command)
-
+        val result = executor.onCommand(platMessage)
         if (result != null) {
-            command.contents = result
-            command.sender = BOT_SENDER
-
             // submit as new message
-            bridge.submitMessage(command)
+            val resultMessage = BridgeMessage(CommandMessage(result, BridgeSender, platMessage.source, Instant.now()))
+            resultMessage.destination = Destination.BOTH // theoretically the source message was bridged, so the result should go to both places
+            bridge.submitMessage(resultMessage)
         }
     }
 }

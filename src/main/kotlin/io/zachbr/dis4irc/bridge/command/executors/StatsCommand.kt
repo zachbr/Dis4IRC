@@ -10,32 +10,34 @@ package io.zachbr.dis4irc.bridge.command.executors
 
 import io.zachbr.dis4irc.bridge.Bridge
 import io.zachbr.dis4irc.bridge.command.api.Executor
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import java.lang.management.ManagementFactory
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 private const val EXEC_DELAY_MILLIS = 60_000
 
 class StatsCommand(private val bridge: Bridge) : Executor {
     private val percentageContext = MathContext(4, RoundingMode.HALF_UP)
-    private var lastExecution = 0L
+    private var lastExecution = AtomicLong(0L)
 
     private fun isRateLimited(): Boolean {
         val now = System.currentTimeMillis()
+        val last = lastExecution.get()
 
-        return if (now - lastExecution > EXEC_DELAY_MILLIS) {
-            lastExecution = now
-            false
-        } else {
-            true
+        if (now - last > EXEC_DELAY_MILLIS) {
+            if (lastExecution.compareAndSet(last, now)) {
+                return false
+            }
         }
+        return true
     }
 
-    override fun onCommand(command: Message): String? {
+    override fun onCommand(command: PlatformMessage): String? {
         if (isRateLimited()) {
             return null
         }

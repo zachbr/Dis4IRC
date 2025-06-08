@@ -8,7 +8,7 @@
 
 package io.zachbr.dis4irc.bridge.command.api
 
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 
 interface Executor {
     /**
@@ -16,5 +16,5 @@ interface Executor {
      *
      * @return your desired output or null if you desire no output
      */
-    fun onCommand(command: Message): String?
+    fun onCommand(command: PlatformMessage): String?
 }

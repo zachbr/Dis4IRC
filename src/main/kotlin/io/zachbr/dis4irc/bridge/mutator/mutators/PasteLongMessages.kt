@@ -9,8 +9,9 @@
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.bridge.message.BridgeMessage
+import io.zachbr.dis4irc.bridge.message.DiscordSource
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 import io.zachbr.dis4irc.util.countSubstring
 import okhttp3.Call
@@ -62,11 +63,11 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
         pasteExpiryDays = pasteExpiryNode.long
     }
 
-    override fun mutate(message: Message): Mutator.LifeCycle {
+    override fun mutate(message: PlatformMessage): Mutator.LifeCycle {
         val msgContents = message.contents
 
         // we only need to run paste service on discord messages
-        if (message.source.type != PlatformType.DISCORD) {
+        if (message.source !is DiscordSource) {
             return Mutator.LifeCycle.CONTINUE
         }
 
@@ -88,10 +89,6 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
         // don't paste, return early
         if (!shouldPaste) {
             return Mutator.LifeCycle.CONTINUE
-        }
-
-        if (message.hasAlreadyApplied(this.javaClass)) {
-            throw IllegalStateException("Twice!")
         }
 
         // called when we were unable to submit the paste
@@ -156,11 +153,13 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
     }
 
     /**
-     * Marks that this message has gone through the paste system
+     * Resubmits the message to the bridge. Useful for async ops.
      */
-    private fun resubmitToBridge(message: Message) {
+    private fun resubmitToBridge(message: PlatformMessage) {
         bridge.logger.debug("Resubmitting to bridge: {}", message)
-        bridge.submitMessage(message)
+        val bridgeMsg = BridgeMessage(message)
+        bridgeMsg.markMutatorApplied(this.javaClass)
+        bridge.submitMessage(bridgeMsg)
     }
 
     /**

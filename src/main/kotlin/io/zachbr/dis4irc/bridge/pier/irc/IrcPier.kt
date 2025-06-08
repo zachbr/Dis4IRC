@@ -10,18 +10,15 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.BridgeMessage
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.pier.Pier
 import org.kitteh.irc.client.library.Client
 import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
 import org.kitteh.irc.client.library.element.Channel
-import org.kitteh.irc.client.library.util.Format
 import org.slf4j.Logger
+import java.time.Instant
 import java.util.regex.Pattern
-import kotlin.math.abs
-
-const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
-private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
@@ -75,7 +72,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
     }
 
-    override fun sendMessage(targetChan: String, msg: Message) {
+    override fun sendMessage(targetChan: String, msg: BridgeMessage) {
         if (!this::ircConn.isInitialized) {
             logger.error("IRC Connection has not been initialized yet!")
             return
@@ -83,106 +80,19 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         val channel = getChannelByName(targetChan)
         if (channel == null) {
-            logger.error("Unable to get or join $targetChan to send message from ${msg.sender.displayName}")
+            logger.error("Unable to get or join $targetChan to send message from ${msg.message.sender.displayName}")
             logger.debug(msg.toString())
             return
         }
 
-        var msgContent = msg.contents
-
-        // discord embed bridging
-        if (bridge.config.irc.sendDiscordEmbeds) {
-            for (embed in msg.embeds) {
-                if (!embed.string.isNullOrBlank()) {
-                    if (msgContent.isNotEmpty()) {
-                        msgContent += ' '
-                    }
-                    msgContent += embed.string
-                }
-                if (!embed.imageUrl.isNullOrBlank()) {
-                    msg.attachments.add(embed.imageUrl)
-                }
-            }
+        val ircLines = IrcMessageFormatter.format(msg, bridge.config) // <-- NEW!
+        ircLines.forEach { line ->
+            channel.sendMultiLineMessage(line)
         }
 
-        if (msg.attachments != null && msg.attachments.isNotEmpty()) {
-            msg.attachments.forEach { msgContent += " $it"}
+        if (ircLines.isNotEmpty()) {
+            bridge.updateStatistics(msg, Instant.now())
         }
-
-        // discord reply handling
-        if (msg.referencedMessage != null && referenceLengthLimit > 0) {
-            var context = msg.referencedMessage.contents.replace("\n", " ") // no newlines in context msgs
-            if (context.length > referenceLengthLimit) {
-                context = context.substring(0, referenceLengthLimit - 1) + "..."
-            }
-
-            val refSender = createMessagePrefix(msg.referencedMessage, withAsciiAngleBracket = false)
-            channel.sendMessage("Reply to \"$refSender: $context\"")
-        }
-
-        // discord forward handling // todo refactor
-        if (msg.snapshots.isNotEmpty()) {
-            // currently just support one forward, that's all discord seems to support
-            val snapshot = msg.snapshots[0]
-            val forwarderName = createMessagePrefix(msg, withAsciiAngleBracket = false)
-            channel.sendMessage("$forwarderName forwarded a message:")
-
-            var forwardContents = snapshot.content
-
-            // embed bridging
-            if (bridge.config.irc.sendDiscordEmbeds) {
-                for (embed in snapshot.embeds) {
-                    if (!embed.string.isNullOrBlank()) {
-                        if (forwardContents.isNotEmpty()) {
-                            forwardContents += ' '
-                        }
-                        forwardContents += embed.string
-                    }
-                    if (!embed.imageUrl.isNullOrBlank()) {
-                        snapshot.attachments.add(embed.imageUrl)
-                    }
-                }
-            }
-
-            if (snapshot.attachments != null && snapshot.attachments.isNotEmpty()) {
-                snapshot.attachments.forEach { forwardContents += " $it"}
-            }
-
-            val forwardLines = forwardContents.trim().split("\n")
-            for (line in forwardLines) {
-                channel.sendMultiLineMessage(line)
-            }
-
-            // forwards come through as their own message with no direct content. If this was a forward, and there is no
-            // direct text content, stop here to avoid an empty message
-            if (msg.contents.trim().isEmpty()) {
-                // todo refactor
-                val outTimestamp = System.nanoTime()
-                bridge.updateStatistics(msg, outTimestamp)
-                return
-            }
-        }
-
-        val messagePrefix = createMessagePrefix(msg)
-        val noPrefixPattern = noPrefix
-        val msgLines = msgContent.split("\n")
-        for (line in msgLines) {
-            var ircMsgOut = line
-
-            if (noPrefixPattern == null || !noPrefixPattern.matcher(ircMsgOut).find()) {
-                ircMsgOut = "$messagePrefix $line"
-            } else {
-                logger.debug("Message matches no-prefix-regex: {}, sending without name", noPrefixPattern)
-                if (bridge.config.irc.announceForwardedCommands) {
-                    channel.sendMessage("Forwarded command from ${createMessagePrefix(msg, withAsciiAngleBracket = false)}")
-                }
-            }
-
-            channel.sendMultiLineMessage(ircMsgOut)
-        }
-
-        val outTimestamp = System.nanoTime()
-        bridge.updateStatistics(msg, outTimestamp)
     }
 
     fun sendNotice(targetUser: String, message: String) {
@@ -194,35 +104,6 @@ class IrcPier(private val bridge: Bridge) : Pier {
         for (line in message.split("\n")) {
             ircConn.sendMultiLineNotice(targetUser, line)
         }
-    }
-
-    fun createMessagePrefix(msg: Message, withAsciiAngleBracket: Boolean = true): String {
-        if (msg.originatesFromBridgeItself()) {
-            return ""
-        }
-
-        var nameOut = msg.sender.displayName
-        if (antiPing) {
-            nameOut = rebuildWithAntiPing(nameOut)
-        }
-
-        if (bridge.config.irc.useNickNameColor) {
-            val color = getColorCodeForName(msg.sender.displayName)
-            nameOut = Format.COLOR_CHAR + color + nameOut + Format.RESET
-        }
-
-        return if (withAsciiAngleBracket) {
-            "<$nameOut>"
-        } else {
-            nameOut
-        }
-    }
-
-    // https://github.com/korobi/Web/blob/master/src/Korobi/WebBundle/IRC/Parser/NickColours.php
-    private fun getColorCodeForName(nick: String): String {
-        var index = 0
-        nick.toCharArray().forEach { index += it.code.toByte() }
-        return NICK_COLORS[abs(index) % NICK_COLORS.size]
     }
 
     /**
@@ -249,12 +130,12 @@ class IrcPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(message: Message) {
-        bridge.submitMessage(message)
+    fun sendToBridge(message: PlatformMessage) {
+        bridge.submitMessage(BridgeMessage(message))
     }
 
     /**
-     * Signals the bridge that the pier needs to shutdown
+     * Signals the bridge that the pier needs to shut down
      */
     fun signalShutdown(inErr: Boolean) {
         this.bridge.shutdown(inErr)
@@ -276,21 +157,4 @@ class IrcPier(private val bridge: Bridge) : Pier {
             ircConn.addChannel(mapping.ircChannel)
         }
     }
-}
-
-/**
- * Rebuilds a string with the [ANTI_PING_CHAR] character placed strategically
- */
-fun rebuildWithAntiPing(nick: String): String {
-    val builder = StringBuilder()
-    val length = nick.length
-    for (i in nick.indices) {
-        builder.append(nick[i])
-        if (i + 1 >= length || !Character.isSurrogatePair(nick[i], nick[i +  1])) {
-            if (i % 2 == 0) {
-                builder.append(ANTI_PING_CHAR)
-            }
-        }
-    }
-    return builder.toString()
 }

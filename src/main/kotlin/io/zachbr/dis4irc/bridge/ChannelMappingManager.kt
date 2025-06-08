@@ -8,8 +8,9 @@
 
 package io.zachbr.dis4irc.bridge
 
-import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.DiscordSource
+import io.zachbr.dis4irc.bridge.message.IrcSource
+import io.zachbr.dis4irc.bridge.message.PlatformSource
 import java.util.Locale
 
 /**
@@ -31,10 +32,10 @@ class ChannelMappingManager(conf: BridgeConfiguration) {
     /**
      * Gets the opposite channel mapping for the given channel
      */
-    internal fun getMappingFor(source: Source): String? {
-        return when (source.type) {
-            PlatformType.IRC -> ircMappingByName(source.channelName)
-            PlatformType.DISCORD -> discordMappingByName(source.discordId.toString()) ?: discordMappingByName(source.channelName)
+    internal fun getMappingFor(source: PlatformSource): String? {
+        return when (source) {
+            is IrcSource -> ircMappingByName(source.channelName)
+            is DiscordSource -> discordMappingByName(source.channelId.toString()) ?: discordMappingByName(source.channelName)
         }
     }
 

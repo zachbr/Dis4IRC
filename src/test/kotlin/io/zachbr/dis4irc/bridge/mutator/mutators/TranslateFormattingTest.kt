@@ -8,13 +8,16 @@
 
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
-import io.zachbr.dis4irc.bridge.message.Sender
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.DiscordSender
+import io.zachbr.dis4irc.bridge.message.DiscordSource
+import io.zachbr.dis4irc.bridge.message.IrcMessage
+import io.zachbr.dis4irc.bridge.message.IrcSender
+import io.zachbr.dis4irc.bridge.message.IrcSource
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.kitteh.irc.client.library.util.Format
+import java.time.Instant
 
 class TranslateFormattingTest {
     @Test
@@ -44,14 +47,14 @@ class TranslateFormattingTest {
     }
 
     private fun testIrcToDiscord(expected: String, string: String) {
-        val message = Message(string, Sender("Test", null, null), Source("#test", null, PlatformType.IRC), System.nanoTime())
+        val message = IrcMessage(string, IrcSender("Test", null), IrcSource("#test"), Instant.now())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)
     }
 
     private fun testDiscordToIrc(expected: String, input: String) {
-        val message = Message(input, Sender("Test", null, null), Source("#test", null, PlatformType.DISCORD), System.nanoTime())
+        val message = DiscordMessage(input, DiscordSender("Test", 10L), DiscordSource("#test", 5L), Instant.now())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)

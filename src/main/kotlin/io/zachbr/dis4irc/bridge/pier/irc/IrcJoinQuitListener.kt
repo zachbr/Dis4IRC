@@ -8,13 +8,14 @@
 
 package io.zachbr.dis4irc.bridge.pier.irc
 
-import io.zachbr.dis4irc.bridge.message.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.IrcMessage
+import io.zachbr.dis4irc.bridge.message.IrcSender
 import net.engio.mbassy.listener.Handler
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent
 import org.kitteh.irc.client.library.event.channel.ChannelPartEvent
 import org.kitteh.irc.client.library.event.channel.UnexpectedChannelLeaveViaKickEvent
 import org.kitteh.irc.client.library.event.user.UserQuitEvent
+import java.time.Instant
 
 class IrcJoinQuitListener(private val pier: IrcPier) {
     private val logger = pier.logger
@@ -26,13 +27,13 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
             return
         }
 
-        val receiveTimestamp = System.nanoTime()
+        val receiveInstant = Instant.now()
         logger.debug("IRC JOIN ${event.channel.name} ${event.user.nick}")
 
-        val sender = BOT_SENDER
+        val sender = IrcSender("IRC", null)
         val source = event.channel.asBridgeSource()
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has joined ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp)
+        val message = IrcMessage(msgContent, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 
@@ -43,13 +44,13 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
             return
         }
 
-        val receiveTimestamp = System.nanoTime()
+        val receiveInstant = Instant.now()
         logger.debug("IRC PART ${event.channel.name} ${event.user.nick}")
 
-        val sender = BOT_SENDER
+        val sender = IrcSender("IRC", null)
         val source = event.channel.asBridgeSource()
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has left ${event.channel.name}"
-        val message = Message(msgContent, sender, source, receiveTimestamp)
+        val message = IrcMessage(msgContent, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 
@@ -60,20 +61,20 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
             return
         }
 
-        val receiveTimestamp = System.nanoTime()
+        val receiveInstant = Instant.now()
         logger.debug("IRC KICK ${event.channel.name} ${event.target.nick} by ${event.user.nick}")
 
-        val sender = BOT_SENDER
+        val sender = IrcSender("IRC", null)
         val source = event.channel.asBridgeSource()
         val msgContent = "${event.user.nick} kicked ${event.target.nick} (${event.target.userString}@${event.target.host}) (${event.message})"
-        val message = Message(msgContent, sender, source, receiveTimestamp)
+        val message = IrcMessage(msgContent, sender, source, receiveInstant)
         pier.sendToBridge(message)
     }
 
     @Handler
     fun onUserQuit(event: UserQuitEvent) {
-        val receiveTimestamp = System.nanoTime()
-        val sender = BOT_SENDER
+        val receiveInstant = Instant.now()
+        val sender = IrcSender("IRC", null)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has quit"
         logger.debug("IRC QUIT ${event.user.nick}")
 
@@ -81,7 +82,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
             val chan = event.client.getChannel(channel).toNullable() ?: continue
 
             val source = chan.asBridgeSource()
-            val message = Message(msgContent, sender, source, receiveTimestamp)
+            val message = IrcMessage(msgContent, sender, source, receiveInstant)
             pier.sendToBridge(message)
         }
     }

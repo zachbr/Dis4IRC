@@ -8,7 +8,7 @@
 
 package io.zachbr.dis4irc.bridge.mutator.api
 
-import io.zachbr.dis4irc.bridge.message.Message
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 
 /**
  * A mutator takes the given message contents and alters it in some way before returning it
@@ -19,7 +19,7 @@ interface Mutator {
      *
      * @return how to proceed with the message's lifecycle
      */
-    fun mutate(message: Message): LifeCycle
+    fun mutate(message: PlatformMessage): LifeCycle
 
     /**
      * Mutator Life Cycle control types

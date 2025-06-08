@@ -8,8 +8,8 @@
 
 package io.zachbr.dis4irc.bridge.mutator.mutators
 
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.PlatformType
+import io.zachbr.dis4irc.bridge.message.IrcSource
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
 
 /**
@@ -17,17 +17,15 @@ import io.zachbr.dis4irc.bridge.mutator.api.Mutator
  */
 class BlockHereEveryone : Mutator {
 
-    override fun mutate(message: Message): Mutator.LifeCycle {
+    override fun mutate(message: PlatformMessage): Mutator.LifeCycle {
         // only block from IRC -> Discord, allow them the other way around
-        if (message.source.type != PlatformType.IRC) {
+        if (message.source !is IrcSource) {
             return Mutator.LifeCycle.CONTINUE
         }
 
         var out = message.contents
-
         out = out.replace("@everyone", "at-everyone")
         out = out.replace("@here", "at-here")
-
         message.contents = out
 
         return Mutator.LifeCycle.CONTINUE

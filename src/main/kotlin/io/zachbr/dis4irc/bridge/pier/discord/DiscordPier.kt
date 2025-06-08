@@ -14,9 +14,12 @@ import club.minnced.discord.webhook.send.AllowedMentions
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import club.minnced.discord.webhook.util.WebhookErrorHandler
 import io.zachbr.dis4irc.bridge.Bridge
-import io.zachbr.dis4irc.bridge.message.BOT_SENDER
-import io.zachbr.dis4irc.bridge.message.Message
-import io.zachbr.dis4irc.bridge.message.Source
+import io.zachbr.dis4irc.bridge.message.BridgeMessage
+import io.zachbr.dis4irc.bridge.message.BridgeSender
+import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.DiscordSource
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
+import io.zachbr.dis4irc.bridge.message.PlatformSource
 import io.zachbr.dis4irc.bridge.pier.Pier
 import io.zachbr.dis4irc.util.replaceTarget
 import net.dv8tion.jda.api.JDA
@@ -30,6 +33,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.slf4j.Logger
+import java.time.Instant
 
 private const val ZERO_WIDTH_SPACE = 0x200B.toChar()
 
@@ -103,7 +107,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         }
     }
 
-    override fun sendMessage(targetChan: String, msg: Message) {
+    override fun sendMessage(targetChan: String, msg: BridgeMessage) {
         if (!this::discordApi.isInitialized) {
             logger.error("Discord Connection has not been initialized yet!")
             return
@@ -117,22 +121,23 @@ class DiscordPier(private val bridge: Bridge) : Pier {
 
         val webhook = webhookMap[targetChan]
         val guild = channel.guild
+        val platMessage = msg.message
 
         // make sure to replace clearly separated mentions first to not replace partial mentions
-        replaceMentions(guild, msg, true)
+        replaceMentions(guild, platMessage, true)
 
         // replace mentions but don't require separation to find some previously missed, non-separated ones
-        replaceMentions(guild, msg, false)
+        replaceMentions(guild, platMessage, false)
 
         // convert emotes to show properly
         for (emoji in guild.emojiCache) {
             val mentionTrigger = ":${emoji.name}:"
-            msg.contents = replaceTarget(msg.contents, mentionTrigger, emoji.asMention)
+            platMessage.contents = replaceTarget(platMessage.contents, mentionTrigger, emoji.asMention)
         }
 
         // Discord won't broadcast messages that are just whitespace
-        if (msg.contents.trim() == "") {
-            msg.contents = "$ZERO_WIDTH_SPACE"
+        if (platMessage.contents.trim() == "") {
+            platMessage.contents = "$ZERO_WIDTH_SPACE"
         }
 
         if (webhook != null) {
@@ -141,35 +146,36 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             sendMessageOldStyle(channel, msg)
         }
 
-        val outTimestamp = System.nanoTime()
-        bridge.updateStatistics(msg, outTimestamp)
+        bridge.updateStatistics(msg, Instant.now())
     }
 
-    private fun sendMessageOldStyle(discordChannel: TextChannel, msg: Message) {
+    private fun sendMessageOldStyle(discordChannel: TextChannel, bMessage: BridgeMessage) {
         if (!discordChannel.canTalk()) {
-            logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $msg")
+            logger.warn("Bridge cannot speak in ${discordChannel.name} to send message: $bMessage")
             return
         }
 
-        val senderName = enforceSenderName(msg.sender.displayName)
-        val prefix = if (msg.originatesFromBridgeItself()) "" else "<$senderName> "
+        val platMessage = bMessage.message
+        val senderName = enforceSenderName(platMessage.sender.displayName)
+        val prefix = if (bMessage.originatesFromBridgeItself()) "" else "<$senderName> "
 
-        discordChannel.sendMessage("$prefix${msg.contents}").queue()
+        discordChannel.sendMessage("$prefix${platMessage.contents}").queue()
     }
 
-    private fun sendMessageWebhook(guild: Guild, webhook: WebhookClient, msg: Message) {
-        val guildUser = getMemberByUserNameOrDisplayName(msg.sender.displayName, guild)
+    private fun sendMessageWebhook(guild: Guild, webhook: WebhookClient, bMessage: BridgeMessage) {
+        val platMessage = bMessage.message
+        val guildUser = getMemberByUserNameOrDisplayName(platMessage.sender.displayName, guild)
         var avatarUrl = guildUser?.effectiveAvatarUrl
 
-        var senderName = enforceSenderName(msg.sender.displayName)
+        var senderName = enforceSenderName(platMessage.sender.displayName)
         // if sender is command, use bot's actual name and avatar if possible
-        if (msg.sender == BOT_SENDER) {
+        if (platMessage.sender == BridgeSender) {
             senderName = guild.getMember(discordApi.selfUser)?.effectiveName ?: senderName
             avatarUrl = botAvatarUrl ?: avatarUrl
         }
 
         val message = WebhookMessageBuilder()
-            .setContent(msg.contents)
+            .setContent(platMessage.contents)
             .setUsername(senderName)
             .setAvatarUrl(avatarUrl)
             .setAllowedMentions(
@@ -185,16 +191,20 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Checks if the message came from this bot
      */
-    fun isThisBot(source: Source, snowflake: Long): Boolean {
+    fun isThisBot(source: PlatformSource, userSnowflake: Long): Boolean {
+        if (source !is DiscordSource) {
+            return false
+        }
+
         // check against bot user directly
-        if (snowflake == discordApi.selfUser.idLong) {
+        if (userSnowflake == discordApi.selfUser.idLong) {
             return true
         }
 
         // check against webclients
-        val webhook = webhookMap[source.discordId.toString()] ?: webhookMap[source.channelName]
+        val webhook = webhookMap[source.channelId.toString()] ?: webhookMap[source.channelName]
         if (webhook != null) {
-            return snowflake == webhook.id
+            return userSnowflake == webhook.id
         }
 
         // nope
@@ -204,27 +214,27 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Sends a message to the bridge for processing
      */
-    fun sendToBridge(message: Message) {
+    fun sendToBridge(message: DiscordMessage) {
         // try and resolve local snapshot mentions before they go across the bridge
-        if (message.snapshots.isNotEmpty()) { // todo refactor
+        if (message.snapshots.isNotEmpty()) {
             for (snapshot in message.snapshots) {
-                val textChannel = getTextChannelBy(message.source.discordId.toString()) ?: continue
-                snapshot.content = parseMentionableToNames(textChannel.guild, snapshot.content, requireSeparation = true)
-                snapshot.content = parseMentionableToNames(textChannel.guild, snapshot.content, requireSeparation = false)
+                val textChannel = getTextChannelBy(message.source.channelId.toString()) ?: continue
+                snapshot.contents = parseMentionableToNames(textChannel.guild, snapshot.contents, requireSeparation = true)
+                snapshot.contents = parseMentionableToNames(textChannel.guild, snapshot.contents, requireSeparation = false)
             }
         }
 
-        bridge.submitMessage(message)
+        bridge.submitMessage(BridgeMessage(message))
     }
 
     /**
      * Gets the pinned messages from the specified discord channel or null if the channel cannot be found
      */
-    fun getPinnedMessages(channelId: String): List<Message>? {
+    fun getPinnedMessages(channelId: String): List<DiscordMessage>? {
         val channel = getTextChannelBy(channelId) ?: return null
         val messages = channel.retrievePinnedMessages().complete()
 
-        return messages.map { it.toBridgeMsg(logger) }.toList()
+        return messages.map { it.toPlatformMessage(logger) }.toList()
     }
 
     /**
@@ -240,7 +250,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
         return if (byName.isNotEmpty()) byName.first() else null
     }
 
-    private fun replaceMentions(guild: Guild, msg: Message, requireSeparation: Boolean) {
+    private fun replaceMentions(guild: Guild, msg: PlatformMessage, requireSeparation: Boolean) {
         // convert name use to proper mentions
         for (member in guild.memberCache) {
             val mentionTrigger = "@${member.effectiveName}" // require @ prefix
