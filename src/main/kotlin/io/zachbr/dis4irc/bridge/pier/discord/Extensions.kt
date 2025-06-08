@@ -27,7 +27,7 @@ const val CDN_DISCORDAPP_STICKERS_URL_LENGTH = "https://cdn.discordapp.com/stick
 
 fun TextChannel.asPlatformSource(): DiscordSource = DiscordSource(this.name, this.idLong)
 
-fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant, shouldResolveReference: Boolean = true) : io.zachbr.dis4irc.bridge.message.DiscordMessage {
+fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant = Instant.now(), shouldResolveReference: Boolean = true) : io.zachbr.dis4irc.bridge.message.DiscordMessage {
     // We need to get the guild member in order to grab their display name
     val guildMember = this.guild.getMember(this.author)
     if (guildMember == null && !this.author.isBot) {
