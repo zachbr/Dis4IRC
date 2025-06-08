@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.io.ByteArrayOutputStream
 import org.gradle.api.JavaVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     // Kotlin 2.1.20 causes build failures on riscv64 and other archs
@@ -26,7 +26,7 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:5.5.1") {
+    implementation("net.dv8tion:JDA:5.6.1") {
         exclude(module = "opus-java")
     }
 
@@ -63,13 +63,13 @@ tasks {
     }
 
     // make compileKotlin task be quiet
-    withType<JavaCompile> {
+    compileJava {
         targetCompatibility = targetJVM
     }
 
-    withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = targetJVM
+    compileKotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(targetJVM))
         }
     }
 
