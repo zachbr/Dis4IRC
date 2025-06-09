@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.io.ByteArrayOutputStream
 import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin 2.1.20 causes build failures on riscv64 and other archs
@@ -63,11 +64,11 @@ tasks {
     }
 
     // make compileKotlin task be quiet
-    compileJava {
+    withType<JavaCompile> {
         targetCompatibility = targetJVM
     }
 
-    compileKotlin {
+    withType<KotlinCompile> {
         compilerOptions {
             jvmTarget.set(JvmTarget.fromTarget(targetJVM))
         }
