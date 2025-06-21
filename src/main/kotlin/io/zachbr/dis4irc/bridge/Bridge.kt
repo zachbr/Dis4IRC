@@ -62,35 +62,36 @@ class Bridge(private val main: Dis4IRC, internal val config: BridgeConfiguration
      * Bridges communication between the two piers
      */
     internal fun submitMessage(bMessage: BridgeMessage) {
-        val mutatedMessage = mutatorManager.applyMutators(bMessage) ?: return
-        val sourceMessage = mutatedMessage.message
-
-        val bridgeTarget = channelMappings.getMappingFor(sourceMessage.source) ?: run {
-            logger.debug("Discarding message with no bridge target from: {}", sourceMessage.source)
+        // don't process a message that has no destination
+        val bridgeTarget = channelMappings.getMappingFor(bMessage.message.source) ?: run {
+            logger.debug("Discarding message with no bridge target from: {}", bMessage.message.source)
             return
         }
+
+        val mutatedMessage = mutatorManager.applyMutators(bMessage) ?: return
+        val mutatedPlatformMsg = mutatedMessage.message
 
         // we only send across the bridge (to the relevant mapping) or back to the same source currently
         val ircSendTarget: String
         val discordSendTarget: String
-        when (sourceMessage) {
+        when (mutatedPlatformMsg) {
             is IrcMessage -> {
-                ircSendTarget = sourceMessage.source.channelName
+                ircSendTarget = mutatedPlatformMsg.source.channelName
                 discordSendTarget = bridgeTarget
             }
             is DiscordMessage -> {
                 ircSendTarget = bridgeTarget
-                discordSendTarget = sourceMessage.source.channelId.toString()
+                discordSendTarget = mutatedPlatformMsg.source.channelId.toString()
             }
             is CommandMessage -> {
-                when (sourceMessage.source) {
+                when (mutatedPlatformMsg.source) {
                     is IrcSource -> {
-                        ircSendTarget = sourceMessage.source.channelName
+                        ircSendTarget = mutatedPlatformMsg.source.channelName
                         discordSendTarget = bridgeTarget
                     }
                     is DiscordSource -> {
                         ircSendTarget = bridgeTarget
-                        discordSendTarget = sourceMessage.source.channelId.toString()
+                        discordSendTarget = mutatedPlatformMsg.source.channelId.toString()
                     }
                 }
             }
