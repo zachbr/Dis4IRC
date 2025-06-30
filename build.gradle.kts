@@ -29,6 +29,7 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.dv8tion:JDA:5.6.1") {
         exclude(module = "opus-java")
+        exclude(module = "tink")
     }
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
