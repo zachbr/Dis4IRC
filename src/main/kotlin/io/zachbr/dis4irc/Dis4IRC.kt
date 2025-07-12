@@ -50,6 +50,22 @@ class Dis4IRC(args: Array<String>) {
         logger.info("Source available at ${Versioning.sourceRepo}")
         logger.info("Available under the MIT License")
 
+        // future versions will require a newer version of Java (21)
+        val javaVer = Runtime.version().feature()
+        if (javaVer < 21) {
+            logger.info("")
+            logger.info("======================================================")
+            logger.info("Future versions of Dis4IRC will require Java 21 or newer.")
+            logger.info("You appear to be running Java $javaVer.")
+            logger.info("")
+            logger.info("On Linux, your distribution likely already offers newer packages. If your")
+            logger.info("distribution does not offer newer packages or you are not on Linux, you can use")
+            logger.info("a (free) release package from a vendor such as:")
+            logger.info("    Eclipse Temurin, Amazon Corretto, Microsoft OpenJDK, BellSoft Liberica")
+            logger.info("======================================================")
+            logger.info("")
+        }
+
         logger.info("Loading config from: $configPath")
         val config = Configuration(configPath)
 
