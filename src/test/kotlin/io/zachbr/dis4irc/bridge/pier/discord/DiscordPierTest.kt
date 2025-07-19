@@ -76,4 +76,46 @@ class DiscordPierTest {
         assertTrue(enforceSenderName(tooShort).length >= minimumAcceptedLength)
         assertTrue(enforceSenderName(tooLong).length <= maximumAcceptedLength)
     }
+
+    @Test
+    fun testUrlSuppressionWithBrackets() {
+        val bare = "https://google.com"
+        assertEquals("<https://google.com>", wrapUrlsInBrackets(bare))
+
+        val leading = "$bare and some text"
+        assertEquals("<https://google.com> and some text", wrapUrlsInBrackets(leading))
+
+        val trailing = "Some text and $bare"
+        assertEquals("Some text and <https://google.com>", wrapUrlsInBrackets(trailing))
+
+        val ignored = "This case should be unchanged: don't touch."
+        assertEquals(ignored, wrapUrlsInBrackets(ignored))
+
+        val withParam = "https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8"
+        assertEquals("<https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8>", wrapUrlsInBrackets(withParam))
+
+        val withParamLeading = "$withParam seems like a good idea"
+        assertEquals("<https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8> seems like a good idea", wrapUrlsInBrackets(withParamLeading))
+
+        val withParamTrailing = "Have you seen $withParam"
+        assertEquals("Have you seen <https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8>", wrapUrlsInBrackets(withParamTrailing))
+
+        val withParamTrailingPunctuation = "$withParamTrailing??"
+        assertEquals("Have you seen <https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8>??", wrapUrlsInBrackets(withParamTrailingPunctuation))
+
+        val mixedNoSpace = "What is up withhttps://google.com" // yes the discord client handles this, no I am not sure why
+        assertEquals("What is up with<https://google.com>", wrapUrlsInBrackets(mixedNoSpace))
+
+        val mixedNoSpaceWithPuncutation = "$mixedNoSpace?"
+        assertEquals("What is up with<https://google.com>?", wrapUrlsInBrackets(mixedNoSpaceWithPuncutation))
+
+        val mixedNoSpaceWithMorePuncutation = "$mixedNoSpace?!?!?!?!?"
+        assertEquals("What is up with<https://google.com>?!?!?!?!?", wrapUrlsInBrackets(mixedNoSpaceWithMorePuncutation))
+
+        val multiple = "Has anyone found $withParam nearby? Anyone at all? I tried using $bare but it's not working!"
+        assertEquals("Has anyone found <https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8> nearby? Anyone at all? I tried using <https://google.com> but it's not working!", wrapUrlsInBrackets(multiple))
+
+        val alreadyWrappedIgnore = "Has anyone found <https://www.google.com/search?q=tacos+near+me&oq=tacos+near+me&sourceid=chrome&ie=UTF-8> nearby? Anyone at all? I tried using <https://google.com> but it's not working!"
+        assertEquals(alreadyWrappedIgnore, wrapUrlsInBrackets(alreadyWrappedIgnore))
+    }
 }

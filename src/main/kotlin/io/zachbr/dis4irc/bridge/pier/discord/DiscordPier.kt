@@ -140,6 +140,10 @@ class DiscordPier(private val bridge: Bridge) : Pier {
             platMessage.contents = "$ZERO_WIDTH_SPACE"
         }
 
+        if (bridge.config.discord.suppressUrlPreview) {
+            platMessage.contents = wrapUrlsInBrackets(platMessage.contents)
+        }
+
         if (webhook != null) {
             sendMessageWebhook(guild, webhook, msg)
         } else {
@@ -347,5 +351,30 @@ fun enforceSenderName(name: String): String {
     }
 
     return name
+}
+
+/**
+ * Wraps URLs within a string in angle brackets.
+ *
+ * @param text string to process
+ * @return string with URLs wrapped in <>.
+ */
+fun wrapUrlsInBrackets(text: String): String {
+    // discord only links for http[s]:// URLs
+    val urlRegex = """(?<!<)https?://\S+""".toRegex(RegexOption.IGNORE_CASE) // don't match when already wrapped
+
+    return urlRegex.replace(text) { match ->
+        val originalUrl = match.value
+        val lastUrlCharIndex = originalUrl.indexOfLast { it !in ".,;:'!?)" }
+
+        if (lastUrlCharIndex == -1) {
+            return@replace originalUrl
+        }
+
+        val url = originalUrl.substring(0, lastUrlCharIndex + 1)
+        val suffix = originalUrl.substring(lastUrlCharIndex + 1)
+
+        return@replace "<${url}>${suffix}"
+    }
 }
 

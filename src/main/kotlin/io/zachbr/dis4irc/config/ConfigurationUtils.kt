@@ -122,6 +122,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val discordStatusNode = discordOptionsNode.node("online-status")
     discordStatusNode.set("ONLINE")
     discordStatusNode.comment("Online status indicator. Acceptable values are ONLINE, IDLE, DO_NOT_DISTURB, INVISIBLE")
+
+    val discordSuppressUrlPreviews = discordOptionsNode.node("suppress-url-previews")
+    discordSuppressUrlPreviews.set(false)
+    discordSuppressUrlPreviews.comment("Suppresses URL previews for messages bridged to Discord.")
 }
 
 /**
@@ -171,6 +175,14 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     var discordActivityDesc = this.node("discord-options", "activity-desc").string
     var discordActivityUrl = this.node("discord-options", "activity-url").string
     var discordOnlineStatus = this.node("discord-options", "online-status").string
+
+    // config overhaul overdue - this is awful
+    val discordSuppressUrlPreviewsNode = this.node("discord-options", "suppress-url-previews")
+    if (discordSuppressUrlPreviewsNode.virtual()) {
+        discordSuppressUrlPreviewsNode.set(false)
+        discordSuppressUrlPreviewsNode.comment("Suppresses URL previews for messages bridged to Discord.")
+    }
+    val discordSuppressUrlPreviews = discordSuppressUrlPreviewsNode.boolean
 
     val webhookMappings = ArrayList<WebhookMapping>()
     for (webhookNode in this.node("discord-webhooks").childrenMap().values) {
@@ -247,7 +259,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         throw IllegalArgumentException("Cannot start $bridgeName bridge with above configuration errors!")
     }
 
-    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus)
+    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus, discordSuppressUrlPreviews)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
         ircRealName, ircAntiPing, ircUseNickNameColor, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit,
         ircCommandsList, ircSendDiscordEmbeds)
