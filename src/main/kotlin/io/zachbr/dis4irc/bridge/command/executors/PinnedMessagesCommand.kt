@@ -23,17 +23,23 @@ class PinnedMessagesCommand(private val bridge: Bridge) : Executor {
         }
 
         val mappedChannel = bridge.channelMappings.getMappingFor(command.source) ?: throw IllegalStateException("No mapping for source channel: ${command.source}?!?")
-        val pinnedMessages = bridge.discordConn.getPinnedMessages(mappedChannel) ?: return null
         // TODO add max limit (10 most recent?), flood concerns, UX spam, opinionated
-        for (msg in pinnedMessages) {
-            bridge.mutatorManager.applyMutator(TranslateFormatting::class.java, msg)
-            val senderInfo = IrcMessageFormatter.createSenderPrefix(msg.sender, bridge.config.irc.antiPing, bridge.config.irc.useNickNameColor)
-            var msgContent = msg.contents
-            if (msg.attachments.isNotEmpty()) {
-                msg.attachments.forEach { msgContent += " $it"}
+        val pinnedMessages = bridge.discordConn.getPinnedMessages(mappedChannel) { pinned ->
+            if (pinned == null) {
+                bridge.ircConn.sendNotice(command.sender.displayName, "There are no pinned messages for ${command.source.channelName}.")
+                return@getPinnedMessages
             }
 
-            bridge.ircConn.sendNotice(command.sender.displayName, "$senderInfo $msgContent")
+            for (msg in pinned) {
+                bridge.mutatorManager.applyMutator(TranslateFormatting::class.java, msg)
+                val senderInfo = IrcMessageFormatter.createSenderPrefix(msg.sender, bridge.config.irc.antiPing, bridge.config.irc.useNickNameColor)
+                var msgContent = msg.contents
+                if (msg.attachments.isNotEmpty()) {
+                    msg.attachments.forEach { msgContent += " $it"}
+                }
+
+                bridge.ircConn.sendNotice(command.sender.displayName, "$senderInfo $msgContent")
+            }
         }
 
         return null // don't send a message publicly

@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.requests.restaction.pagination.PinnedMessagePaginationAction
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.slf4j.Logger
@@ -46,7 +47,7 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     override fun start() {
         logger.info("Connecting to Discord API...")
 
-        val intents = listOf(GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.MESSAGE_CONTENT)
+        val intents = listOf(GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EXPRESSIONS, GatewayIntent.MESSAGE_CONTENT)
         val discordApiBuilder = JDABuilder.createLight(bridge.config.discord.apiKey, intents)
             .setMemberCachePolicy(MemberCachePolicy.ALL) // so we can cache invisible members and ping people not online
             .enableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
@@ -234,11 +235,13 @@ class DiscordPier(private val bridge: Bridge) : Pier {
     /**
      * Gets the pinned messages from the specified discord channel or null if the channel cannot be found
      */
-    fun getPinnedMessages(channelId: String): List<DiscordMessage>? {
-        val channel = getTextChannelBy(channelId) ?: return null
-        val messages = channel.retrievePinnedMessages().complete()
-
-        return messages.map { it.toPlatformMessage(logger) }.toList()
+    fun getPinnedMessages(channelId: String, callback: (List<DiscordMessage>?) -> Unit) {
+        getTextChannelBy(channelId)?.let { channel ->
+            channel.retrievePinnedMessages().queue { pinnedMessages ->
+                val platformMessages = pinnedMessages.map { it.message.toPlatformMessage(logger) }
+                callback(platformMessages)
+            }
+        } ?: callback(null)
     }
 
     /**
