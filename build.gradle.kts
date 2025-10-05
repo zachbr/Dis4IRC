@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "2.2.20"
 
-    id("org.cadixdev.licenser") version "0.6.1"
+    id("net.neoforged.licenser") version "0.7.5"
     id("com.gradleup.shadow") version "8.3.5"
 }
 
@@ -78,7 +78,7 @@ tasks {
         expand(
             "projectName" to rootProject.name,
             "projectVersion" to version,
-            "projectSuffix" to getSuffix(),
+            "projectSuffix" to project.getSuffix(),
             "projectSourceRepo" to "https://github.com/zachbr/Dis4IRC"
         )
     }
@@ -97,21 +97,24 @@ license {
     }
 }
 
-fun getSuffix(): String {
+fun Project.getSuffix(): String {
     // If suffix was specified at build-time, use that.
     // ./gradlew build -P suffix="suffixValue15"
-    project.findProperty("suffix")?.toString()?.let { return it }
+    findProperty("suffix")?.toString()?.let { return it }
 
     // Fall back to git hash if suffix not set
-    return ByteArrayOutputStream().let { stdout ->
-        runCatching {
-            exec {
-                commandLine("git", "rev-parse", "--short", "HEAD")
-                standardOutput = stdout
-                errorOutput = ByteArrayOutputStream()
-                isIgnoreExitValue = true
-            }
-            stdout.toString().trim().takeIf { it.isNotEmpty() }
-        }.getOrNull() ?: "0"  // fall back to 0 if git falls through
-    }
+    return runCatching {
+        val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+            .directory(this.rootDir)
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .start()
+        process.waitFor(3, TimeUnit.SECONDS)
+
+        val gitHash = process.inputStream.bufferedReader().readText().trim()
+        if (process.exitValue() == 0 && gitHash.isNotEmpty()) {
+            gitHash
+        } else {
+            "0"
+        }
+    }.getOrDefault("0") // fall back to 0 if git falls through
 }
