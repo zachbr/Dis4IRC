@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import java.io.ByteArrayOutputStream
 import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -111,10 +110,9 @@ fun Project.getSuffix(): String {
         process.waitFor(3, TimeUnit.SECONDS)
 
         val gitHash = process.inputStream.bufferedReader().readText().trim()
-        if (process.exitValue() == 0 && gitHash.isNotEmpty()) {
-            gitHash
-        } else {
-            "0"
+        if (process.exitValue() != 0 && gitHash.isEmpty()) {
+            throw Exception("Git command failed or returned empty output.")
         }
+        return gitHash
     }.getOrDefault("0") // fall back to 0 if git falls through
 }
