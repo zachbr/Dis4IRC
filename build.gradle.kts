@@ -24,7 +24,7 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:6.0.0") {
+    implementation("net.dv8tion:JDA:6.1.1") {
         exclude(module = "opus-java")
         exclude(module = "tink")
     }
@@ -110,7 +110,7 @@ fun Project.getSuffix(): String {
         process.waitFor(3, TimeUnit.SECONDS)
 
         val gitHash = process.inputStream.bufferedReader().readText().trim()
-        if (process.exitValue() != 0 && gitHash.isEmpty()) {
+        if (process.exitValue() != 0 || gitHash.isEmpty()) {
             throw Exception("Git command failed or returned empty output.")
         }
         return gitHash
