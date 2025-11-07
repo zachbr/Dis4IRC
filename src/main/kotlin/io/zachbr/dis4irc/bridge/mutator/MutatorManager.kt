@@ -13,7 +13,6 @@ import io.zachbr.dis4irc.bridge.message.BridgeMessage
 import io.zachbr.dis4irc.bridge.message.DiscordMessage
 import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
-import io.zachbr.dis4irc.bridge.mutator.mutators.BlockHereEveryone
 import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.StripAntiPingCharacters
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
@@ -24,7 +23,6 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
 
     init {
         registerMutator(StripAntiPingCharacters())
-        registerMutator(BlockHereEveryone())
         registerMutator(PasteLongMessages(bridge, config.node("paste-service")))
         registerMutator(TranslateFormatting())
     }
