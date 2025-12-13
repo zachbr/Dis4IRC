@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.time.Instant
+import java.time.OffsetDateTime
 
 class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter() {
     private val logger = pier.logger
@@ -32,7 +33,7 @@ class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter()
         logger.debug("DISCORD JOIN ${event.user.name}")
 
         val sender = DiscordSender("Discord", 0L)
-        val message = DiscordMessage("${event.user.name} has joined the Discord", sender, source, receiveInstant)
+        val message = DiscordMessage("${event.user.name} has joined the Discord", sender, source, receiveInstant, sentTimestamp = OffsetDateTime.now())
         pier.sendToBridge(message)
     }
 
@@ -49,7 +50,7 @@ class DiscordJoinQuitListener(private val pier: DiscordPier) : ListenerAdapter()
         logger.debug("DISCORD PART ${event.user.name}")
 
         val sender = DiscordSender("Discord", 0L)
-        val message = DiscordMessage("${event.user.name} has left the Discord", sender, source, receiveInstant)
+        val message = DiscordMessage("${event.user.name} has left the Discord", sender, source, receiveInstant, sentTimestamp = OffsetDateTime.now())
         pier.sendToBridge(message)
     }
 }

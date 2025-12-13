@@ -43,7 +43,7 @@ class StatisticsManager(private val bridge: Bridge) {
             is CommandMessage -> return // command messages originate on bridge, don't need to count
         }
 
-        val difference = Duration.between(message.timestamp, sentInstant).toNanos()
+        val difference = Duration.between(message.receiveTimestamp, sentInstant).toNanos()
         messageTimings.add(difference)
         bridge.logger.debug("Message from ${message.source.channelName} ${message.sender.displayName} took ${TimeUnit.NANOSECONDS.toMillis(difference)}ms to handle")
     }

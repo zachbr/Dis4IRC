@@ -132,6 +132,7 @@ fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant = Instant.
         receiveInstant,
         attachmentUrls,
         parsedEmbeds,
+        timeCreated,
         snapshots,
         platformMsgRef
     )

@@ -10,10 +10,10 @@ package io.zachbr.dis4irc.bridge.pier.irc
 
 import io.zachbr.dis4irc.bridge.BridgeConfiguration
 import io.zachbr.dis4irc.bridge.IrcConfiguration
-import io.zachbr.dis4irc.bridge.message.BridgeMessage
 import io.zachbr.dis4irc.bridge.message.BridgeSender
 import io.zachbr.dis4irc.bridge.message.DiscordContentBase
 import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.message.PlatformSender
 import org.kitteh.irc.client.library.util.Format
 import kotlin.math.abs
@@ -25,9 +25,7 @@ object IrcMessageFormatter {
     /**
      * Takes a bridge message and returns a list of lines for sending to IRC.
      */
-    fun format(bridgeMessage: BridgeMessage, config: BridgeConfiguration): List<String> {
-        val platMessage = bridgeMessage.message
-
+    fun format(platMessage: PlatformMessage, config: BridgeConfiguration): List<String> {
         // Only really need to format messages from Discord (currently?)
         // Other messages we can just hand back as provided.
         if (platMessage !is DiscordMessage) {

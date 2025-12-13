@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.OffsetDateTime
 
 class MessageTest {
     @Test
@@ -45,7 +46,7 @@ class MessageTest {
         // test from Discord
         val discordSource = DiscordSource("some-channel", 1L)
         val discordSender = DiscordSender("SomeSender", 0L)
-        val discordMessage = DiscordMessage("Test", discordSender, discordSource, Instant.now())
+        val discordMessage = DiscordMessage("Test", discordSender, discordSource, Instant.now(), sentTimestamp = OffsetDateTime.now())
         val discordBridgeMsg = BridgeMessage(discordMessage)
 
         discordBridgeMsg.destination = Destination.DISCORD

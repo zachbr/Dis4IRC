@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.kitteh.irc.client.library.util.Format
 import java.time.Instant
+import java.time.OffsetDateTime
 
 class TranslateFormattingTest {
     @Test
@@ -54,7 +55,7 @@ class TranslateFormattingTest {
     }
 
     private fun testDiscordToIrc(expected: String, input: String) {
-        val message = DiscordMessage(input, DiscordSender("Test", 10L), DiscordSource("#test", 5L), Instant.now())
+        val message = DiscordMessage(input, DiscordSender("Test", 10L), DiscordSource("#test", 5L), Instant.now(), sentTimestamp = OffsetDateTime.now())
         val mutator = TranslateFormatting()
         mutator.mutate(message)
         assertEquals(expected, message.contents)
