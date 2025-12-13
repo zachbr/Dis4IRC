@@ -267,9 +267,9 @@ class PasteLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) 
                     }
                 }
 
-                override fun onFailure(call: Call, ex: IOException) {
-                    logger.error("Unable to make outgoing call to paste service! $ex")
-                    ex.printStackTrace()
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Unable to make outgoing call to paste service! $e")
+                    e.printStackTrace()
 
                     errorConsumer.accept(Response(Response.Type.FAILURE, null, null, null))
                 }

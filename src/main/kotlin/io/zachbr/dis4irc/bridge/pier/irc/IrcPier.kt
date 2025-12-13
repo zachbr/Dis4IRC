@@ -72,7 +72,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
     }
 
-    override fun sendMessage(targetChan: String, bMsg: BridgeMessage) {
+    override fun sendMessage(targetChan: String, msg: BridgeMessage) {
         if (!this::ircConn.isInitialized) {
             logger.error("IRC Connection has not been initialized yet!")
             return
@@ -80,18 +80,18 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         val channel = getChannelByName(targetChan)
         if (channel == null) {
-            logger.error("Unable to get or join $targetChan to send message from ${bMsg.message.sender.displayName}")
-            logger.debug(bMsg.toString())
+            logger.error("Unable to get or join $targetChan to send message from ${msg.message.sender.displayName}")
+            logger.debug(msg.toString())
             return
         }
 
-        val ircLines = IrcMessageFormatter.format(bMsg.message, bridge.config)
+        val ircLines = IrcMessageFormatter.format(msg.message, bridge.config)
         ircLines.forEach { line ->
             channel.sendMultiLineMessage(line)
         }
 
         if (ircLines.isNotEmpty()) {
-            bridge.updateStatistics(bMsg, Instant.now())
+            bridge.updateStatistics(msg, Instant.now())
         }
     }
 
