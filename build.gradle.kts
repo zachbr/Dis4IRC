@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "2.2.20"
 
     id("net.neoforged.licenser") version "0.7.5"
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "9.3.0"
 }
 
 group = "io.zachbr"
@@ -24,7 +24,7 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:6.1.1") {
+    implementation("net.dv8tion:JDA:6.1.3") {
         exclude(module = "opus-java")
         exclude(module = "tink")
     }
@@ -36,8 +36,8 @@ dependencies {
     implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.24.0")
 
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-core:1.5.18")
-    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("ch.qos.logback:logback-core:1.5.22")
+    implementation("ch.qos.logback:logback-classic:1.5.22")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
