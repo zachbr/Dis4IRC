@@ -2,6 +2,17 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.7.0 - `bd593a0`
+[Commits since 1.6.5](https://github.com/zachbr/Dis4IRC/compare/v1.6.5...v1.7.0)
+* Internal refactors to ensure we're treating each platform's messages correctly
+* Adds a warning message at startup for those who are not on Java 21 or higher.
+  * As the Java ecosystem continues to evolve, it's likely we'll be forced to bump
+    the required version at some point. This gives some advance warning.
+  * For more information, see [the commit notes](https://github.com/zachbr/Dis4IRC/commit/f2c73f068c01fa138148dbf41a50c73b039a0eb3).
+* Adds an option to suppress previews for URLs bridged to Discord.
+* Improvements to the pinned messages command.
+* Updates to the underlying Discord library and other libraries.
+
 ## 1.6.5 - `96b6acc`
 [Commits since 1.6.4](https://github.com/zachbr/Dis4IRC/compare/v1.6.4...v1.6.5)
 * Adds basic support for Discord Message Forwards.
