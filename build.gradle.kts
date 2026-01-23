@@ -4,10 +4,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "2.3.0"
 
     id("net.neoforged.licenser") version "0.7.5"
-    id("com.gradleup.shadow") version "9.3.0"
+    id("com.gradleup.shadow") version "9.3.1"
 }
 
 group = "io.zachbr"
@@ -24,22 +24,22 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:6.2.0") {
+    implementation("net.dv8tion:JDA:6.3.0") {
         exclude(module = "opus-java")
         exclude(module = "tink")
     }
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.json:json:20250107")
+    implementation("org.json:json:20251224")
     implementation("org.spongepowered:configurate-hocon:4.2.0")
-    implementation("org.commonmark:commonmark:0.24.0")
-    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.24.0")
+    implementation("org.commonmark:commonmark:0.27.1")
+    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.27.1")
 
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-core:1.5.22")
-    implementation("ch.qos.logback:logback-classic:1.5.22")
+    implementation("ch.qos.logback:logback-core:1.5.25")
+    implementation("ch.qos.logback:logback-classic:1.5.25")
 
-    testImplementation(platform("org.junit:junit-bom:5.12.2"))
+    testImplementation(platform("org.junit:junit-bom:5.14.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
