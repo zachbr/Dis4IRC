@@ -21,6 +21,7 @@ import kotlin.math.abs
 object IrcMessageFormatter {
     const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
     private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
+    private val SAFE_TRIM_CHARS: (Char) -> Boolean = { it == ' ' || it == '\t' || it == '\n' || it == '\r' }
 
     /**
      * Takes a bridge message and returns a list of lines for sending to IRC.
@@ -117,7 +118,7 @@ object IrcMessageFormatter {
         // forwards currently only contain one message
         val snapshot = msg.snapshots.first()
         val formattedContent = formatContentBlock(snapshot, config)
-        lines.addAll(formattedContent.trim().split("\n"))
+        lines.addAll(formattedContent.trim(SAFE_TRIM_CHARS).split("\n"))
 
         return lines
     }
@@ -128,7 +129,7 @@ object IrcMessageFormatter {
     private fun formatStandardMessage(msg: DiscordMessage, config: IrcConfiguration): List<String> {
         val content = formatContentBlock(msg, config)
 
-        return content.trim().split("\n").map { line ->
+        return content.trim(SAFE_TRIM_CHARS).split("\n").map { line ->
             val noPrefixPattern = config.noPrefixRegex
             if (noPrefixPattern == null || !noPrefixPattern.matcher(line).find()) {
                 val messagePrefix = createSenderPrefix(msg.sender, config.antiPing, config.useNickNameColor)
