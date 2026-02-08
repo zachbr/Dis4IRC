@@ -2,6 +2,21 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.7.2 - `7af7a74`
+[Commits since 1.7.1](https://github.com/zachbr/Dis4IRC/compare/v1.7.1...v1.7.2)
+* Fixes an issue with the logging system detecting a false version mismatch and
+  writing warning messages in the console. This was a bug in logback itself.
+
+## 1.7.1 - `ffc27b5`
+[Commits since 1.7.0](https://github.com/zachbr/Dis4IRC/compare/v1.7.0...v1.7.1)
+* Fixes an issue certain Discord formatting being lost when bridged to IRC.
+* Updates to the underlying Discord library and other libraries.
+
+> [!NOTE]
+> While a 1.7.1 release was prepared in the source code, a tagged version and
+> release were not published due to an issue with logback that was discovered
+> at release time. 1.7.2 contains all changes from 1.7.1.
+
 ## 1.7.0 - `bd593a0`
 [Commits since 1.6.5](https://github.com/zachbr/Dis4IRC/compare/v1.6.5...v1.7.0)
 * Internal refactors to ensure we're treating each platform's messages correctly
