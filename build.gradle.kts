@@ -36,8 +36,8 @@ dependencies {
     implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.27.1")
 
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-core:1.5.25")
-    implementation("ch.qos.logback:logback-classic:1.5.25")
+    implementation("ch.qos.logback:logback-core:1.5.28")
+    implementation("ch.qos.logback:logback-classic:1.5.28")
 
     testImplementation(platform("org.junit:junit-bom:5.14.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
