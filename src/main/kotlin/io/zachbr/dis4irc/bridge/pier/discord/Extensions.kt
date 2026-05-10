@@ -12,6 +12,14 @@ import io.zachbr.dis4irc.bridge.message.Embed
 import io.zachbr.dis4irc.bridge.message.DiscordMessageSnapshot
 import io.zachbr.dis4irc.bridge.message.DiscordSender
 import io.zachbr.dis4irc.bridge.message.DiscordSource
+import net.dv8tion.jda.api.components.Component
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.filedisplay.FileDisplay
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.section.Section
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.MessageType
@@ -126,9 +134,14 @@ fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant = Instant.
     // slash command handling
     val interactionMeta = this.interactionMetadata
     if (this.type == MessageType.SLASH_COMMAND && embeds.isEmpty() && interactionMeta != null) {
-        if (messageText.isNullOrBlank()) { // command invocation
+        if (messageText.isBlank() && components.isEmpty()) { // command invocation
             sender = DiscordSender(interactionMeta.user.effectiveName, interactionMeta.user.idLong)
             messageText = "*used the /" + this.interaction?.name + " command*"
+        }
+
+        // treat components as embeds, a richer representation is probably needed but one problem at a time
+        if (this.components.isNotEmpty()) {
+            parseComponentsAsEmbeds(this.components, parsedEmbeds)
         }
     }
 
@@ -161,7 +174,7 @@ fun makeLottieViewerUrl(discordCdnUrl: String): String? {
     return "$LOTTIE_PLAYER_BASE_URL?p=$encodedString"
 }
 
-fun parseEmbeds(embeds: List<MessageEmbed>): List<Embed> {
+fun parseEmbeds(embeds: List<MessageEmbed>): MutableList<Embed> {
     val parsed = ArrayList<Embed>()
     for (embed in embeds) {
         val strBuilder = StringBuilder()
@@ -208,15 +221,208 @@ fun parseEmbeds(embeds: List<MessageEmbed>): List<Embed> {
     return parsed
 }
 
-fun parseAttachments(attachments: List<Message.Attachment>) : MutableList<String> {
-    val attachmentUrls = ArrayList<String>()
-    for (attachment in attachments) {
-        var url = attachment.url
-        if (attachment.isImage) {
-            url = attachment.proxyUrl
+fun parseComponentsAsEmbeds(components: List<Component>, embeds: MutableList<Embed>) {
+    embeds.addAll(parseComponentsAsEmbeds(components))
+}
+
+private data class ComponentEmbedBuilder(
+    val text: StringBuilder = StringBuilder(),
+    var imageUrl: String? = null
+) {
+    fun append(value: String?) {
+        if (value.isNullOrBlank()) {
+            return
         }
 
-        attachmentUrls.add(url)
+        if (text.isNotEmpty() && !text.endsWith("\n")) {
+            text.append('\n')
+        }
+
+        text.append(value)
     }
-    return attachmentUrls
+
+    fun appendBlankLine() {
+        if (text.isNotEmpty() && !text.endsWith("\n\n")) {
+            if (!text.endsWith("\n")) {
+                text.append('\n')
+            }
+
+            text.append('\n')
+        }
+    }
+
+    fun append(embed: Embed) {
+        append(embed.string)
+        captureImage(embed.imageUrl)
+    }
+
+    fun captureImage(url: String?) {
+        if (imageUrl == null && !url.isNullOrBlank()) {
+            imageUrl = url
+        }
+    }
+
+    fun toEmbed(): Embed? {
+        val string = text.toString().trim()
+        if (string.isBlank() && imageUrl == null) {
+            return null
+        }
+
+        return Embed(string, imageUrl)
+    }
+}
+
+private fun parseComponentsAsEmbeds(components: List<Component>): List<Embed> {
+    val embeds = ArrayList<Embed>()
+
+    for (component in components) {
+        when (component) {
+            is Separator -> continue
+            is Container -> embeds.addAll(parseContainerAsEmbeds(component))
+            is Section -> parseSectionAsEmbed(component)?.let { embeds.add(it) }
+            else -> {
+                val builder = ComponentEmbedBuilder()
+                if (appendLeafComponent(builder, component)) {
+                    builder.toEmbed()?.let { embeds.add(it) }
+                }
+            }
+        }
+    }
+
+    return embeds
+}
+
+private fun parseContainerAsEmbeds(container: Container): List<Embed> {
+    val embeds = ArrayList<Embed>()
+
+    for (component in container.components) {
+        when (component) {
+            is Separator -> continue
+            is Section -> parseSectionAsEmbed(component)?.let { embeds.add(it) }
+            is Container -> embeds.addAll(parseContainerAsEmbeds(component))
+            else -> appendLooseComponent(embeds, component)
+        }
+    }
+
+    return embeds
+}
+
+private fun parseSectionAsEmbed(section: Section): Embed? {
+    val builder = ComponentEmbedBuilder()
+
+    for (component in section.contentComponents) {
+        when (component) {
+            is Separator -> builder.appendBlankLine()
+            is Container -> parseContainerAsEmbeds(component).forEach { builder.append(it) }
+            is Section -> parseSectionAsEmbed(component)?.let { builder.append(it) }
+            else -> appendLeafComponent(builder, component, boldLabels = true)
+        }
+    }
+
+    val accessory = section.accessory
+    if (accessory is Thumbnail) {
+        appendLeafComponent(builder, accessory)
+    }
+
+    return builder.toEmbed()
+}
+
+private fun appendLooseComponent(embeds: MutableList<Embed>, component: Component) {
+    val builder = ComponentEmbedBuilder()
+    if (!appendLeafComponent(builder, component)) {
+        return
+    }
+
+    val embed = builder.toEmbed() ?: return
+    if (embeds.isEmpty()) {
+        embeds.add(embed)
+        return
+    }
+
+    val previous = embeds.last()
+    previous.string = appendText(previous.string, embed.string)
+
+    if (previous.imageUrl == null && embed.imageUrl != null) {
+        embeds[embeds.lastIndex] = Embed(previous.string, embed.imageUrl)
+    }
+}
+
+private fun appendLeafComponent(builder: ComponentEmbedBuilder, component: Component, boldLabels: Boolean = false): Boolean {
+    when (component) {
+        is Label -> {
+            val text = cleanComponentText(component.label)
+            builder.append(if (boldLabels && text != null) "**$text**" else text)
+        }
+
+        is TextDisplay -> {
+            builder.append(cleanComponentText(component.content))
+        }
+
+        is FileDisplay -> {
+            builder.append(component.url)
+        }
+
+        is Thumbnail -> {
+            builder.append(cleanComponentText(component.description))
+            builder.captureImage(component.url)
+        }
+
+        else -> return false
+    }
+
+    return true
+}
+
+private fun appendText(existing: String?, value: String?): String? {
+    if (value.isNullOrBlank()) {
+        return existing
+    }
+
+    if (existing.isNullOrBlank()) {
+        return value
+    }
+
+    return "$existing\n$value"
+}
+
+private fun cleanComponentText(value: String?): String? {
+    if (value == null) {
+        return null
+    }
+
+    return value
+        // todo - do not love the amount of reformatting being done here as regex
+        // markdown headings from components, move to normal bold e.g. "### Title" -> "**Title**"
+        .replace(Regex("""(?m)^#{1,6}\s+(.+)$""")) {
+            "**${it.groupValues[1]}**"
+        }
+
+        // markdown links e.g. "[@display](https://url)" -> "@display (https://url)"
+        .replace(Regex("""\[([^\]]+)]\(([^)]+)\)""")) {
+            "${it.groupValues[1]} (${it.groupValues[2]})"
+        }
+
+        // custom emoji, e.g. "<:reply:123>" or "<a:party:123>" -> ":reply:" / ":party:"
+        .replace(Regex("""<a?:([A-Za-z0-9_]+):\d+>""")) {
+            ":${it.groupValues[1]}:"
+        }
+
+        // remove discord timestamps
+        .replace(Regex("""<t:\d+:[tTdDfFR]>"""), "")
+
+        // Collapse extra horizontal whitespace left by removed markup.
+        .replace(Regex("""[ \t]+"""), " ")
+
+        // Avoid excessive blank lines.
+        .replace(Regex("""\n{3,}"""), "\n\n")
+
+        .trim()
+        .ifBlank { null }
+}
+
+fun parseAttachments(attachments: List<Message.Attachment>) : MutableList<String> {
+    return attachments
+        .mapTo(ArrayList()) { attachment ->
+            if (attachment.isImage) attachment.proxyUrl else attachment.url
+        }
 }

@@ -71,7 +71,8 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
             && message.attachments.isEmpty()
             && message.stickers.isEmpty()
             && message.embeds.isEmpty()
-            && message.messageSnapshots.isEmpty()) {
+            && message.messageSnapshots.isEmpty()
+            && message.components.isEmpty()) {
             return
         }
 

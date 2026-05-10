@@ -13,6 +13,7 @@ import io.zachbr.dis4irc.bridge.IrcConfiguration
 import io.zachbr.dis4irc.bridge.message.BridgeSender
 import io.zachbr.dis4irc.bridge.message.DiscordContentBase
 import io.zachbr.dis4irc.bridge.message.DiscordMessage
+import io.zachbr.dis4irc.bridge.message.Embed
 import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.message.PlatformSender
 import org.kitteh.irc.client.library.util.Format
@@ -22,6 +23,7 @@ object IrcMessageFormatter {
     const val ANTI_PING_CHAR = 0x200B.toChar() // zero width space
     private val NICK_COLORS = arrayOf("10", "06", "03", "07", "12", "11", "13", "09", "02")
     private val SAFE_TRIM_CHARS: (Char) -> Boolean = { it == ' ' || it == '\t' || it == '\n' || it == '\r' }
+    private val IRC_FORBIDDEN_CHARS = Regex("""[\u0000\r\n]""")
 
     /**
      * Takes a bridge message and returns a list of lines for sending to IRC.
@@ -30,7 +32,7 @@ object IrcMessageFormatter {
         // Only really need to format messages from Discord (currently?)
         // Other messages we can just hand back as provided.
         if (platMessage !is DiscordMessage) {
-            return platMessage.contents.split("\n")
+            return splitToIrcLines(platMessage.contents)
         }
 
         val lines = mutableListOf<String>()
@@ -127,17 +129,74 @@ object IrcMessageFormatter {
      * Formats a standard message, handling prefixes.
      */
     private fun formatStandardMessage(msg: DiscordMessage, config: IrcConfiguration): List<String> {
-        val content = formatContentBlock(msg, config)
+        val lines = mutableListOf<String>()
+        val contentLines = formatContentAndAttachments(msg.contents, msg.attachments)
+        for (line in contentLines) {
+            lines.add(formatDiscordLine(msg.sender, line, config))
+        }
 
-        return content.trim(SAFE_TRIM_CHARS).split("\n").map { line ->
-            val noPrefixPattern = config.noPrefixRegex
-            if (noPrefixPattern == null || !noPrefixPattern.matcher(line).find()) {
-                val messagePrefix = createSenderPrefix(msg.sender, config.antiPing, config.useNickNameColor)
-                "$messagePrefix $line"
-            } else {
-                line
+        if (config.sendDiscordEmbeds) {
+            for (embed in msg.embeds) {
+                lines.addAll(formatEmbed(msg.sender, embed, config))
             }
         }
+
+        return lines
+    }
+
+    private fun formatContentAndAttachments(contents: String, attachments: List<String>): List<String> {
+        var content = contents
+        if (attachments.isNotEmpty()) {
+            content += " " + attachments.joinToString(" ")
+        }
+
+        return splitToIrcLines(content)
+    }
+
+    private fun formatEmbed(sender: PlatformSender, embed: Embed, config: IrcConfiguration): List<String> {
+        val lines = mutableListOf<String>()
+        for (line in splitToIrcLines(embed.string)) {
+            lines.add(formatDiscordLine(sender, line, config))
+        }
+
+        val imageUrl = embed.imageUrl?.takeIf { it.isNotBlank() }
+        if (imageUrl != null) {
+            for (line in splitToIrcLines(imageUrl)) {
+                lines.add(formatDiscordLine(sender, line, config))
+            }
+        }
+
+        return lines
+    }
+
+    private fun formatDiscordLine(sender: PlatformSender, line: String, config: IrcConfiguration): String {
+        val safeLine = sanitizeIrcLine(line)
+        val noPrefixPattern = config.noPrefixRegex
+        if (noPrefixPattern != null && noPrefixPattern.matcher(safeLine).find()) {
+            return safeLine
+        }
+
+        val messagePrefix = createSenderPrefix(sender, config.antiPing, config.useNickNameColor)
+        return sanitizeIrcLine("$messagePrefix $safeLine")
+    }
+
+    private fun splitToIrcLines(value: String?): List<String> {
+        if (value.isNullOrBlank()) {
+            return emptyList()
+        }
+
+        return value
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+            .split('\n')
+            .map { sanitizeIrcLine(it) }
+            .filter { it.isNotBlank() }
+    }
+
+    private fun sanitizeIrcLine(value: String): String {
+        return value
+            .replace(IRC_FORBIDDEN_CHARS, "")
+            .trim(SAFE_TRIM_CHARS)
     }
 
     /**
@@ -145,12 +204,12 @@ object IrcMessageFormatter {
      */
     private fun formatContentBlock(block: DiscordContentBase, config: IrcConfiguration): String {
         var content = block.contents
-        val attachments = block.attachments.toMutableList() // Create a mutable copy
+        val attachments = block.attachments.toMutableList()
 
         if (config.sendDiscordEmbeds) {
             block.embeds.forEach { embed ->
                 embed.string?.takeIf { it.isNotBlank() }?.let {
-                    content += " $it"
+                    content += "\n$it"
                 }
                 embed.imageUrl?.takeIf { it.isNotBlank() }?.let {
                     attachments.add(it)
@@ -165,7 +224,6 @@ object IrcMessageFormatter {
 
         return content
     }
-
 
     /**
      * Determines the color code to use for the provided nickname.
