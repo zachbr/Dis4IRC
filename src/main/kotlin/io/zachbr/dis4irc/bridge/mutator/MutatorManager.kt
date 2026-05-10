@@ -13,9 +13,9 @@ import io.zachbr.dis4irc.bridge.message.BridgeMessage
 import io.zachbr.dis4irc.bridge.message.DiscordMessage
 import io.zachbr.dis4irc.bridge.message.PlatformMessage
 import io.zachbr.dis4irc.bridge.mutator.api.Mutator
-import io.zachbr.dis4irc.bridge.mutator.mutators.PasteLongMessages
 import io.zachbr.dis4irc.bridge.mutator.mutators.StripAntiPingCharacters
 import io.zachbr.dis4irc.bridge.mutator.mutators.TranslateFormatting
+import io.zachbr.dis4irc.bridge.mutator.mutators.ShortenLongMessages
 import org.spongepowered.configurate.CommentedConfigurationNode
 
 class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
@@ -24,6 +24,7 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
     init {
         registerMutator(StripAntiPingCharacters())
         //registerMutator(PasteLongMessages(bridge, config.node("paste-service"))) // endpoint no longer available, future needs eval
+        registerMutator(ShortenLongMessages(bridge, config.node("shorten-long-messages")))
         registerMutator(TranslateFormatting())
     }
 
