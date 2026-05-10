@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.3.21"
 
     id("net.neoforged.licenser") version "0.7.5"
     id("com.gradleup.shadow") version "9.3.1"
@@ -24,7 +24,7 @@ repositories {
 dependencies {
     implementation("org.kitteh.irc:client-lib:9.0.0")
     implementation("club.minnced:discord-webhooks:0.8.4")
-    implementation("net.dv8tion:JDA:6.3.0") {
+    implementation("net.dv8tion:JDA:6.4.1") {
         exclude(module = "opus-java")
         exclude(module = "tink")
     }
