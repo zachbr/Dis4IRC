@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 COPY build/libs/Dis4IRC-*.jar /opt/dis4irc/app.jar
 RUN mkdir /data
 WORKDIR /data
