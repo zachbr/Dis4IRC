@@ -14,6 +14,7 @@ import io.zachbr.dis4irc.bridge.message.DiscordSender
 import io.zachbr.dis4irc.bridge.message.DiscordSource
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.sticker.Sticker
@@ -120,7 +121,17 @@ fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant = Instant.
     }
 
     val displayName = guildMember?.effectiveName ?: this.author.name // webhooks won't have an effective name
-    val sender = DiscordSender(displayName, this.author.idLong)
+    var sender = DiscordSender(displayName, this.author.idLong)
+
+    // slash command handling
+    val interactionMeta = this.interactionMetadata
+    if (this.type == MessageType.SLASH_COMMAND && embeds.isEmpty() && interactionMeta != null) {
+        if (messageText.isNullOrBlank()) { // command invocation
+            sender = DiscordSender(interactionMeta.user.effectiveName, interactionMeta.user.idLong)
+            messageText = "*used the /" + this.interaction?.name + " command*"
+        }
+    }
+
     if (this.channelType != ChannelType.TEXT) {
         logger.debug("Encountered unsupported channel type: {}", channelType) // TODO: probably a nicer way to handle this (FIXME: Support other types?)
     }
@@ -157,7 +168,7 @@ fun parseEmbeds(embeds: List<MessageEmbed>): List<Embed> {
         val imageUrl = embed.image?.url
 
         if (embed.title != null) {
-            strBuilder.append(embed.title)
+            strBuilder.append("**" + embed.title + "**")
         }
 
         if (embed.title != null && embed.description != null) {

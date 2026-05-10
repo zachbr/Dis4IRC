@@ -8,8 +8,10 @@
 
 package io.zachbr.dis4irc.bridge.pier.discord
 
+import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.time.Instant
 
@@ -37,12 +39,44 @@ class DiscordMsgListener(private val pier: DiscordPier) : ListenerAdapter() {
             && message.attachments.isEmpty()
             && message.stickers.isEmpty()
             && message.embeds.isEmpty()
-            && message.messageSnapshots.isEmpty()) {
+            && message.messageSnapshots.isEmpty()
+            && message.type != MessageType.SLASH_COMMAND) {
             return
         }
 
         val receiveInstant = Instant.now()
         logger.debug("DISCORD MSG ${event.channel.name} ${event.author.name}: ${event.message.contentStripped}")
+        pier.sendToBridge(message.toPlatformMessage(logger, receiveInstant))
+    }
+
+    override fun onMessageUpdate(event: MessageUpdateEvent) {
+        if (event.message.channelType != ChannelType.TEXT) {
+            return
+        }
+
+        // this is only here to support slash command embeds currently
+        if (event.message.type != MessageType.SLASH_COMMAND) {
+            return
+        }
+
+        // don't bridge itself
+        val source = event.channel.asTextChannel().asPlatformSource()
+        if (pier.isThisBot(source, event.author.idLong)) {
+            return
+        }
+
+        // don't bridge empty messages
+        val message = event.message
+        if (message.contentDisplay.isEmpty()
+            && message.attachments.isEmpty()
+            && message.stickers.isEmpty()
+            && message.embeds.isEmpty()
+            && message.messageSnapshots.isEmpty()) {
+            return
+        }
+
+        val receiveInstant = Instant.now()
+        logger.debug("DISCORD MSGUPD ${event.channel.name} ${event.author.name} ${event.message.idLong}")
         pier.sendToBridge(message.toPlatformMessage(logger, receiveInstant))
     }
 }
