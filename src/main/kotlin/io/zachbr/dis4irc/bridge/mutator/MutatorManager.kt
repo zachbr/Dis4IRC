@@ -23,7 +23,7 @@ class MutatorManager(bridge: Bridge, config: CommentedConfigurationNode) {
 
     init {
         registerMutator(StripAntiPingCharacters())
-        registerMutator(PasteLongMessages(bridge, config.node("paste-service")))
+        //registerMutator(PasteLongMessages(bridge, config.node("paste-service"))) // endpoint no longer available, future needs eval
         registerMutator(TranslateFormatting())
     }
 
