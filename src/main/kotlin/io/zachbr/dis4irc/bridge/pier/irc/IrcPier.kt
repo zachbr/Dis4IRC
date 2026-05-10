@@ -87,7 +87,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         val ircLines = IrcMessageFormatter.format(msg.message, bridge.config)
         ircLines.forEach { line ->
-            channel.sendMessage(line)
+            channel.sendMultiLineMessage(line) // sendMultiLineMessage used to handle splitting long messages based on length
         }
 
         if (ircLines.isNotEmpty()) {
