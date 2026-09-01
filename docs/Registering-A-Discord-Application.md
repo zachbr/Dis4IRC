@@ -30,9 +30,9 @@ Select "Add bot" on the right side.
 
 ![add-a-bot](https://i.imgur.com/mE1Lt7K.png)
 
-Give your bot a username, if you aren't using webhooks, you'll see this name a lot.
+Give your bot a username. If you aren't using webhooks, you'll see this name a lot.
 
-You can also give it an icon, if you aren't using webhooks you'll see this a lot too.
+You can also give it an icon. If you aren't using webhooks, you'll see this a lot too.
 
 Now click the "Copy" button under the "Token" section. That is your bot's Discord API token that
 you should paste into the config file.
@@ -42,14 +42,22 @@ you should paste into the config file.
 ## Gateway Intents
 
 You're almost done, just one more thing. Scroll down, under "Privileged Gateway Intents" and make sure that
-the both the "Server Members Intent" and the "Message Content Intent" is set to **On**.
+both the "Server Members Intent" and the "Message Content Intent" are set to **On**.
 
 Dis4IRC requires the "Server Members Intent" to properly cache the member list for things like pings from IRC. Dis4IRC
 requires the "Message Content Intent" to access message content now that Discord has added the command system.
 
 ![gateway-intents](https://i.imgur.com/cBZfGRm.png)
 
-If you do not enable these intents, you will receive an error message like this on start up:
+> [!IMPORTANT]
+> Discord requires that applications running in servers with more than 10,000 members undergo a review before they
+> can use privileged intents such as the **Server Members Intent** and the **Message Content Intent**. For more
+> information, see [Discord's tutorial on Privileged Intent Review](https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review).
+>
+> If your server meets these requirements, you will need their approval to use these intents.
+
+
+If you do not enable these intents, you will receive an error message like this on startup:
 ```
 CloseCode(4014 / Disallowed intents. Your bot might not be eligible to request a privileged intent such as GUILD_PRESENCES or GUILD_MEMBERS.)
 ```
