@@ -17,8 +17,9 @@ import org.spongepowered.configurate.CommentedConfigurationNode
 import kotlin.math.min
 
 class ShortenLongMessages(val bridge: Bridge, config: CommentedConfigurationNode) : Mutator {
-    private var maxNewlines: Int = 3
-    private var maxMsgLength: Int = 400
+    private var maxNewlines: Int = 6
+    private var maxMsgLength: Int = 1800
+    private var shortenedSuffix: String = "[...]"
 
     init {
         val msgNewlineCount = config.node("max-new-lines")
@@ -31,8 +32,15 @@ class ShortenLongMessages(val bridge: Bridge, config: CommentedConfigurationNode
             msgLengthNode.set(maxMsgLength)
         }
 
+        val shortenedSuffixNode = config.node("shortened-suffix")
+        if (shortenedSuffixNode.virtual()) {
+            shortenedSuffixNode.comment("Suffix to append to shortened messages")
+            shortenedSuffixNode.set(shortenedSuffix)
+        }
+
         maxNewlines = msgNewlineCount.int
         maxMsgLength = msgLengthNode.int
+        shortenedSuffix = shortenedSuffixNode.string ?: shortenedSuffix
     }
 
     override fun mutate(message: PlatformMessage): Mutator.LifeCycle {
@@ -58,15 +66,15 @@ class ShortenLongMessages(val bridge: Bridge, config: CommentedConfigurationNode
             return Mutator.LifeCycle.CONTINUE
         }
 
+        // todo - there's almost certainly a better way to handle markdown as part of the formatter
         val cleaned = contents
-            .replace("\n", " ")
             .replace("```", "")
             .replace("`", "")
 
         val maxLength = min(maxMsgLength, cleaned.length)
-        val shortened = cleaned.substring(0, maxLength) + "..."
-
+        val shortened = cleaned.substring(0, maxLength) + shortenedSuffix
         message.contents = "$shortened${IrcFormattingCodes.RESET}"
+
         return Mutator.LifeCycle.CONTINUE
     }
 }
