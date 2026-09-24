@@ -2,6 +2,19 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.7.3 - `18632b6`
+[Commits since 1.7.2](https://github.com/zachbr/Dis4IRC/compare/v1.7.2...v1.7.3)
+* Adds the ability to bridge slash commands and message components.
+* The Paste service has been disabled due to the provider going offline.
+  * We will investigate alternatives in future releases.
+* A message shortening feature has been added.
+  * By default, messages over 1800 characters  or with more than 6 newlines will be shortened with a `[...]` suffix.
+  * These values are configurable.
+* Updates the Java runtime version warning to log a message at startup for those who are not on **Java 25** or higher.
+  * This is only a warning and is not required at this time.
+  * A future version of Dis4IRC may require Java 25.
+* Updates to the underlying Discord library and other libraries.
+
 ## 1.7.2 - `7af7a74`
 [Commits since 1.7.1](https://github.com/zachbr/Dis4IRC/compare/v1.7.1...v1.7.2)
 * Fixes an issue with the logging system detecting a false version mismatch and

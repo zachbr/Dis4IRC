@@ -2,7 +2,8 @@ Getting Started
 ===============
 
 Dis4IRC requires **Java 11** or newer to run, so make sure you have that
-installed before proceeding.
+installed before proceeding. A future version of Dis4IRC will require **Java 25**
+or newer to run.
 
 Startup
 -------
@@ -13,8 +14,8 @@ that it's missing some important information and exit.
 
 It should look like this:
 ```bash                                                               
-$ java -jar Dis4IRC-1.7.2.jar
-[18:23:19] [init] [INFO] - Dis4IRC v1.7.2-7af7a74
+$ java -jar Dis4IRC-1.7.3.jar
+[18:23:19] [init] [INFO] - Dis4IRC v1.7.3-18632b6
 [18:23:19] [init] [INFO] - Source available at https://github.com/zachbr/Dis4IRC
 [18:23:19] [init] [INFO] - Available under the MIT License
 [18:23:19] [init] [INFO] - Loading config from: config.hocon

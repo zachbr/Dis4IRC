@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "io.zachbr"
-version = "1.7.3"
+version = "1.7.4-SNAPSHOT"
 
 val targetJVM = JavaVersion.VERSION_11.toString()
 
