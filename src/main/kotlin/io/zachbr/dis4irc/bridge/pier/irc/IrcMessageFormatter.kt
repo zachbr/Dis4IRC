@@ -27,8 +27,10 @@ object IrcMessageFormatter {
 
     /**
      * Takes a bridge message and returns a list of lines for sending to IRC.
+     *
+     * @param includeReplyContext whether to include the `Reply to` context line for Discord replies
      */
-    fun format(platMessage: PlatformMessage, config: BridgeConfiguration): List<String> {
+    fun format(platMessage: PlatformMessage, config: BridgeConfiguration, includeReplyContext: Boolean = true): List<String> {
         // Only really need to format messages from Discord (currently?)
         // Other messages we can just hand back as provided.
         if (platMessage !is DiscordMessage) {
@@ -38,7 +40,7 @@ object IrcMessageFormatter {
         val lines = mutableListOf<String>()
 
         // discord replies
-        if (platMessage.referencedMessage != null && config.irc.discordReplyContextLimit > 0) {
+        if (includeReplyContext && platMessage.referencedMessage != null && config.irc.discordReplyContextLimit > 0) {
             lines.add(formatReplyHeader(platMessage.referencedMessage, config.irc))
         }
 

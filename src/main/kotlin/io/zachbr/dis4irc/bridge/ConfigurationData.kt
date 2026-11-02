@@ -52,7 +52,9 @@ data class IrcConfiguration (
     val announceForwardedCommands: Boolean,
     val discordReplyContextLimit: Int,
     val startupRawCommands: List<String>,
-    val sendDiscordEmbeds: Boolean
+    val sendDiscordEmbeds: Boolean,
+    val discordReplyTags: Boolean,
+    val discordReplyContextWithTags: Boolean
 ) {
     fun toLoggable(): String {
         return "IrcConfiguration(" +
@@ -70,7 +72,9 @@ data class IrcConfiguration (
                 "announceForwardedCommands=$announceForwardedCommands, " +
                 "discordReplyContextLimit=$discordReplyContextLimit, " +
                 "startupRawCommands=$startupRawCommands" +
-                "sendDiscordEmbeds=$sendDiscordEmbeds" +
+                "sendDiscordEmbeds=$sendDiscordEmbeds, " +
+                "discordReplyTags=$discordReplyTags, " +
+                "discordReplyContextWithTags=$discordReplyContextWithTags" +
                 ")"
     }
 }
@@ -82,7 +86,8 @@ data class DiscordConfiguration(
     val activityDesc: String,
     val activityUrl: String,
     val onlineStatus: String,
-    val suppressUrlPreview: Boolean
+    val suppressUrlPreview: Boolean,
+    val threadIrcReplies: Boolean
 ) {
     fun toLoggable(): String {
         return "DiscordConfiguration(" +
@@ -92,7 +97,8 @@ data class DiscordConfiguration(
                 "activityDesc=${activityDesc}, " +
                 "activityUrl=${activityUrl}, " +
                 "onlineStatus=${onlineStatus}" +
-                "suppressUrlPreview=${suppressUrlPreview}" +
+                "suppressUrlPreview=${suppressUrlPreview}, " +
+                "threadIrcReplies=${threadIrcReplies}" +
                 ")"
     }
 }

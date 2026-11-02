@@ -82,6 +82,14 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     ircSendDiscordEmbeds.set(true)
     ircSendDiscordEmbeds.comment("Whether to send Discord channel embeds to IRC.")
 
+    val ircDiscordReplyTags = ircBaseNode.node("discord-reply-tags")
+    ircDiscordReplyTags.set(true)
+    ircDiscordReplyTags.comment("Whether to send Discord replies as IRCv3 threaded replies (+draft/reply), if the server supports it.")
+
+    val ircDiscordReplyContextWithTags = ircBaseNode.node("discord-reply-context-with-tags")
+    ircDiscordReplyContextWithTags.set(false)
+    ircDiscordReplyContextWithTags.comment("Whether to also send the reply context line when a reply is sent threaded, for clients without IRCv3 reply support. Unthreaded replies always get it.")
+
     val discordApiKey = this.node("discord-api-key")
     discordApiKey.comment("Your discord API key you registered your bot with")
     discordApiKey.set("")
@@ -126,7 +134,14 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val discordSuppressUrlPreviews = discordOptionsNode.node("suppress-url-previews")
     discordSuppressUrlPreviews.set(false)
     discordSuppressUrlPreviews.comment("Suppresses URL previews for messages bridged to Discord.")
+
+    val discordThreadIrcReplies = discordOptionsNode.node("thread-irc-replies")
+    discordThreadIrcReplies.set(true)
+    discordThreadIrcReplies.comment(THREAD_IRC_REPLIES_COMMENT)
 }
+
+private const val THREAD_IRC_REPLIES_COMMENT = "Whether IRCv3 replies from IRC to bridged messages are sent as Discord replies. " +
+        "Webhooks can't reply, so these are sent by the bot itself."
 
 /**
  * Converts a given node into a BridgeConfiguration instance
@@ -168,6 +183,16 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         ircSendDiscordEmbedsNode.set(true)
     }
     val ircSendDiscordEmbeds = ircSendDiscordEmbedsNode.boolean
+    val ircDiscordReplyTagsNode = this.node("irc", "discord-reply-tags")
+    if (ircDiscordReplyTagsNode.virtual()) {
+        ircDiscordReplyTagsNode.set(true)
+    }
+    val ircDiscordReplyTags = ircDiscordReplyTagsNode.boolean
+    val ircDiscordReplyContextWithTagsNode = this.node("irc", "discord-reply-context-with-tags")
+    if (ircDiscordReplyContextWithTagsNode.virtual()) {
+        ircDiscordReplyContextWithTagsNode.set(false)
+    }
+    val ircDiscordReplyContextWithTags = ircDiscordReplyContextWithTagsNode.boolean
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.node("announce-joins-and-quits").boolean
     val announceExtras = this.node("announce-extras").boolean
@@ -183,6 +208,12 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         discordSuppressUrlPreviewsNode.comment("Suppresses URL previews for messages bridged to Discord.")
     }
     val discordSuppressUrlPreviews = discordSuppressUrlPreviewsNode.boolean
+    val discordThreadIrcRepliesNode = this.node("discord-options", "thread-irc-replies")
+    if (discordThreadIrcRepliesNode.virtual()) {
+        discordThreadIrcRepliesNode.set(true)
+        discordThreadIrcRepliesNode.comment(THREAD_IRC_REPLIES_COMMENT)
+    }
+    val discordThreadIrcReplies = discordThreadIrcRepliesNode.boolean
 
     val webhookMappings = ArrayList<WebhookMapping>()
     for (webhookNode in this.node("discord-webhooks").childrenMap().values) {
@@ -259,10 +290,10 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         throw IllegalArgumentException("Cannot start $bridgeName bridge with above configuration errors!")
     }
 
-    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus, discordSuppressUrlPreviews)
+    val discordConfig = DiscordConfiguration(discordApiKey, webhookMappings, discordActivityType, discordActivityDesc, discordActivityUrl, discordOnlineStatus, discordSuppressUrlPreviews, discordThreadIrcReplies)
     val ircConfig = IrcConfiguration(ircHost, ircPass, ircPort, ircUseSsl, ircAllowBadSsl, ircNickName, ircUserName,
         ircRealName, ircAntiPing, ircUseNickNameColor, ircNoPrefixPattern, ircAnnounceForwards, ircDiscordReplyContextLimit,
-        ircCommandsList, ircSendDiscordEmbeds)
+        ircCommandsList, ircSendDiscordEmbeds, ircDiscordReplyTags, ircDiscordReplyContextWithTags)
 
     return BridgeConfiguration(
         bridgeName,

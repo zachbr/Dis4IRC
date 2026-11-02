@@ -158,7 +158,8 @@ fun Message.toPlatformMessage(logger: Logger, receiveInstant: Instant = Instant.
         parsedEmbeds,
         timeCreated,
         snapshots,
-        platformMsgRef
+        platformMsgRef,
+        idLong
     )
 }
 
