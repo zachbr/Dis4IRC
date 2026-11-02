@@ -2,6 +2,12 @@
 User-relevant changes to the software, see the full commit log for all changes.  
 [Downloads](https://github.com/zachbr/Dis4IRC/releases)
 
+## 1.7.4 - `2c08cc3`
+[Commits since 1.7.3](https://github.com/zachbr/Dis4IRC/compare/v1.7.3...v1.7.4)
+* Update the underlying Discord library for an upcoming platform change.
+  * Discord will begin [obfuscating channel information](https://docs.discord.com/developers/change-log#channel-obfuscation-for-users-and-bots) for channels that bots and users don't have rights to see.
+  * While I don't believe this will impact us directly, we should ensure JDA understands the change and handles it properly.
+
 ## 1.7.3 - `18632b6`
 [Commits since 1.7.2](https://github.com/zachbr/Dis4IRC/compare/v1.7.2...v1.7.3)
 * Adds the ability to bridge slash commands and message components.
