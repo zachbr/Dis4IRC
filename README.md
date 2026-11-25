@@ -46,6 +46,8 @@ bridges {
     default {
         # Relay joins, quits, parts, and kicks
         announce-joins-and-quits=false
+        # IRC nicknames whose joins, quits, parts, and kicks will not be relayed. Case-insensitive.
+        join-quit-ignore-nicks=[]
         # Relay extra verbose information you don't really need like topics and mode changes.
         announce-extras=false
         # Mappings are the channel <-> channel bridging configurations

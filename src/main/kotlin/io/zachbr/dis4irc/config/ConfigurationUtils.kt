@@ -98,6 +98,10 @@ fun CommentedConfigurationNode.makeDefaultNode() {
     val announceExtras = this.node("announce-extras")
     announceExtras.set(false)
 
+    val joinQuitIgnoreNicks = this.node("join-quit-ignore-nicks")
+    joinQuitIgnoreNicks.setList(String::class.java, emptyList())
+    joinQuitIgnoreNicks.comment("IRC nicknames whose joins, quits, parts, and kicks will not be relayed. Case-insensitive.")
+
     val mappingsNode = this.node("channel-mappings")
     mappingsNode.comment("Mappings are the channel <-> channel bridging configurations")
 
@@ -171,6 +175,15 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
     val discordApiKey = getStringNonNull("Discord API key cannot be null in $bridgeName!", "discord-api-key")
     val announceJoinsQuits = this.node("announce-joins-and-quits").boolean
     val announceExtras = this.node("announce-extras").boolean
+    val joinQuitIgnoreNicksNode = this.node("join-quit-ignore-nicks")
+    if (joinQuitIgnoreNicksNode.virtual()) {
+        joinQuitIgnoreNicksNode.setList(String::class.java, emptyList())
+        joinQuitIgnoreNicksNode.comment("IRC nicknames whose joins, quits, parts, and kicks will not be relayed. Case-insensitive.")
+    }
+    val joinQuitIgnoreNicks = joinQuitIgnoreNicksNode.childrenList()
+        .mapNotNull { it.string?.trim()?.lowercase() }
+        .filter { it.isNotEmpty() }
+        .toSet()
     var discordActivityType = this.node("discord-options", "activity-type").string
     var discordActivityDesc = this.node("discord-options", "activity-desc").string
     var discordActivityUrl = this.node("discord-options", "activity-url").string
@@ -268,6 +281,7 @@ fun CommentedConfigurationNode.toBridgeConfiguration(): BridgeConfiguration {
         bridgeName,
         announceJoinsQuits,
         announceExtras,
+        joinQuitIgnoreNicks,
         channelMappings,
         ircConfig,
         discordConfig,
