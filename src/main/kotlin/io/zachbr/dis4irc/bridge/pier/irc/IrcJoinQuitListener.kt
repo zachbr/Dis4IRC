@@ -17,13 +17,15 @@ import org.kitteh.irc.client.library.event.channel.UnexpectedChannelLeaveViaKick
 import org.kitteh.irc.client.library.event.user.UserQuitEvent
 import java.time.Instant
 
-class IrcJoinQuitListener(private val pier: IrcPier) {
+class IrcJoinQuitListener(private val pier: IrcPier, private val ignoredNicks: Set<String>) {
     private val logger = pier.logger
+
+    private fun isIgnored(nick: String): Boolean = nick.lowercase() in ignoredNicks
 
     @Handler
     fun onUserJoinChan(event: ChannelJoinEvent) {
         // don't log our own joins
-        if (event.user.nick == pier.getBotNick()) {
+        if (event.user.nick == pier.getBotNick() || isIgnored(event.user.nick)) {
             return
         }
 
@@ -40,7 +42,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
     @Handler
     fun onUserLeaveChan(event: ChannelPartEvent) {
         // don't log our own leaving
-        if (event.user.nick == pier.getBotNick()) {
+        if (event.user.nick == pier.getBotNick() || isIgnored(event.user.nick)) {
             return
         }
 
@@ -57,7 +59,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
     @Handler
     fun onUserKicked(event: UnexpectedChannelLeaveViaKickEvent) {
         // don't log our own quitting
-        if (event.user.nick == pier.getBotNick()) {
+        if (event.user.nick == pier.getBotNick() || isIgnored(event.target.nick)) {
             return
         }
 
@@ -73,6 +75,10 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
 
     @Handler
     fun onUserQuit(event: UserQuitEvent) {
+        if (isIgnored(event.user.nick)) {
+            return
+        }
+
         val receiveInstant = Instant.now()
         val sender = IrcSender("IRC", null)
         val msgContent = "${event.user.nick} (${event.user.userString}@${event.user.host}) has quit"

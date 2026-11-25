@@ -19,6 +19,8 @@ data class BridgeConfiguration(
     val bridgeName: String,
     val announceJoinsQuits: Boolean,
     val announceExtras: Boolean,
+    /** Lowercased IRC nicks whose join/part/quit/kick messages are not announced */
+    val joinQuitIgnoreNicks: Set<String>,
     val channelMappings: List<ChannelMapping>,
     val irc: IrcConfiguration,
     val discord: DiscordConfiguration,
@@ -30,6 +32,7 @@ data class BridgeConfiguration(
                 "bridgeName='$bridgeName', " +
                 "announceJoinsQuits=$announceJoinsQuits, " +
                 "announceExtras=$announceExtras, " +
+                "joinQuitIgnoreNicks=$joinQuitIgnoreNicks, " +
                 "channelMappings=$channelMappings, " +
                 irc.toLoggable() + " " +
                 discord.toLoggable() + " " +
