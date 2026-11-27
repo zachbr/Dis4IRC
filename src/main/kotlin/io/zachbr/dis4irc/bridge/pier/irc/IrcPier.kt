@@ -51,8 +51,8 @@ class IrcPier(private val bridge: Bridge) : Pier {
                 .secureHostnameVerification(false)
         }
 
-        // connect
-        ircConn = builder.then().buildAndConnect()
+        // build without connecting
+        ircConn = builder.then().build()
         ircConn.client.exceptionListener.setConsumer { bridge.logger.warn("Exception from IRC API:", it)}
 
         // listeners
@@ -71,6 +71,9 @@ class IrcPier(private val bridge: Bridge) : Pier {
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
         referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
+
+        // connect
+        ircConn.connect()
     }
 
     override fun onShutdown() {
