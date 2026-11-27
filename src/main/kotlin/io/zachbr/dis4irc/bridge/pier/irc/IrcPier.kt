@@ -21,10 +21,13 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
+private const val REJOIN_INTERVAL = 60_000L
+
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private lateinit var ircConn: Client
     private val mappedChannelsAdded = AtomicBoolean(false)
+    private val lastRejoinAttempt = HashMap<String, Long>()
     private var antiPing: Boolean = false
     private var noPrefix: Pattern? = null
     private var referenceLengthLimit: Int = 90
@@ -115,13 +118,31 @@ class IrcPier(private val bridge: Bridge) : Pier {
      */
     private fun getChannelByName(name: String): Channel? {
         val chan = ircConn.getChannel(name).toNullable()
-        if (chan == null) {
+        if (chan != null) {
+            return chan
+        }
+
+        val key = ircConn.serverInfo.caseMapping.toLowerCase(name)
+        val now = System.currentTimeMillis()
+        val shouldRejoin = synchronized(lastRejoinAttempt) {
+            val last = lastRejoinAttempt[key]
+            if (last == null || now - last >= REJOIN_INTERVAL) {
+                lastRejoinAttempt[key] = now
+                true
+            } else {
+                false
+            }
+        }
+
+        if (shouldRejoin) {
             logger.warn("Bridge not in expected channel $name, was it kicked?")
             logger.debug("Attempting to rejoin $name")
             ircConn.addChannel(name)
+        } else {
+            logger.debug("Bridge not in expected channel $name, but already recently tried rejoining")
         }
 
-        return chan ?: ircConn.getChannel(name).toNullable()
+        return ircConn.getChannel(name).toNullable()
     }
 
     /**
