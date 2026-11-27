@@ -146,10 +146,10 @@ class IrcPier(private val bridge: Bridge) : Pier {
     }
 
     /**
-     * Gets the IRC bot user's nickname
+     * Checks if the given nickname is the IRC bot's, using the server's casemapping
      */
-    fun getBotNick(): String {
-        return ircConn.nick
+    fun isBotNick(nick: String): Boolean {
+        return ircConn.serverInfo.caseMapping.areEqualIgnoringCase(nick, ircConn.nick)
     }
 
     /**

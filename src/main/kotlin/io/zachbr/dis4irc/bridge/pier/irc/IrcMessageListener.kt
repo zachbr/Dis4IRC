@@ -28,7 +28,7 @@ class IrcMessageListener(private val pier: IrcPier) {
     @Handler
     fun onMessage(event: ChannelMessageEvent) {
         // ignore messages sent by this bot
-        if (event.actor.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.actor.nick)) {
             return
         }
 
@@ -44,7 +44,7 @@ class IrcMessageListener(private val pier: IrcPier) {
     @Handler
     fun onChannelCtcp(event: ChannelCtcpEvent) {
         // ignore messages sent by this bot
-        if (event.actor.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.actor.nick)) {
             return
         }
 
