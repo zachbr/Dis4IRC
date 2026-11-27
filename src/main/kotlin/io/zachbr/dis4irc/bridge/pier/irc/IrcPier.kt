@@ -54,6 +54,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
 
         // listeners
         ircConn.eventManager.registerEventListener(IrcConnectionListener(this))
+        ircConn.eventManager.registerEventListener(IrcDiagnosticsListener(this))
         ircConn.eventManager.registerEventListener(IrcMessageListener(this))
 
         if (bridge.config.announceJoinsQuits) {
