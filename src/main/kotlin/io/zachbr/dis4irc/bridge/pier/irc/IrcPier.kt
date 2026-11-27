@@ -43,6 +43,7 @@ class IrcPier(private val bridge: Bridge) : Pier {
         if (bridge.config.irc.allowInvalidCerts) {
             logger.warn("Allowing invalid TLS certificates for IRC. This is not recommended.")
             builder.secureTrustManagerFactory(InsecureTrustManagerFactory.INSTANCE)
+                .secureHostnameVerification(false)
         }
 
         // connect
