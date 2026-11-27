@@ -1,9 +1,13 @@
 Getting Started
 ===============
 
-Dis4IRC requires **Java 11** or newer to run, so make sure you have that
-installed before proceeding. A future version of Dis4IRC will require **Java 25**
-or newer to run.
+Dis4IRC requires **Java 25** or newer to run, so make sure you have that
+installed before proceeding.
+
+On Linux, your distribution likely already offers newer packages. If your
+distribution does not offer newer packages or you are not on Linux, you can use
+a (free) release package from a vendor such as Eclipse Temurin, Amazon Corretto,
+Microsoft OpenJDK, or BellSoft Liberica.
 
 Startup
 -------

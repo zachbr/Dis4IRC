@@ -28,7 +28,7 @@ class IrcMessageListener(private val pier: IrcPier) {
     @Handler
     fun onMessage(event: ChannelMessageEvent) {
         // ignore messages sent by this bot
-        if (event.actor.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.actor.nick)) {
             return
         }
 
@@ -44,7 +44,7 @@ class IrcMessageListener(private val pier: IrcPier) {
     @Handler
     fun onChannelCtcp(event: ChannelCtcpEvent) {
         // ignore messages sent by this bot
-        if (event.actor.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.actor.nick)) {
             return
         }
 
@@ -52,12 +52,17 @@ class IrcMessageListener(private val pier: IrcPier) {
         logger.debug("IRC CTCP ${event.channel.name} ${event.actor.nick}: ${event.message}")
 
         // if it's not an action we probably don't care
-        if (!event.message.startsWith(CTCP_ACTION)) {
+        if (!event.message.startsWith("$CTCP_ACTION ")) {
             return
         }
 
-        // add italic code and strip off the ctcp type info
-        val messageText = "${Format.ITALIC}${event.message.substring(CTCP_ACTION.length + 1)}"
+        val action = event.message.substring(CTCP_ACTION.length + 1)
+        if (action.isBlank()) {
+            return
+        }
+
+        // add italic code
+        val messageText = "${Format.ITALIC}$action"
 
         val sender = event.actor.asBridgeSender()
         val source = event.channel.asBridgeSource()

@@ -18,11 +18,16 @@ import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
 import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.Logger
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
+
+private const val REJOIN_INTERVAL = 60_000L
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private lateinit var ircConn: Client
+    private val mappedChannelsAdded = AtomicBoolean(false)
+    private val lastRejoinAttempt = HashMap<String, Long>()
     private var antiPing: Boolean = false
     private var noPrefix: Pattern? = null
     private var referenceLengthLimit: Int = 90
@@ -43,14 +48,16 @@ class IrcPier(private val bridge: Bridge) : Pier {
         if (bridge.config.irc.allowInvalidCerts) {
             logger.warn("Allowing invalid TLS certificates for IRC. This is not recommended.")
             builder.secureTrustManagerFactory(InsecureTrustManagerFactory.INSTANCE)
+                .secureHostnameVerification(false)
         }
 
-        // connect
-        ircConn = builder.then().buildAndConnect()
+        // build without connecting
+        ircConn = builder.then().build()
         ircConn.client.exceptionListener.setConsumer { bridge.logger.warn("Exception from IRC API:", it)}
 
         // listeners
         ircConn.eventManager.registerEventListener(IrcConnectionListener(this))
+        ircConn.eventManager.registerEventListener(IrcDiagnosticsListener(this))
         ircConn.eventManager.registerEventListener(IrcMessageListener(this))
 
         if (bridge.config.announceJoinsQuits) {
@@ -64,6 +71,9 @@ class IrcPier(private val bridge: Bridge) : Pier {
         noPrefix = bridge.config.irc.noPrefixRegex
         antiPing = bridge.config.irc.antiPing
         referenceLengthLimit = bridge.config.irc.discordReplyContextLimit
+
+        // connect
+        ircConn.connect()
     }
 
     override fun onShutdown() {
@@ -111,20 +121,38 @@ class IrcPier(private val bridge: Bridge) : Pier {
      */
     private fun getChannelByName(name: String): Channel? {
         val chan = ircConn.getChannel(name).toNullable()
-        if (chan == null) {
+        if (chan != null) {
+            return chan
+        }
+
+        val key = ircConn.serverInfo.caseMapping.toLowerCase(name)
+        val now = System.currentTimeMillis()
+        val shouldRejoin = synchronized(lastRejoinAttempt) {
+            val last = lastRejoinAttempt[key]
+            if (last == null || now - last >= REJOIN_INTERVAL) {
+                lastRejoinAttempt[key] = now
+                true
+            } else {
+                false
+            }
+        }
+
+        if (shouldRejoin) {
             logger.warn("Bridge not in expected channel $name, was it kicked?")
             logger.debug("Attempting to rejoin $name")
             ircConn.addChannel(name)
+        } else {
+            logger.debug("Bridge not in expected channel $name, but already recently tried rejoining")
         }
 
-        return chan ?: ircConn.getChannel(name).toNullable()
+        return ircConn.getChannel(name).toNullable()
     }
 
     /**
-     * Gets the IRC bot user's nickname
+     * Checks if the given nickname is the IRC bot's, using the server's casemapping
      */
-    fun getBotNick(): String {
-        return ircConn.nick
+    fun isBotNick(nick: String): Boolean {
+        return ircConn.serverInfo.caseMapping.areEqualIgnoringCase(nick, ircConn.nick)
     }
 
     /**
@@ -152,6 +180,11 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         // join all mapped channels
+        // Only needed once. KICL stores added channels across connections
+        if (!mappedChannelsAdded.compareAndSet(false, true)) {
+            return
+        }
+
         for (mapping in bridge.config.channelMappings) {
             logger.debug("Joining ${mapping.ircChannel}")
             ircConn.addChannel(mapping.ircChannel)

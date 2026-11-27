@@ -13,16 +13,17 @@ plugins {
 group = "io.zachbr"
 version = "1.7.5-SNAPSHOT"
 
-val targetJVM = JavaVersion.VERSION_11.toString()
+val targetJVM = JavaVersion.VERSION_25.toString()
 
 repositories {
+    mavenLocal() // TODO: remove once KittehIRCClientLib 10.0.0 is published
     maven("https://m2.dv8tion.net/releases")
     maven("https://repo.spongepowered.org/maven")
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.kitteh.irc:client-lib:9.0.0")
+    implementation("org.kitteh.irc:client-lib:10.0.0-SNAPSHOT")
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.dv8tion:JDA:6.7.0") {
         exclude(module = "opus-java")

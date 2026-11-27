@@ -23,7 +23,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
     @Handler
     fun onUserJoinChan(event: ChannelJoinEvent) {
         // don't log our own joins
-        if (event.user.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.user.nick)) {
             return
         }
 
@@ -40,7 +40,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
     @Handler
     fun onUserLeaveChan(event: ChannelPartEvent) {
         // don't log our own leaving
-        if (event.user.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.user.nick)) {
             return
         }
 
@@ -57,7 +57,7 @@ class IrcJoinQuitListener(private val pier: IrcPier) {
     @Handler
     fun onUserKicked(event: UnexpectedChannelLeaveViaKickEvent) {
         // don't log our own quitting
-        if (event.user.nick == pier.getBotNick()) {
+        if (pier.isBotNick(event.user.nick)) {
             return
         }
 
