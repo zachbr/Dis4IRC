@@ -18,11 +18,13 @@ import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType
 import org.kitteh.irc.client.library.element.Channel
 import org.slf4j.Logger
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
 class IrcPier(private val bridge: Bridge) : Pier {
     internal val logger: Logger = bridge.logger
     private lateinit var ircConn: Client
+    private val mappedChannelsAdded = AtomicBoolean(false)
     private var antiPing: Boolean = false
     private var noPrefix: Pattern? = null
     private var referenceLengthLimit: Int = 90
@@ -153,6 +155,11 @@ class IrcPier(private val bridge: Bridge) : Pier {
         }
 
         // join all mapped channels
+        // Only needed once. KICL stores added channels across connections
+        if (!mappedChannelsAdded.compareAndSet(false, true)) {
+            return
+        }
+
         for (mapping in bridge.config.channelMappings) {
             logger.debug("Joining ${mapping.ircChannel}")
             ircConn.addChannel(mapping.ircChannel)
